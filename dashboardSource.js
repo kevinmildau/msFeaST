@@ -145,6 +145,10 @@ function initializeInteractiveNetworkSession(nodes, edges, groups, groupStats) {
   network = new vis.Network(networkContainer, networkData, networkDrawingOptions);
 
   // Define network Event Targets, Event Listeners, and Event Handlers:
+  network.on("dragging", function (params){
+    network.storePositions();
+    return undefined
+  })
   network.on("click", function (params) {
     let resetGroupDrawingOptions = function (drawingOptions, color) {
       /*
