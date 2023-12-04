@@ -36,7 +36,7 @@ JSON input data structure for dashboard:
 	nodes: [
 		{
 			"id": "uniqueNodeIdentifier", // unique for each node in the network
-			"size": numericSize, // based on a univ. statistical measure, scaled to pixels between 10 and 50.
+			"size": numericSize, // based on a univ. statistical measure, scaled to pixels between 10 and 50. A node size in px.
 			"group": "groupKey1", // matching the keys in groupNames exactly
 			"x": numericCoordinateValue, // x location on canvas for the node in pixels
 			"y": numericCoordinateValue, // y location on canvas for the node in pixels
@@ -67,7 +67,7 @@ JSON input data structure for dashboard:
 		"to": "uniqueNodeIdentifier2", // a unique node identifier to which the edge points
 		"width": value, // the similarity score projected to the range between 1px and 30px
 		"data": {
-			"score": value // the actual value of the score to be displayed as an edge label
+			"score": value // the actual value of the score to be displayed as an edge label (up to some rounding)
 			... // Possible additional data keys for edges currently not supported but could be added in future updates.
 		} 
 	]
