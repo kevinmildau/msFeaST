@@ -348,7 +348,6 @@ function loadDataAndConstructNetworkVisualization() {
       let adjustNodeDataToSelection = function (){
         let selectedContrast = domElementContrast.value;
         let selectedMeasure = domElementMeasure.value;
-        console.log("Selected Configuration:", selectedContrast, selectedMeasure)
         for (let node of nodes){
           // Replaces the starting node size with the node size of the selected Contrast and Measure. 
           // There is always at least one contrast and one measure to select.
@@ -362,8 +361,8 @@ function loadDataAndConstructNetworkVisualization() {
       formSelectUnivMeasure.addEventListener("change",adjustNodeDataToSelection);
       
     }
-    initializeContrastMeasureSelectors(formSelectContrast, formSelectUnivMeasure, contrastKeys, univMeasureKeys, nodes, groupKeys)
-    initializeInteractiveNetworkSession(nodes, edges, groupKeys, groupStats);
+    
+    initializeContrastMeasureSelectors(formSelectContrast, formSelectUnivMeasure, contrastKeys, univMeasureKeys, nodes, groupKeys, groupStats)
   }
   if (typeof window.FileReader !== 'function') {
     alert("The file API isn't supported on this browser yet.");
