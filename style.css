@@ -1,0 +1,35 @@
+.visjsNetworkContainer {
+  width: 100%;
+  height: 80vh;
+  border: 1px solid lightgray;
+}
+
+.plotlyGraphContainer {
+  width: 95%;
+  height: 60vh;
+  border: 5px black;
+  align-content: center;
+  overflow: auto; /*must have for plotly resizing to work in bootstrap tabs!*/
+}
+
+.customWarningStyle {
+  color: red;
+}
+
+.navbar {
+  background-color: gainsboro;
+}
+
+.navbar-brand {
+  font-family: 'Helvetica';
+}
+
+
+body {
+  font-size: 10px; 
+  font-family: 'Helvetica';
+}
+
+.vis-tooltip {
+  position: absolute;
+}
