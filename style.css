@@ -33,3 +33,15 @@ body {
 .vis-tooltip {
   position: absolute;
 }
+
+
+
+html {
+  font-size: 70%;
+}
+body {
+  font-size: 1rem;
+}
+header {
+  font-size: 2rem;
+}

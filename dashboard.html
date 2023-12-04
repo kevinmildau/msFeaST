@@ -25,7 +25,7 @@
     <div class="container-fluid"> 
       <div class="navbar-header">
         <a class="navbar-brand" href="#"> 
-          Feature Set Tester Visualization Dashboard 
+          <strong>PROTOTYPE: </strong> Feature Set Tester Visualization Dashboard
         </a>
       </div>
       <!-- Actual navbar items are stored in a list-->
@@ -70,73 +70,61 @@
           </div>
           <br/>
           <div class="row">
-            Coordinate System Scaling: I keep the the nodes at the same fixed size defined in pixels, but increase the 
-            coordinate system and thus the canvas size, while also forcing the canvas to fit. This means that nodes get 
-            relatively smaller when scaling upwards. graphScaler is only triggered when inside the form an pressing the
-            enter key when the input form is active. (zero input is ignored).
+            Adjust Coordinate System Scale: Set value between 1 and 9999.
           </div>
-          <br/>
           <input id="id-graph-scaler" class="form-control" type="number" placeholder=200>
-          <br></br>
           <div class="row">
-            Prototype - Run network stabilization physics for the specified number of iterations:
+            Prototype: Run network stabilization physics n iterations:
           </div>
           <input id="id-network-physics" class="form-control" type="number" placeholder=1>
-          <br/>
           <div class="row">
-            Export the network as an SVG image:
+            Export the network as in SVG format:
           </div>
           <button id="id-save-to-svg" type="button" class="btn btn-primary">Save to SVG</button>
-          <br/>
-          <br/>
-          <div>
-            Select Contrast:
-            <select  id="id-contrast-selector" class="form-select" size="1" aria-label="Multiple select example"> </select>
-          </div>
-          <div>
-            Select univ. statistical measure:
-            <select  id="id-univ-measure-selector" class="form-select" size="1" aria-label="Multiple select example"> </select>
-          </div>
         </div>
       </div>
       <div class="row"">
-        <p class="customWarningStyle"> This is where warnings to the user will live, like no edges above threshold. One warning at a time, where each warning modification will erase the previous and add the most recently triggered warning.  </p>
+        <p id="id-warning-paragraph" class="customWarningStyle"> Example Warning. </p>
       </div>
     </div>
     <div id="settings-tab" class="tab-pane">
       <br/>
       <div class="row">
         <div class="col-6">
-          <p> Here's an example plotly graph. The graph is specified in a separate .js file and will be put into the 
-            DIV below. 
+          <form id="jsonFile" name="jsonFile" enctype="multipart/form-data" method="post">
+            <fieldset>
+              <h1>Import Session Data</h1>
+               <input type='file' id='id-file-input'>
+            </fieldset>
+          </form>
+          <br/>
+          <input type='button' id='id-button-load-json' value='Load Selected Data'>
+          <br/>
+          <br/>
+          <p>Plotly Graph Example</p>
+          <p> This is an example plotly graph. The graph is specified in a separate .js file and will be put into the 
+            DIV below. Interactivity in this graph does not connect to any other graph elements yet. This might be used
+            later on to incorporate some summary statistics for the data.
           </p>
           <div id="id_plotly_example" class = "plotlyGraphContainer"></div>
         </div>
         <div class="col-6">
-          <p>The settings tab is currently inactive. There's no specific reactivity to changes in elements.</p>
-          <h4>Select one of a type for toggling between a list of things.</h4>
+          <h1>Select top-K edge limits:</h1>
           <form>
             <div class="form-group">
               <label for="formControlRange"> Set maximum number of nodes per edge. Can be set to range 1 to 100. This setting only does sub-setting; if only 20 edges are provided per node, this will be the effective maximum. </label>
               <div id="id-topk-live-print">Selected top-K value: 20</div>
-              <input id="id-topk-range-input" type="range" class="form-control-range" id="formControlRange" min="1" max="100" step="1" value="20">
+              <input id="id-topk-range-input" type="range" class="form-control-range" id="formControlRange" min="1" max="100" step="1" value="5">
             </div>
           </form>
-          <h4>Multiple selection input for chemical class selection for instance (bootstrap)</h4>
-          <select class="form-select" multiple size="5" aria-label="Multiple select example">
-            <option value="1">One</option>
-            <option value="2">Two</option>
-            <option value="3">Three</option>
-          </select>
-          <!-- The `multiple` attribute lets users select multiple files. -->
-          <form id="jsonFile" name="jsonFile" enctype="multipart/form-data" method="post">
-            <fieldset>
-              <h2>Json File</h2>
-               <input type='file' id='id-file-input'>
-               <input type='button' id='id-button-load-json' value='Load'>
-            </fieldset>
-          </form>
-          <div id="id-json-print-container"></div>
+          <div>
+            Select Contrast:
+            <select  id="id-contrast-selector" class="form-select" size="1" aria-label="Contrast Selector"> </select>
+          </div>
+          <div>
+            Select univ. statistical measure:
+            <select  id="id-univ-measure-selector" class="form-select" size="1" aria-label="Measure Selector"> </select>
+          </div>
         </div>
       </div>
     </div>
