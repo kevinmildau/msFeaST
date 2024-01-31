@@ -3,3 +3,9 @@ archive
 trialCode
 mockData
 notebooks/.Rhistory
+
+
+.Rhistory
+.Rapp.history
+
+notebooks/__pycache__
