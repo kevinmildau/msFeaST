@@ -1,6 +1,24 @@
 rm(list = ls())
+
+#' generateConfigurations
+#' 
+#' Creates configuration data frame (list) from inputs.
+#'
+#' @param measures List of measures c("globalTest", "log2FoldChange") are supported. Must be a list even if scalar.
+#' @param contrasts List of contrasts. Named list, where names are contrast names, and sub-list elements are treatment identifiers. For example: list("contrast_ctrl_vs_trt" = list(reference="ctrl", treatment="trt"))
+#' @param feature_ids List of feature identifiers (character)
+#' @param feature_sets List of feature sets, where names in the list are feature set ids, and list elements are lists with feature identifiers.
+#'
+#' @return
+#' @export
+#'
+#' @examples
 generateConfigurations <- function(measures, contrasts, feature_ids, feature_sets){
   # generates configurations for msfeast linear situation run
+  print(feature_sets)
+  print(contrasts)
+  print(feature_ids)
+  print(measures) # is a list, should be character vector!
   feature_set_names <- names(feature_sets)
   configurations <- data.frame()
   for (current_measure in measures){
@@ -41,34 +59,96 @@ generateConfigurations <- function(measures, contrasts, feature_ids, feature_set
   }
   return (configurations)
 }
+
 constructEmptyNamedList <- function(entryNamesList){
   # Construct empty named list with provided names list. Each name will be associated with an empty list entry.
   # To create a list of certain length, the vector constructor needs to be used
   emptyList <- sapply(entryNamesList, function(x) list())
   return (emptyList)
 }
+
 extractFeatureSetData <- function(){
   # Function Extracts data for specified contrast and feature set  from the full data tibble
   # The obvious thing to do for univariate methods is to have a set of one features
 }
+
 runHandlerLog2FoldChange <- function(resultsListEnv, feature_id, contrast, contrast_name, quantification_table, metadata_table){
   # Extract contrast specific data
+  contrast <- contrasts[[contrast_name]]
+  
+  # get sample_ids
+  treatment_reference_id <- contrast[[1]]
+  treatment_treatment_id <- contrast[[2]]
+  tmpMetaData <- metadata_table[which(metadata_table$treatment %in% c(treatment_reference_id, treatment_treatment_id)),]
+  sample_ids <- pull(tmpMetaData, sample_id)
+  tmpAllData <- quantification_table %>% 
+    filter(., sample_id %in% sample_ids) %>%
+    select(., all_of( c("sample_id", feature_id))) %>%
+    left_join(., tmpMetaData, by= "sample_id") %>%
+    mutate(treatment = factor(
+      treatment, 
+      levels = c(treatment_reference_id, treatment_treatment_id))) %>%
+    mutate(treatment = as.numeric(treatment)-1)
+  
+  print(tmpAllData)
+  referenceIntensities <- tmpAllData %>%
+    filter(., treatment == 0) %>%
+    select(., -c(treatment, sample_id)) %>%
+    pull(.)
+  
+  treatmentIntensities <- tmpAllData %>%
+    filter(., treatment == 1) %>%
+    select(., -c(treatment, sample_id)) %>%
+    pull(.)
+  
+  print(referenceIntensities)
+  ratio <- mean(treatmentIntensities) / mean(referenceIntensities)
+  log2ratio <- log2(ratio)
+  
+  tmpFeatureData <- tmpAllData %>% 
+    select(-c("sample_id", "treatment")) %>%
+    as.matrix(.)
   
   # get the actual value
   value = runif(1, 0.001, 100)
   
   # Attach to output
-  resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["log2FoldChange"] <- list(value)
+  resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["log2FoldChange"] <- list(log2ratio)
 }
+
 runHandlerGlobalTest <- function(resultsListEnv, feature_set_name, feature_set_members, contrast, contrast_name, quantification_table, metadata_table){
   # Extract contrast specific data
+  contrast <- contrasts[[contrast_name]]
+  feature_ids <- feature_sets[[feature_set_name]]
+  
+  # get sample_ids
+  treatment_reference_id <- contrast[[1]]
+  treatment_treatment_id <- contrast[[2]]
+  tmpMetaData <- metadata_table[which(metadata_table$treatment %in% c(treatment_reference_id, treatment_treatment_id)),]
+  sample_ids <- pull(tmpMetaData, sample_id)
+  tmpAllData <- quantification_table %>% 
+    filter(., sample_id %in% sample_ids) %>%
+    select(., all_of( c("sample_id", feature_ids))) %>%
+    left_join(., tmpMetaData, by= "sample_id")
+  tmpResponse <- tmpAllData %>% select(treatment) %>%
+    mutate(treatment = factor(
+      treatment, 
+      levels = c(treatment_reference_id, treatment_treatment_id))) %>%
+    mutate(treatment = as.numeric(treatment)-1) %>%
+    as.matrix(.)
+  tmpFeatureData <- tmpAllData %>% 
+    select(-c("sample_id", "treatment")) %>%
+    as.matrix(.)
   
   # get the actual values
+  model_output <- globaltest::gt(tmpResponse, tmpFeatureData, model = "linear")
+  p_value <- model_output@result[[1]] # extracts the p-value
+  
   value1 = runif(1,0,1)
   value2 = sample(1:100, 1)
   
   # Attach to output
-  resultsListEnv$"set_specific"[[feature_set_name]][[contrast_name]]["globalTestPValue"] <- list(value1) 
+  resultsListEnv$"set_specific"[[feature_set_name]][[contrast_name]]["globalTestPValue"] <- list(p_value) 
   for (feature_id in feature_set_members){
     resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["globalTestFeatureContribution"] <- list(value2)
   }
@@ -110,19 +190,29 @@ run_msfeast <- function(
     measures = list("globalTest", "log2FoldChange")
     ){
   
-  # Create configuration tables used for looping over all measure configurations
+  # Create configuration table used for looping over all measure configurations
+  # configurations is a data_frame type of list (named columns, nrow and ncol attributes)
   configurations <- generateConfigurations(measures, contrasts, feature_ids, feature_sets)
   n_configurations <- nrow(configurations)
   
-  # Create empty output data containers. Code Assumption: at least one group and one feature specific measure is computed.
+  # Create empty output data container.
+  # A named list with two entries, each named lists with keys for feature and set
+  # identifiers Code Assumption: at least one group and one feature specific measure 
+  # is computed (no fully empty list). 
   resultsListEnv <- listenv::listenv(
     feature_specific = constructEmptyNamedList(feature_ids),
     set_specific = constructEmptyNamedList(names(feature_sets)))
   
+  # Loop through all configurations and attach relevant metadata to output container
+  # Each row in configurations is dealt with separately, where the required information
+  # is accessed using named column / list entries. Configurations are measure specific,
+  # accounting for differences in inputs that are accessed. For example, globalTest
+  # is a set specific measure, and thus requires feature_set_name and feature_set_members
+  # to be available while log2foldChange is feature specific and doesn't require this
+  # information.
   for (row_number in 1:n_configurations){
     current_measure <- configurations$measure[[row_number]]
-    # Each measure implies feature or set specific data to be provided. 
-    # This is handler specific and needs to be accommodated by generateConfigurations
+    # NOTE THE INPLACE MODIFICATION OF resultsListEnv WITHIN THE HANDLERS!
     switch(
       current_measure,
       "globalTest" = runHandlerGlobalTest(
@@ -144,7 +234,7 @@ run_msfeast <- function(
       ),
     )
   }
-  # Avoids unexpected modify in place behavior for output of msfeast
+  # Avoids unexpected modify in place behavior for output of msfeast after return
   resultsList <- as.list(resultsListEnv)
   return(resultsList)
 }
@@ -165,7 +255,7 @@ if (TRUE){
   feature_ids <- paste0("feature_", seq(1:n_features))
   set_ids <- paste0("set_", seq(1:n_sets))
   quantification_table <- tibble(
-    sample_id = seq(1, n_samples, 1),
+    sample_id = paste0("sample_", seq(1, n_samples, 1)),
   )
   
   for (feature in feature_ids){
@@ -196,10 +286,10 @@ if (TRUE){
     feature_sets = feature_sets, 
     feature_ids = feature_ids,
     contrasts = contrasts)
-  str(out)
+  #str(out)
   print("Results Inspection")
-  print(typeof(out$feature_specific$feature_1$treatment_1_vs_treatment_2))
-  print(out$set_specific$set_1)
+  #print(typeof(out$feature_specific$feature_1$treatment_1_vs_treatment_2))
+  #print(out$set_specific$set_1)
   jsonlite::toJSON(out, pretty = T, simplifyVector = F, flatten = TRUE, auto_unbox = T)
 }
 
