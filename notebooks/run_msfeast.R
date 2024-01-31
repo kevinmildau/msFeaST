@@ -266,11 +266,14 @@ if (TRUE){
     feature_id = feature_ids,
     set_id = rep(set_ids, length.out = n_features)
   )
-  feature_sets <-constructEmptyNamedList(set_ids)
-  for (set in set_ids){
-    feature_sets[[set]] <- feature_groupings %>% filter(set_id == set) %>% pull(feature_id)
+  generateFeatureSetList <- function(feature_groupings_df){
+    feature_sets <-constructEmptyNamedList(set_ids)
+    for (set in set_ids){
+      feature_sets[[set]] <- feature_groupings %>% filter(set_id == set) %>% pull(feature_id)
+    }
+    return(feature_sets)
   }
-  
+  feature_sets <- generateFeatureSetList(feature_groupings)
   measures <- c("globalTest", "log2FoldChange")
   
   contrasts = list()
