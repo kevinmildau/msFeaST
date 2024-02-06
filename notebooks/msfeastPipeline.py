@@ -82,7 +82,7 @@ class msfeast:
     """
     # Implement file extension check to see whether a csv or tsv file is provided
     return None
-    def attach_treatment_table(self, table : pd.DataFrame) -> None:
+  def attach_treatment_table(self, table : pd.DataFrame) -> None:
     """
     NOT IMPLEMENTED
     Attaches treatment data table pandas data frame. Must contain sample_id and treatment_id columns.
@@ -132,7 +132,7 @@ class msfeast:
   def process_spectra(self, spectra):
     """
     NOT IMPLEMENTED
-    
+
     """
     # TODO: apply spectral pre-processing inside the pipeline. Currently: assumed done outside of the pipeline, no checks in place.
     
