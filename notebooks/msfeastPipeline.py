@@ -47,17 +47,6 @@ class msfeast:
   treatment_table: pd.DataFrame | None = None
   spectra_list: list[matchms.Spectrum] | None = None
 
-  # Instance tracking variables
-  _dataLoaded: bool = False # _dataAttached / _dataUploaded / _dataAvailable
-  _contrastSelected: bool = False # sounds accurate
-  _referenceCategorySelected: bool = False # sounds accurate _referenceTreatmentSelected also an option
-  # _spectralDataCleaningDone_: bool = False # this one might be unnecessary. If data cleaned elsewhere, may not be necessary here. Causes no blocking
-  _similarityMatrixAvailable: bool = False # sounds accurate pairwiseSimilarityMatrixAvailable would be more explicit, technically numpy array...
-  _kmedoidGridComputed: bool = False # 
-  _kmedoidIndexSelected: bool = False
-  _tnseGridComputed: bool = False
-  _tsneIndexSelected: bool = False
-  _statisticsDataComputed: bool = False
 
   def loadAndSelectDataFromFile(self, filepath_quantification_table, filepath_metadata, filepath_spectra):
     """ NOT IMPLEMENTED YET
