@@ -298,10 +298,18 @@ class msfeast:
   def selectEmbeddingIndex(self):
     # make sure that the index is available in the visual overviews
     return None
-
-  def runGlobalTest (self, file_directory, file_prefix = None, overwrite = False):
+  def run_r_testing_routine (self, filepath, overwrite = False):
+    """
+    NOT IMPLEMENTED
+    Function writes r inputs to file, writes r script to file, tests r availabiltiy, runs test, and imports r results.
+    """
     # assess all data required available
     # construct python structures suitable for file writing
+    self._generate_r_script()
+    self._export_r_input_data()
+    self._try_r_connection()
+    self._run_r_routine()
+    self._import_r_results()
     # determine file_names; (date, time, run/file_prefix, default file suffix)
     # write files to directory
     # run R interface call & wait for run execution
@@ -311,8 +319,36 @@ class msfeast:
     self.importGlobaltest(filepath)
     _statisticsDataComputed = True
     return None
-  
-  def importGlobalTest (self, filepath):
+  def _run_r_routine(self, file_directory, filepath, time_limit : int = 60):
+    """
+    NOT IMPLEMENTED
+    Function calls the r script encoding the testing routine.
+    The r-script will generate a json-file output at filepath. This function only returns when the r routine is complete
+    or a time limit is exceeded. The default time limit is 60 seconds.
+    """
+    return None
+  def _export_r_input_data(self, file_directory):
+    """
+    NOT IMPLEMENTED
+    """
+    return None
+  def _try_r_connection(self, file_directory):
+    """
+    NOT IMPLEMENTED
+    """
+    return None
+  def _generate_r_script(self, directory_path, filename):
+    """
+    NOT IMPLEMENTED
+    Funciton creates the r script file required to run R from within python. 
+    R code is a constant from the python module and standalone code.
+    """
+    return None
+  def _import_r_results(self, directory_path : str):
+    """
+    NOT IMPLEMENTED
+    Funciton imports the results of the R-based testing.
+    """
     # read the r data
     # add default nodeSize conversions to the expected R outputs, deal with NA values by giving sensible defaults
     # if any NAs detected, print corresponding warning that this is unexpected
