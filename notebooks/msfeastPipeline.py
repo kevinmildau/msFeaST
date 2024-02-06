@@ -20,6 +20,25 @@ import os
 from typing import List, TypedDict, Tuple, Dict, NamedTuple, Union
 
 @dataclass
+class GridEntryTsne:
+  """ 
+  Results container for tsne grid computation. A list of these containers can be converted to pandas for easy display.
+  """
+  ...
+@dataclass
+class GridEntryUmap:
+  """ 
+  Results container for umap grid computation. A list of these containers can be converted to pandas for easy display.
+  """
+  ...
+@dataclass
+class GridEntryKmedoid:
+  """ 
+  Results container for kmedoid grid computation. A list of these containers can be converted to pandas for easy display.
+  """
+  ...
+
+@dataclass
 class msfeast:
   """
   msFeaST pipeline api class for user interactions via python console or GUI (NOT IMPLEMENTED YET)
