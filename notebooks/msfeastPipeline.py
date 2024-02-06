@@ -127,8 +127,10 @@ class msfeast:
     assert True
     return None
 
-  def cleanSpectralData(self, spectra):
-    """ NOT IMPLEMENTED 
+  def process_spectra(self, spectra):
+    """
+    NOT IMPLEMENTED
+    
     """
     # TODO: apply spectral pre-processing inside the pipeline. Currently: assumed done outside of the pipeline, no checks in place.
     
