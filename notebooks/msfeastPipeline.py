@@ -47,6 +47,7 @@ class msfeast:
   treatment_table: pd.DataFrame | None = None
   spectra_list: list[matchms.Spectrum] | None = None
 
+  similarity_score : Union[None, str] = None
 
   def load_spectral_data_from_file(self, filepath : str, identifier_key : str) -> None:
     """
@@ -137,10 +138,8 @@ class msfeast:
   def process_spectra(self, spectra):
     """
     NOT IMPLEMENTED
-
+    Runs default matchms filters on spectra to improve spectrals similarity computations and derived processes.
     """
-    # TODO: apply spectral pre-processing inside the pipeline. Currently: assumed done outside of the pipeline, no checks in place.
-    
     # after processing: 
     # check feature_ids is not empty, validate spectra
     # get feature_id subset
@@ -149,7 +148,11 @@ class msfeast:
     # update spectra and quantification table
     return None
 
-  def attachSimilarities(self, similarities : np.ndarray, similarity_measure_name : str):
+  def attach_spectral_similarity_array(
+      self, 
+      similarities : np.ndarray, 
+      similarity_measure_name : str = "unspecified"
+      ) -> None:
     """ NOT IMPLEMENTED
     --> attach similarities and check for agreement in dimensions with spectra list
     --> Require: at least order alignment between spectra list and similarity matrix
@@ -159,37 +162,44 @@ class msfeast:
     """
     # validate similarities to match feature_id length (implied order agreement!)
     # validate similarities to be in range 0 to 1
-    # specify that similarity matrix must follow feature_id ordering provided (uncheckable!). 
+    # warn that similarity matrix must follow feature_id ordering provided (uncheckable!). 
     # attach the similarity matrix
     self._similarityMatrixAvailable = True
+    self.similarity_score = similarity_measure_name
     return None
   
-  def computeSimilarities(self, method = "modified_cosine_score", model_directory = "not_available", output = False) -> Union[None, np.ndarray]:
+  def run_spectral_similarity_computations(
+      self, 
+      method = "modified_cosine_score", 
+      model_directory = "not_available"
+      ) -> None:
     """ 
     NOT IMPLEMENTED
-    computes and attaches similarities, by default returns None, but can be made to also return the array
     DELEGATOR FUNCTION 
     --> refers to specific functions for computing the different measures
-    --> specified similarity matrix for use in the remainder of the tool.
+    --> specifies similarity matrix for use in the remainder of the tool.
     """
     # check that: spectra are available, check method and whether model available if required
     if method == "ms2deepscore" and model_directory == "not_available":
       # print warning message and indicate object unchanged
-      return False
+      ...
     if method == "spec2vec" and model_directory == "not_available":
       # print warning message and indicate object unchanged
-      return False
+      ...
     if method == "modified_cosine_score":
       # check input validity and run data
-      values = compute_similarities_cosine(self.spectra, cosine_type="ModifiedCosine")
+      values = _compute_similarities_cosine(self.spectra, cosine_type="ModifiedCosine")
       # if successful, upade object and attach similarities
       self._similarities = values
-      self._similarityMatrixAvailable = True
-    if output:
-      return values
-    else:
-      return None
+    self.similarity_score = method # record used similarity matrix approach 
+    return None
   
+  def get_spectral_similarity_array():
+     """
+     NOT IMPLEMENTED
+     
+     """
+
   def runKmedoidGrid(self, values_of_k = None):
     if not self._similarityMatrixAvailable:
       ...
@@ -294,10 +304,10 @@ class msfeast:
 
 
 ########################################################################################################################
-# Utility functions required by msFeaST that can be purely functional (no self input needed)
+# Utility functions required by msFeaST that are be purely functions
 
 @staticmethod
-def compute_similarities_cosine(
+def _compute_similarities_cosine(
   spectrum_list : List[matchms.Spectrum], 
   cosine_type : str = "ModifiedCosine" ) -> np.ndarray:
   """ Function computes pairwise similarity matrix for list of spectra using specified cosine score method. 
