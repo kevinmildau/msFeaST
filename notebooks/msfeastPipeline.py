@@ -48,42 +48,46 @@ class msfeast:
   spectra_list: list[matchms.Spectrum] | None = None
 
 
-  def loadAndSelectDataFromFile(self, filepath_quantification_table, filepath_metadata, filepath_spectra):
-    """ NOT IMPLEMENTED YET
-    Deals with loading data from filepaths & selecting / subselecting the right data for 
-    attaching to msfeast class instance. 
-
-    Currently indicated as a single function call but actually a multiple step process, including load, expose, select in some gui, process, and finally attach
-    Could be mocked using a "wait for console input approach" but that seems hardly useful without the visual underpinnings (maybe Jupyter?)
-
+  def load_spectral_data_from_file(self, filepath : str, identifier_key : str) -> None:
     """
-    # Anticipated Steps
-    # TODO: check path exist
-    # TODO: try loading data from expected formats & convert to suitable python representation
-    # TODO: expose and let user select appropriate columns & reference categories
-    # TODO: subset data to selected and overlapping sub-parts (no unused feature_ids, no unused sample_ids etc.)
-    # TODO: if selected, run cleanSpectralData with minimal exposed matchms functionality
-    # TODO: validate data agreement (feature_id, sample_id, treatment_id overlaps and uniqueness)
-    # TODO: attach spectral data
+    NOT IMPLEMENTED
+    Loads spectral data from mgf file. Must have feature_id entry, or alternative identifier_key name to fetch. 
+    """
     return None
-  
-  def attachData(
-      self, 
-      quantification_table : pd.DataFrame, 
-      treatment_table : pd.DataFrame, 
-      spectra : List[matchms.Spectrum]
-    ) -> None:
+  def load_quantification_table_from_file(self, filepath : str) -> None :
     """
-    Method attaches data to the msfeast class object.
-    
-    This method does not deal with loading from file, but instead assumes the data were already loaded and processed for
-    compatibility with msFeast (strict, including naming convention and file-types & sub-setting).
+    NOT IMPLEMENTED
+    Loads spectral data quantification table from csv / tsv file. Must contain sample id, and feature_id based columns.
     """
-    # TODO: ADD INPUT VALIDATION FUNCTION CALL
-    self.quantification_table = quantification_table
-    self.treatment_table = treatment_table
-    self.spectra = spectra
-    self._dataLoaded = True # take note of data being available (required for follow-up steps)
+    # Implement file extension check to see whether a csv or tsv file is provided
+    return None
+  def load_treatment_table_from_file(self, filepath : str) -> None:
+    """
+    NOT IMPLEMENTED
+    Loads treatment data table from csv / tsv file. Must contain sample_id and treatment_id columns.
+    """
+    # Implement file extension check to see whether a csv or tsv file is provided
+    return None
+  def attach_spectral_data(self, spectra : List[matchms.Spectrum], identifier_key : str) -> None:
+    """
+    NOT IMPLEMENTED
+    Attaches spectral data from python list. Must have feature_id entry, or alternative identifier_key name to fetch. 
+    """
+    return None
+  def attach_quantification_table(self, table : pd.DataFrame) -> None :
+    """
+    NOT IMPLEMENTED
+    Attaches spectral data quantification table from pandas data frame. Must contain sample id, and feature_id based 
+    columns.
+    """
+    # Implement file extension check to see whether a csv or tsv file is provided
+    return None
+    def attach_treatment_table(self, table : pd.DataFrame) -> None:
+    """
+    NOT IMPLEMENTED
+    Attaches treatment data table pandas data frame. Must contain sample_id and treatment_id columns.
+    """
+    # Implement file extension check to see whether a csv or tsv file is provided
     return None
   
   def _validate_quantification_table(self) -> None:
@@ -98,7 +102,6 @@ class msfeast:
      # Make sure no non-feature_id or non-sample_id columns are there to confuse downstream functions. 
      assert True
      return None
-
   def _validate_specta(self) -> None:
     """
     NOT IMPLEMENTED
@@ -110,7 +113,6 @@ class msfeast:
     # Make sure spectrum has feature_id
     assert True
     return None
-
   def _validate_treatment_data(self):
     """
     NOT IMPLEMENTED
