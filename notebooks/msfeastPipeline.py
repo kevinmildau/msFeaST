@@ -353,26 +353,36 @@ class msfeast:
     # add default nodeSize conversions to the expected R outputs, deal with NA values by giving sensible defaults
     # if any NAs detected, print corresponding warning that this is unexpected
     return None
-  
-  def exportToJson (self, filepath = None):
+  def generate_json_dict(self) -> Dict: 
+    """
+    NOT IMPLEMENTED
+    Function constructs the json representation required by the visualization app as a python dictionary,.
+    """
+    # this will involve create node list, 
+    # edge list (including ordering and zero removal), 
+    # stats data incorporation
+    # Multiple steps creation various lists and or dicts of dicts
+    return {}
+  def export_to_json_file(self, filepath = None, force = False):
     """ 
+    NOT IMPLEMENTED
+    Can be split into many small routines, one to make the node lists, one to make the group stats values etc.
     exportToJson 
     """
-    # validate the self object data
+    # validate the that all self object data available
+    self.validate_complete()
+    # validate the filepath does not exist or force setting to ensure everything works 
+    assert True
     # construct json string for entire dataset
-    # this will involve create node list, edge list (including ordering and zero removal), stats data incorporation
-
-    if filepath is not None:
-      # write to file
-      # print export successful to console
-      ...
-    else:
-      jsonstring = ...
-      return jsonstring
+    output_dict = self.generate_json_dict()
+    # write to file
     return None
-  
-  def validate(self):
-    # Run a comprehensive check for lack of compliance or agreement between available data types
+  def validate_complete(self):
+    """
+    NOT IMPLEMENTED
+    Runs a comprehensive check for lack of compliance or agreement between available data types, makes sure all data for
+    export is available.
+    """
     isValid = True
     isValid = False
     return isValid
