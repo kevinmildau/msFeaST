@@ -450,122 +450,52 @@ class msfeast:
 ########################################################################################################################
 # Utility functions required by msFeaST that are be purely functions
 
-@staticmethod
-def _compute_similarities_cosine(
-  spectrum_list : List[matchms.Spectrum], 
-  cosine_type : str = "ModifiedCosine" ) -> np.ndarray:
-  """ Function computes pairwise similarity matrix for list of spectra using specified cosine score method. 
-  
-  Parameters:
-      spectrum_list: List of matchms ms/ms spectra. These should be pre-processed and must incldue peaks.
-      cosine_type: String identifier of supported cosine metric, options: ["ModifiedCosine", "CosineHungarian", 
-      "CosineGreedy"]
-  Returns:
-      ndarray with shape (n, n) where n is the number of spectra (pairwise similarity matrix).
-  """
-  valid_types = ["ModifiedCosine", "CosineHungarian", "CosineGreedy"]
-  assert cosine_type in valid_types, f"Cosine type specification invalid. Use one of: {str(valid_types)}"
-  if cosine_type == "ModifiedCosine":
-      similarity_measure = matchms.similarity.ModifiedCosine()
-  elif cosine_type == "CosineHungarian":
-      similarity_measure = matchms.similarity.CosineHungarian()
-  elif cosine_type == "CosineGreedy":
-      similarity_measure = matchms.similarity.CosineGreedy()
-  # tmp variable contains both score and number of overlapping fragments; ndarray of tuples for each pair.
-  tmp = matchms.calculate_scores(spectrum_list, spectrum_list, similarity_measure, is_symmetric=True)
-  scores = extract_similarity_scores_from_matchms_cosine_array(tmp.scores)
-  return scores
+def _add_feature_id_key(spectra : List[matchms.Spectrum], identifier_key : str):
+  """ Function add feature_id key to all spectra in list using entry from identifier_key. """
+  for spectrum in spectra:
+    assert spectrum.get(identifier_key) is not None, "Error provided identifier key does not point to valid id!"
+    spectrum.set(key = "feature_id", value = spectrum.get(identifier_key))
+  return spectra
 
-@staticmethod
-def extract_similarity_scores_from_matchms_cosine_array(tuple_array : np.ndarray) -> np.ndarray:
-    """ 
-    Function extracts similarity matrix from matchms cosine scores array.
-    
-    The cosine score similarity output of matchms stores output in a numpy array of pair-tuples, where each tuple 
-    contains (sim, n_frag_overlap). This function extracts the sim scores, and returns a numpy array corresponding to 
-    pairwise similarity matrix.
+def _extract_feature_ids_from_spectra(spectra : List[matchms.Spectrum]) -> List[str]:
+  """ Extract feature ids from list of matchms spectra in string format. """
+  # Extract feature ids from matchms spectra. 
+  feature_ids = [str(spec.get("feature_id")) for spec in spectra]
+  # check feature_id set validity
+  assert not feature_ids == [], "Error: no feature ids detected!"
+  assert not any(feature_ids) is None, (
+    "Error: None type feature ids detected! All spectra must have valid feature_id entry of type string."
+  )
+  assert not all(feature_ids) is None, (
+    "Error: None type feature ids detected! All spectra must have valid feature_id entry of type string."
+  )
+  assert all(isinstance(x, str) for x in feature_ids), (
+    "Error: Non-string feature_ids detected. All feature_ids for spectra must be valid string type."
+  )
+  assert not (len(feature_ids) > len(set(feature_ids))), (
+    "Error: Non-unique (duplicate) feature_ids detected. All feature_ids for spectra must be unique strings."
+  )
+  return feature_ids
 
-    Parameters:
-        tuple_array: A np.ndarray of shape n by n, where each entry is a tuple containing either the score 
-        (index iloc 0) or the number of overlapping fragments (index iloc 1). 
-    
-    Returns: 
-        A np.ndarray with shape (n, n) where n is the number of spectra deduced from the dimensions of the input
-        array. Each element of the ndarray contains the pairwise similarity value.
-    """
-    sim_data = [ ]
-    for row in tuple_array:
-        for elem in row:
-            sim_data.append(
-               float(elem[0])
-            )
-    similarity_scores = np.array(sim_data).reshape(tuple_array.shape[0], tuple_array.shape[1])
-    return similarity_scores
-
-@staticmethod
-def compute_similarities_s2v(spectrum_list:List[matchms.Spectrum], model_path:str) -> np.ndarray:
-    """ Function computes pairwise similarity matrix for list of spectra using pretrained spec2vec model.
-    
-    Parameters:
-        spectrum_list: List of matchms ms/ms spectra. These should be pre-processed and must incldue peaks.
-        model_path: Location of spec2vec pretrained model file path (filename ending in .model or file-directory)
-    Returns: 
-        ndarray with shape (n, n) where n is the number of spectra (Pairwise similarity matrix).
-    """
-    filename = return_model_filepath(model_path, ".model")
-    model = gensim.models.Word2Vec.load(filename) # Load s2v model
-    similarity_measure = Spec2Vec(model=model)
-    scores_matchms = matchms.calculate_scores(spectrum_list, spectrum_list, similarity_measure, is_symmetric=True)
-    scores_ndarray = scores_matchms.scores
-    return scores_ndarray
-
-@staticmethod
-def return_model_filepath(path : str, model_suffix:str) -> str:
-    """ Function parses path input into a model filepath. If a model filepath is provided, it is returned unaltered , if 
-    a directory path is provided, the model filepath is searched for and returned.
-    
-    :param path: File path or directory containing model file with provided model_suffix.
-    :param model_suffix: Model file suffix (str)
-    :returns: Filepath (str).
-    :raises: Error if no model in file directory or filepath does not exist. Error if more than one model in directory.
-    """
-    filepath = []
-    if path.endswith(model_suffix):
-        # path provided is a model file, use the provided path
-        filepath = path
-        assert os.path.exists(filepath), "Provided filepath does not exist!"
-    else:
-        # path provided is not a model filepath, search for model file in provided directory
-        for root, _, files in os.walk(path):
-            for file in files:
-                if file.endswith(model_suffix):
-                    filepath.append(os.path.join(root, file))
-        assert len(filepath) > 0, f"No model file found in given path with suffix '{model_suffix}'!"
-        assert len(filepath) == 1, (
-        "More than one possible model file detected in directory! Please provide non-ambiguous model directory or"
-        "filepath!")
-    return filepath[0]
-
-@staticmethod
-def compute_similarities_ms2ds(spectrum_list:List[matchms.Spectrum], model_path:str) -> np.ndarray:
-    """ 
-    PORTED FROM SPECXPLORE - DEPENDENCIES NOT MET IN PYTHON 3.10 & HENCE DEACTIVATED
-    Function computes pairwise similarity matrix for list of spectra using pretrained ms2deepscore model.
-    
-    Parameters
-        spectrum_list: List of matchms ms/ms spectra. These should be pre-processed and must incldue peaks.
-        model_path: Location of ms2deepscore pretrained model file path (filename ending in .hdf5 or file-directory)
-    Returns: 
-        ndarray with shape (n, n) where n is the number of spectra (Pairwise similarity matrix).
-    """
-    #filename = return_model_filepath(model_path, ".hdf5")
-    #model = load_model(filename) # Load ms2ds model
-    #similarity_measure = MS2DeepScore(model)
-    #scores_matchms = calculate_scores(spectrum_list, spectrum_list, similarity_measure, is_symmetric=True)
-    #scores_ndarray = scores_matchms.scores
-    #return scores_ndarray
-    ...
-    return None
+def _check_spectrum_information_availability(spectra : List[matchms.Spectrum], identifier_key : str) -> None:
+  """ Checks if list of spectral data contains expected entries. Aborts code if not the case. """
+  for spectrum in spectra:
+    assert isinstance(spectrum, matchms.Spectrum), (
+      f"Error: item in loaded spectrum list is not of type matchms.Spectrum!"
+    )
+    assert spectrum is not None, (
+      "Error: None object detected in spectrum list. All spectra must be valid matchms.Spectrum instances."
+    )
+    assert spectrum.get("feature_id") is not None, (
+      "Error: All spectra must have valid feature_idid entries."
+    )
+    assert spectrum.get("precursor_mz") is not None, (
+      "Error: All spectra must have valid precursor_mz value."
+    )
+  return None  
 
 
-
+def _assert_filepath_exists(filepath : str) -> None:
+  assert isinstance(filepath, str), f"Error: expected filepath to be string but received {type(filepath)}"
+  assert os.path.exists(filepath), "Error: supplied filepath does not point to existing file."
+  return None
