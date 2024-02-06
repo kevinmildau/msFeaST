@@ -129,7 +129,7 @@ class Msfeast:
     Attaches spectrum_matchms to pipeline instance. Returns None.
     """
     _assert_filepath_exists(filepath)
-    _load_spectral_data(filepath, identifier_key)
+    spectra_matchms = _load_spectral_data(filepath, identifier_key)
     if identifier_key != "feature_id":
       spectra_matchms = _add_feature_id_key(spectra_matchms, identifier_key)
     _check_spectrum_information_availability(spectra_matchms)
@@ -522,7 +522,7 @@ def _assert_filepath_exists(filepath : str) -> None:
   assert os.path.exists(filepath), "Error: supplied filepath does not point to existing file."
   return None
 
-def _load_spectral_data(filepath : str, identifier_key : str = "feature_id"):
+def _load_spectral_data(filepath : str, identifier_key : str = "feature_id") -> List[matchms.Spectrum]:
   """ Loads spectra from file and validates identifier availability """
   spectra_matchms = list(matchms.importing.load_from_mgf(filepath))
   assert isinstance(spectra_matchms, list), "Error: spectral input must be type list[matchms.Spectrum]"
