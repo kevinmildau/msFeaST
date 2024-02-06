@@ -270,7 +270,7 @@ class msfeast:
       self.similarity_array = values
     self.similarity_score = method # record used similarity matrix approach 
     return None
-  def get_spectral_similarity_array(self) -> Union(np.ndarray, None):
+  def get_spectral_similarity_array(self) -> Union[np.ndarray, None]:
     """
     Returns copy of the spectral similarity array from pipeline.
     """
