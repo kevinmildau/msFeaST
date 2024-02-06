@@ -221,7 +221,10 @@ class msfeast:
     else: 
       warn("Similarity array not available. Returning None instead.")
       return None
-  def runKmedoidGrid(self, values_of_k = None):
+  def run_kmedoid_grid(self, values_of_k = None):
+    """
+    NOT IMPLEMENTED
+    """
     if not self._similarityMatrixAvailable:
       ...
       # warning, please attach similarity measures first
@@ -229,36 +232,52 @@ class msfeast:
     if values_of_k == None:
       ...
       # determine number of features, set values_of_k to list of every value between 2 and min( n_features, 100 )
+    # turn similarities to distance
     # run grid and attach results
     self._kmedoidGridComputed = True
     # print results as summary
     self.printKmedoidGridSummary()
     return None
   
-  def printKmedoidGridSummary(self):
+  def _print_kmedoid_grid_results(self):
+    """
+    NOT IMPLEMENTED
+    """
     # show the plot or textual summaries for the embedding grid
     return None
 
-  def runEmbeddingGrid(self, method, method_settings):
+  def run_embedding_grid(self, method, method_settings):
+    """
+    NOT IMPLEMENTED
+    """
     # run the tsne or umap grid
     # use a switch logic here to run either tsne or umap (replace separate if statements below)
+
+    # turn similarities to distance for embedding
+
     if method == "tsne":
       self.method = "tsne"
-      self.grid = self.runTsneGrid(method_settings)
+      self.grid = self._run_tsne_grid(method_settings)
     if method == "umap":
       self.method = "umap"
-      self.grid = self.runUmapGrid(method_settings)
+      self.grid = self._run_umap_grid(method_settings)
     # method_settings are default encoded for either tsne or umap (may be different in naming, and number)
     # Finally, print the results
     self.printEmbeddingGridSummary()
     return None
 
-  def runTsneGrid(self, settings):
+  def _run_tsne_grid(self, inputs, settings):
+    """
+    NOT IMPLEMENTED
+    """
     # run grid for t-SNE appropriate settings
     grid = ...
     return grid
   
-  def runUmapGrid(self, settings):
+  def _run_umap_grid(self, inputs, settings):
+    """
+    NOT IMPLEMENTED
+    """
     # run grid for umap appropriate settings
     grid = ...
     return grid
