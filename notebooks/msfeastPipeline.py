@@ -50,6 +50,7 @@ class msfeast:
   spectra_list: list[matchms.Spectrum] | None = None
 
   similarity_score : Union[None, str] = None
+  similarity_array : Union[None, np.ndarray] = None
 
   def load_spectral_data_from_file(self, filepath : str, identifier_key : str) -> None:
     """
@@ -136,7 +137,6 @@ class msfeast:
     # Make sure there are three instances of each treatment id at least, otherwise warn of possible issues in stats
     assert True
     return None
-
   def process_spectra(self, spectra):
     """
     NOT IMPLEMENTED
@@ -149,10 +149,9 @@ class msfeast:
     # validate quantification table
     # update spectra and quantification table
     return None
-
   def attach_spectral_similarity_array(
       self, 
-      similarities : np.ndarray, 
+      similarity_array : np.ndarray, 
       similarity_measure_name : str = "unspecified"
       ) -> None:
     """ NOT IMPLEMENTED
@@ -166,7 +165,7 @@ class msfeast:
     # validate similarities to be in range 0 to 1
     # warn that similarity matrix must follow feature_id ordering provided (uncheckable!). 
     # attach the similarity matrix
-    self._similarityMatrixAvailable = True
+    self.similarity_array = similarity_array
     self.similarity_score = similarity_measure_name
     return None
   def run_spectral_similarity_computations(
@@ -191,7 +190,7 @@ class msfeast:
       # check input validity and run data
       values = _compute_similarities_cosine(self.spectra, cosine_type="ModifiedCosine")
       # if successful, upade object and attach similarities
-      self._similarities = values
+      self.similarity_array = values
     self.similarity_score = method # record used similarity matrix approach 
     return None
   def get_spectral_similarity_array(self) -> Union(np.ndarray, None):
