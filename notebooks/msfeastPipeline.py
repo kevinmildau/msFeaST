@@ -121,6 +121,9 @@ class msfeast:
     Parameters
     filepath : str pointing to a .mgf or .MGF formatted file containing the spectral data. 
     identifier_key : str defaults to feature_id. Must be a valid key in spectral metadata pointing to unique feature_id.
+      Note that identifiers should always be supplied in all lowercase letters; they will not be recognized if provided
+      in uppercase even if the original entry is uppercase. This is because the matchms.Spectrum internal representation 
+      makes use of lowercase only.
     
     Returns
     Attaches spectrum_matchms to pipeline instance. Returns None.
@@ -152,10 +155,24 @@ class msfeast:
     # Implement file extension check to see whether a csv or tsv file is provided
     self._validate_treatment_data()
     return None
-  def attach_spectral_data(self, spectra : List[matchms.Spectrum], identifier_key : str) -> None:
+  def attach_spectral_data(
+      self, 
+      spectra : List[matchms.Spectrum], 
+      identifier_key : str = "feature_id"
+      ) -> None:
     """
     NOT IMPLEMENTED
+    
     Attaches spectral data from python list. Must have feature_id entry, or alternative identifier_key name to fetch. 
+
+    Parameters
+      spectra : Python object of type List[matchms.Spectrum] containing the spectral data. 
+      identifier_key : str defaults to feature_id. Must be a valid key in spectral metadata pointing to unique feature_id.
+      Note that identifiers should always be supplied in all lowercase letters; they will not be recognized if provided
+      in uppercase even if the original entry is uppercase. This is because the matchms.Spectrum internal representation 
+      makes use of lowercase only.
+    Returns 
+
     """
     self._validate_spectra()
     return None
