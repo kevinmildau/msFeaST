@@ -80,7 +80,7 @@ class GridEntryKmedoid:
         return custom_print
 
 @dataclass
-class msfeast:
+class Msfeast:
   """
   msFeaST pipeline api class for user interactions via python console or GUI (NOT IMPLEMENTED YET)
 
@@ -129,8 +129,7 @@ class msfeast:
     Attaches spectrum_matchms to pipeline instance. Returns None.
     """
     _assert_filepath_exists(filepath)
-    spectra_matchms = list(matchms.importing.load_from_mgf(filepath))
-    
+    _load_spectral_data(filepath, identifier_key)
     if identifier_key != "feature_id":
       spectra_matchms = _add_feature_id_key(spectra_matchms, identifier_key)
     _check_spectrum_information_availability(spectra_matchms)
@@ -162,7 +161,7 @@ class msfeast:
       ) -> None:
     """
     NOT IMPLEMENTED
-    
+
     Attaches spectral data from python list. Must have feature_id entry, or alternative identifier_key name to fetch. 
 
     Parameters
@@ -505,13 +504,14 @@ def _check_spectrum_information_availability(
     assert spectrum is not None, (
       "Error: None object detected in spectrum list. All spectra must be valid matchms.Spectrum instances."
     )
-    assert spectrum.get("identifier_key") is not None, (
+    assert spectrum.get(identifier_key) is not None, (
       "Error: All spectra must have valid feature_id entries."
     )
     assert spectrum.get("precursor_mz") is not None, (
       "Error: All spectra must have valid precursor_mz value."
     )
   return None  
+
 def _assert_filepath_valid(filepath : str) -> None:
   assert isinstance(filepath, str), f"Error: expected filepath to be string but received {type(filepath)}"
   assert os.path.isfile(filepath), "Error: supplied filepath is not valid."
@@ -521,3 +521,11 @@ def _assert_filepath_exists(filepath : str) -> None:
   assert isinstance(filepath, str), f"Error: expected filepath to be string but received {type(filepath)}"
   assert os.path.exists(filepath), "Error: supplied filepath does not point to existing file."
   return None
+
+def _load_spectral_data(filepath : str, identifier_key : str = "feature_id"):
+  """ Loads spectra from file and validates identifier availability """
+  spectra_matchms = list(matchms.importing.load_from_mgf(filepath))
+  assert isinstance(spectra_matchms, list), "Error: spectral input must be type list[matchms.Spectrum]"
+  for spec in spectra_matchms:
+    assert isinstance(spec, matchms.Spectrum), "Error: all entries in list must be type spectrum."
+  return spectra_matchms
