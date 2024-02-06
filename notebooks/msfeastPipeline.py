@@ -9,14 +9,13 @@ from typing import List, Union
 from spec2vec import Spec2Vec
 import gensim
 
+# ms2deepscore currently not working with macos m1 processors. Only include if ready to test in windows / linux.
 # ms2deepscore dependencies (does not appear to work for Python 3.10 ; check compatible python version)
-#from ms2deepscore import MS2DeepScore
-#from ms2deepscore.models import load_model
+# from ms2deepscore import MS2DeepScore
+# from ms2deepscore.models import load_model
 
 import os
-# from typing import List, TypedDict, Tuple, Dict, NamedTuple, Union
-
-# ISSUE: msFeaST does not contain any imputation routines. Data is assumed to not contain any NA values.
+from typing import List, TypedDict, Tuple, Dict, NamedTuple, Union
 
 @dataclass
 class msfeast:
