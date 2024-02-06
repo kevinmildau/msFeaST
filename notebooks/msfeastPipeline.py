@@ -3,7 +3,8 @@ import pandas as pd
 import numpy as np
 import matchms
 import typing
-from typing import List, Union
+import os
+from typing import List, TypedDict, Tuple, Dict, NamedTuple, Union
 from warnings import warn
 import copy # for safer get methods  pipeline internal variables
 
@@ -16,8 +17,7 @@ import gensim
 # from ms2deepscore import MS2DeepScore
 # from ms2deepscore.models import load_model
 
-import os
-from typing import List, TypedDict, Tuple, Dict, NamedTuple, Union
+
 
 @dataclass
 class GridEntryTsne:
@@ -26,14 +26,14 @@ class GridEntryTsne:
   converted to pandas for easy display.
 
   Parameters:
-      perplexity : int with perplexity value used in t-SNE optimization.
-      x_coordinates : List[int] x coordinates produced by t-SNE
-      y_coordinates:  List[int] y coordinates produced by t-SNE
-      pearson_score : float representing the pearson correlation between pairwise distances in embedding and 
-          high dimensional space.
-      spearman_score : float representing the spearman correlation between pairwise distances in embedding and 
-          high dimensional space.
-      random_seed_used : int or float with the random seed used in k-medoid clustering.
+    perplexity : int with perplexity value used in t-SNE optimization.
+    x_coordinates : List[int] x coordinates produced by t-SNE
+    y_coordinates:  List[int] y coordinates produced by t-SNE
+    pearson_score : float representing the pearson correlation between pairwise distances in embedding and 
+      high dimensional space.
+    spearman_score : float representing the spearman correlation between pairwise distances in embedding and 
+      high dimensional space.
+    random_seed_used : int or float with the random seed used in k-medoid clustering.
   """
   perplexity : int
   x_coordinates : List[int]
@@ -42,13 +42,13 @@ class GridEntryTsne:
   spearman_score : float
   random_seed_used : Union[int, float]
   def __str__(self) -> str:
-      custom_print = (
-          f"Perplexity = {self.perplexity}," 
-          f"Pearson Score = {self.pearson_score}, "
-          f"Spearman Score = {self.spearman_score}, \n"
-          f"x coordinates = {', '.join(self.x_coordinates[0:4])}...",
-          f"y coordinates = {', '.join(self.y_coordinates[0:4])}...")
-      return custom_print
+    custom_print = (
+      f"Perplexity = {self.perplexity}," 
+      f"Pearson Score = {self.pearson_score}, "
+      f"Spearman Score = {self.spearman_score}, \n"
+      f"x coordinates = {', '.join(self.x_coordinates[0:4])}...",
+      f"y coordinates = {', '.join(self.y_coordinates[0:4])}...")
+    return custom_print
 @dataclass
 class GridEntryUmap:
   """ 
