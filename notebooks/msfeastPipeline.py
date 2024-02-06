@@ -107,18 +107,35 @@ class msfeast:
   # msFeaST instance variable are default set to None in constructor. The pipeline gradually builds them up.
   quantification_table: pd.DataFrame | None = None
   treatment_table: pd.DataFrame | None = None
-  spectra_list: list[matchms.Spectrum] | None = None
+  spectra_matchms: list[matchms.Spectrum] | None = None
 
   similarity_score : Union[None, str] = None
   similarity_array : Union[None, np.ndarray] = None
 
-  def load_spectral_data_from_file(self, filepath : str, identifier_key : str) -> None:
+  def attach_spectral_data_from_file(self, filepath : str, identifier_key : str = "feature_id") -> None:
+    """ 
+    Loads and attaches spectra from provided filepath (pointing to compatible .mgf file). Does not run any pre-
+    processing. While the function does not check spectral data integrity or performs any filtering, it does make 
+    sure that unique feature identifiers are available for all spectra provided.
+
+    Parameters
+    filepath : str pointing to a .mgf or .MGF formatted file containing the spectral data. 
+    identifier_key : str defaults to feature_id. Must be a valid key in spectral metadata pointing to unique feature_id.
+    
+    Returns
+    Attaches spectrum_matchms to pipeline instance. Returns None.
     """
-    NOT IMPLEMENTED
-    Loads spectral data from mgf file. Must have feature_id entry, or alternative identifier_key name to fetch. 
-    """
-    self._validate_spectra()
+    _assert_filepath_exists(filepath)
+    spectra_matchms = list(matchms.importing.load_from_mgf(filepath))
+    
+    if identifier_key != "feature_id":
+      spectra_matchms = _add_feature_id_key(spectra_matchms, identifier_key)
+    _check_spectrum_information_availability(spectra_matchms)
+    _ = _extract_feature_ids_from_spectra(spectra_matchms) # loads feature_ids to check uniqueness of every entry
+    self.spectra_matchms = spectra_matchms
+    self._spectral_data_loading_complete = True
     return None
+
   def load_quantification_table_from_file(self, filepath : str) -> None :
     """
     NOT IMPLEMENTED
