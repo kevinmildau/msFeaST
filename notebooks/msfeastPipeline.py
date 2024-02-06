@@ -53,6 +53,7 @@ class msfeast:
     NOT IMPLEMENTED
     Loads spectral data from mgf file. Must have feature_id entry, or alternative identifier_key name to fetch. 
     """
+    self._validate_spectra()
     return None
   def load_quantification_table_from_file(self, filepath : str) -> None :
     """
@@ -60,6 +61,7 @@ class msfeast:
     Loads spectral data quantification table from csv / tsv file. Must contain sample id, and feature_id based columns.
     """
     # Implement file extension check to see whether a csv or tsv file is provided
+    self._validate_quantification_table()
     return None
   def load_treatment_table_from_file(self, filepath : str) -> None:
     """
@@ -67,12 +69,14 @@ class msfeast:
     Loads treatment data table from csv / tsv file. Must contain sample_id and treatment_id columns.
     """
     # Implement file extension check to see whether a csv or tsv file is provided
+    self._validate_treatment_data()
     return None
   def attach_spectral_data(self, spectra : List[matchms.Spectrum], identifier_key : str) -> None:
     """
     NOT IMPLEMENTED
     Attaches spectral data from python list. Must have feature_id entry, or alternative identifier_key name to fetch. 
     """
+    self._validate_spectra()
     return None
   def attach_quantification_table(self, table : pd.DataFrame) -> None :
     """
@@ -81,6 +85,7 @@ class msfeast:
     columns.
     """
     # Implement file extension check to see whether a csv or tsv file is provided
+    self._validate_quantification_table()
     return None
   def attach_treatment_table(self, table : pd.DataFrame) -> None:
     """
@@ -88,8 +93,8 @@ class msfeast:
     Attaches treatment data table pandas data frame. Must contain sample_id and treatment_id columns.
     """
     # Implement file extension check to see whether a csv or tsv file is provided
+    self._validate_treatment_data()
     return None
-  
   def _validate_quantification_table(self) -> None:
      """
      NOT IMPLEMENTED. 
@@ -102,7 +107,7 @@ class msfeast:
      # Make sure no non-feature_id or non-sample_id columns are there to confuse downstream functions. 
      assert True
      return None
-  def _validate_specta(self) -> None:
+  def _validate_spectra(self) -> None:
     """
     NOT IMPLEMENTED
     Function validates spectral data input. Feature_id must be available for each spectrum
