@@ -136,18 +136,13 @@ class msfeast:
     """
     # TODO: apply spectral pre-processing inside the pipeline. Currently: assumed done outside of the pipeline, no checks in place.
     
-    # After processing
-    # validate cleanded data output validity and id agreement, check non empty
-    # update data
-    self._dataSetCleaningRun = True
+    # after processing: 
+    # check feature_ids is not empty, validate spectra
+    # get feature_id subset
+    # restrict quantification table to feature_id set (extract only relevant features)
+    # validate quantification table
+    # update spectra and quantification table
     return None
-
-  def cleanInputData(self):
-    """ NOT IMPLEMENTED 
-    - private method that cleans input data to only contain relevant data to avoid bugs from unexpected data floating around.
-    - no unused feature_id in spectra or quantification table
-    - no unused sample_id in the metadata or quantification table
-    """
 
   def attachSimilarities(self, similarities : np.ndarray, similarity_measure_name : str):
     """ NOT IMPLEMENTED
