@@ -4,6 +4,8 @@ import numpy as np
 import matchms
 import typing
 from typing import List, Union
+from warnings import warn
+import copy # for safer get methods  pipeline internal variables
 
 # spec2vec dependencies
 from spec2vec import Spec2Vec
@@ -167,7 +169,6 @@ class msfeast:
     self._similarityMatrixAvailable = True
     self.similarity_score = similarity_measure_name
     return None
-  
   def run_spectral_similarity_computations(
       self, 
       method = "modified_cosine_score", 
@@ -193,13 +194,15 @@ class msfeast:
       self._similarities = values
     self.similarity_score = method # record used similarity matrix approach 
     return None
-  
-  def get_spectral_similarity_array():
-     """
-     NOT IMPLEMENTED
-     
-     """
-
+  def get_spectral_similarity_array(self) -> Union(np.ndarray, None):
+    """
+    Returns copy of the spectral similarity array from pipeline.
+    """
+    if self.similarity_array is not None:
+      return copy.deepcopy(self.similarity_array)
+    else: 
+      warn("Similarity array not available. Returning None instead.")
+      return None
   def runKmedoidGrid(self, values_of_k = None):
     if not self._similarityMatrixAvailable:
       ...
