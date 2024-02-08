@@ -8,9 +8,21 @@ from typing import List, TypedDict, Tuple, Dict, NamedTuple, Union
 from warnings import warn
 import copy # for safer get methods  pipeline internal variables
 
+# kmedoid dependency
+from kmedoids import KMedoids
+from sklearn.metrics import silhouette_score
+
+# tsne dependencies
+from sklearn.manifold import TSNE
+from scipy.spatial.distance import pdist, squareform
+from scipy.stats import pearsonr, spearmanr 
+
 # spec2vec dependencies
 from spec2vec import Spec2Vec
 import gensim
+
+# plotting functionalities
+import plotly
 
 # ms2deepscore currently not working with macos m1 processors. Only include if ready to test in windows / linux.
 # ms2deepscore dependencies (does not appear to work for Python 3.10 ; check compatible python version)
@@ -109,6 +121,9 @@ class Msfeast:
   treatment_table: pd.DataFrame | None = None
   spectra_matchms: list[matchms.Spectrum] | None = None
   similarity_array : Union[None, np.ndarray] = None
+
+
+  kmedoid_grid : Union[List[GridEntryKmedoid], None] = None
 
   # settings used dictionary, initialized as empty
   _settings_used : dict = field(default_factory= lambda: {})
@@ -485,6 +500,53 @@ class Msfeast:
     # write to file
     return None
   
+  def run_and_attach_kmedoid_grid(self, k_values : List[int] = [8, 10, 20, 30, 50]):
+    """ 
+    Run the k-medoid grid & attach the results to pipeline instance.
+    
+    Parameters
+      k_values : List[int] of number of clusters to optimize for.
+    Returns
+      Attached kmedoid grid to self. Returns None.
+    """
+    # Subset k_values
+    k_values = [value for value in k_values if value < len(self.spectra_matchms)]
+    _check_k_values(k_values, len(self.spectra_matchms))
+    distance_matrix = _convert_similarity_to_distance(self.similarity_array)
+    self.kmedoid_grid = _run_kmedoid_grid(distance_matrix, k_values)
+    _print_kmedoid_grid(self.kmedoid_grid)
+    return None
+    
+  def select_kmedoid_settings(self, iloc : int):
+    """ 
+    Select and attach particular k-medoid clustering assignments using entry iloc. Attaches assignment_table.
+
+    Parameters:
+        ilocs : int with kmedoid assignment entry to exctract from the tuning grid.
+    Returns:
+        Attaches cluster assignment table to self. Returns None.          
+    """
+    # asser provided iloc is valid
+    assert isinstance(iloc, int), (
+        f"Unsupported input type, iloc must be type int but {type(iloc)} provided!"
+    )
+    valid_ilocs = set([iloc for iloc in range(0, len(self.kmedoid_grid))])
+    assert iloc in valid_ilocs, (
+      "Error: iloc provided not in range of valid ilocs for kmedoid grid! Values must be in set: "
+      f"{valid_ilocs}"
+    )
+    # Make sure an initiated classification_table is available
+    feature_ids = _extract_feature_ids_from_spectra(self.spectra_matchms)
+    self.assignment_table = pd.DataFrame(data = {
+        "feature_id" : feature_ids,  
+        "classification" : [f"group_{clust}" for clust in self.kmedoid_grid[iloc].cluster_assignments]
+      }
+    )
+    selected_k = self.kmedoid_grid[iloc].k
+    self._attach_settings_used(kmedoid_n_clusters = selected_k)
+    return None
+
+
   def _attach_settings_used(self, **kwargs) -> None:
     """Helper function attaches used settings to settings dictionary via key value pairs passed as kwargs. """
     for key, value in kwargs.items():
@@ -749,3 +811,88 @@ def _return_model_filepath(
         "More than one possible model file detected in directory! Please provide non-ambiguous model directory or"
         "filepath!")
     return filepath[0]
+
+
+def _run_kmedoid_grid(
+    distance_matrix : np.ndarray, 
+    k_values : List[int], 
+    random_states : Union[List, None] = None
+    ) -> List[GridEntryKmedoid]:
+  """ Runs k-medoid clustering for every value in k_values. 
+  
+  Parameters:
+      distance_matrix: An np.ndarray containing pairwise distances.
+      k_values: A list of k values to try in k-medoid clustering.
+      random_states: None or a list of integers specifying the random state to use for each k-medoid run.
+  Returns: 
+      A list of GridEntryKmedoid objects containing grid results.
+  """
+  if random_states is None:
+      random_states = [ 0 for _ in k_values ]
+  output_list = []
+  _check_k_values(k_values, max_k = distance_matrix.shape[0])
+  for idx, k in enumerate(k_values):
+      cluster = KMedoids(
+          n_clusters=k, 
+          metric='precomputed', 
+          random_state=random_states[idx], 
+          method = "fasterpam"
+      )  
+      cluster_assignments = cluster.fit_predict(distance_matrix)
+      cluster_assignments_strings = [
+          "km_" + str(elem) 
+          for elem in cluster_assignments
+      ]
+      score = silhouette_score(
+          X = distance_matrix, 
+          labels = cluster_assignments_strings, 
+          metric= "precomputed"
+      )
+      output_list.append(
+          GridEntryKmedoid(
+              k, 
+              cluster_assignments_strings, 
+              score, 
+              random_states[idx]
+          )
+      )
+  return output_list
+
+def _check_k_values(k_values : List[int], max_k : int) -> None:
+    """ Function checks whether k values match expected configuration. Aborts if not. """
+    assert k_values is not [], (
+        "Error: k_values list is empty! This may be a result of post-processing: there must be a "
+        "k value below the number of features/spectra for optimization to work."
+    )
+    assert isinstance(k_values, list), (
+        "Error: k_values must be a list. If only running one value, specify input as [value]."
+    )
+    for k_value in k_values: 
+        assert isinstance(k_value, int) and k_value < max_k, (
+            "Error: k_value must be numeric (int) and smaller than number of features/spectra." 
+        )
+    return None
+
+def _print_kmedoid_grid(grid : List[GridEntryKmedoid]) -> None:
+  """ Prints all values in kmedoid grid in readable format via pandas conversion """
+  kmedoid_results = pd.DataFrame.from_dict(data = grid).loc[
+      :, ["k", "silhouette_score", "random_seed_used"]
+  ]
+  kmedoid_results.insert(loc = 0, column = "iloc", value = [iloc for iloc in range(0, len(grid))])
+  print("Kmedoid grid results. Use to inform kmedoid classification selection ilocs.")
+  print(kmedoid_results)
+  return None
+
+def _plot_kmedoid_grid(
+    kmedoid_list : List[GridEntryKmedoid]
+    ) -> None:
+  """ Plots Silhouette Score vs k for each entry in list of GridEntryKmedoid objects. """
+  scores = [x.silhouette_score for x in kmedoid_list]
+  ks = [f"k = {x.k} / iloc = {iloc}" for iloc, x in enumerate(kmedoid_list)]
+  fig = plotly.express.scatter(x = ks, y = scores)
+  fig.update_layout(
+      xaxis_title="K (Number of Clusters) / iloc", 
+      yaxis_title="Silhouette Score"
+  )
+  fig.show()
+  return None
