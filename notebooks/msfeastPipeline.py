@@ -132,7 +132,7 @@ class Msfeast:
     spectra_matchms = _load_spectral_data(filepath, identifier_key)
     if identifier_key != "feature_id":
       spectra_matchms = _add_feature_id_key(spectra_matchms, identifier_key)
-    _check_spectrum_information_availability(spectra_matchms)
+    _validate_spectra(spectra_matchms)
     _ = _extract_feature_ids_from_spectra(spectra_matchms) # loads feature_ids to check uniqueness of every entry
     self.spectra_matchms = spectra_matchms
     self._spectral_data_loading_complete = True
@@ -209,18 +209,6 @@ class Msfeast:
      # Make sure no non-feature_id or non-sample_id columns are there to confuse downstream functions. 
      assert True
      return None
-  
-  def _validate_spectra(self) -> None:
-    """
-    NOT IMPLEMENTED
-    Function validates spectral data input. Feature_id must be available for each spectrum
-    """
-    # Make sure spectrum is not None
-    # Make sure spectrum is instance matchms
-    # Make sure spectrum has peaks
-    # Make sure spectrum has feature_id
-    assert True
-    return None
   
   def _validate_treatment_data(self):
     """
@@ -513,11 +501,20 @@ def _extract_feature_ids_from_spectra(spectra : List[matchms.Spectrum]) -> List[
   _assert_feature_ids_valid(feature_ids)
   return feature_ids
 
-def _check_spectrum_information_availability(
+def _validate_spectra(
     spectra : List[matchms.Spectrum], 
     identifier_key : str = "feature_id"
   ) -> None:
-  """ Checks if list of spectral data contains expected entries. Aborts code if not the case. """
+  """ 
+  Function validates spectral data input to match expectations. A feature_id must be available for each spectrum. Aborts
+  if spectra non-conforming.
+
+  # Make sure spectrum is not None
+  # Make sure spectrum is instance matchms
+  # Make sure spectrum has peaks
+  # Make sure spectrum has feature_id
+  """
+  empty_spectra_detected = False
   for spectrum in spectra:
     assert isinstance(spectrum, matchms.Spectrum), (
       f"Error: item in loaded spectrum list is not of type matchms.Spectrum!"
@@ -530,6 +527,14 @@ def _check_spectrum_information_availability(
     )
     assert spectrum.get("precursor_mz") is not None, (
       "Error: All spectra must have valid precursor_mz value."
+    )
+    if spectrum.intensities is None or spectrum.intensitites == [] or spectrum.mz is None or spectrum.mz == []:
+      empty_spectra_detected = True
+  if empty_spectra_detected:
+    warn((
+        "At least one spectrum provided that does not contain peak information (empty). "
+        "Spectral processing required!"
+      )
     )
   return None  
 
