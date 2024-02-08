@@ -31,4 +31,13 @@ def test_run_pipeline_integration():
   pipeline.attach_spectral_data_from_file(filepath_test_spectra, identifier_key="scans")
   assert pipeline.spectra_matchms is not None
 
+def test_data_loading():
+  import pandas as pd
+  treat_table = pd.read_csv(filepath_test_treat_table)
+  quant_table = pd.read_csv(filepath_test_quant_table)
+  pipeline = msfeast.Msfeast()
+  pipeline.attach_spectral_data_from_file(filepath_test_spectra, identifier_key="scans")
+  pipeline.attach_quantification_table(quant_table)
+  pipeline.attach_treatment_table(treat_table)
+
 print("End of integration testing reached.")
