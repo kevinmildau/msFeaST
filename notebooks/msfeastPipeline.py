@@ -144,7 +144,8 @@ class Msfeast:
     Loads spectral data quantification table from csv / tsv file. Must contain sample id, and feature_id based columns.
     """
     # Implement file extension check to see whether a csv or tsv file is provided
-    self._validate_quantification_table()
+    table = ...
+    self._validate_quantification_table(table)
     return None
   
   def load_treatment_table_from_file(self, filepath : str) -> None:
@@ -153,7 +154,8 @@ class Msfeast:
     Loads treatment data table from csv / tsv file. Must contain sample_id and treatment_id columns.
     """
     # Implement file extension check to see whether a csv or tsv file is provided
-    self._validate_treatment_data()
+    table = ...
+    self._validate_treatment_data(table)
     return None
   
   def attach_spectral_data(
@@ -180,37 +182,48 @@ class Msfeast:
   
   def attach_quantification_table(self, table : pd.DataFrame) -> None :
     """
-    NOT IMPLEMENTED
     Attaches spectral data quantification table from pandas data frame. Must contain sample id, and feature_id based 
     columns.
     """
-    # Implement file extension check to see whether a csv or tsv file is provided
-    self._validate_quantification_table()
+    assert self.spectra_matchms is not None, (
+      "Error: quantificaiton table validation requires spectral data. Please provide spectral data before attaching "
+      "quantification table.")
+
+    self._validate_quantification_table(table)
+    self.quantification_table = table
     return None
   
   def attach_treatment_table(self, table : pd.DataFrame) -> None:
     """
-    NOT IMPLEMENTED
-    Attaches treatment data table pandas data frame. Must contain sample_id and treatment_id columns.
+    Attaches treatment data table in form of pandas data frame. Must contain sample_id and treatment_id columns.
+
+    Parameters
+      table: pd.DataFrame with sample_id and treatment_id columns. Exact name correspondance is expected. Assumes a 
+        dtype of str.
+    Returns
+      None. Atacched treatment_table to self.
     """
     # Implement file extension check to see whether a csv or tsv file is provided
-    self._validate_treatment_data()
+    self._validate_treatment_data(table) # validat
+    self.treatment_table = table
     return None
   
-  def _validate_quantification_table(self) -> None:
-     """
-     NOT IMPLEMENTED. 
-     Function validates quantification table input against spectral data.
-     """
-     # Make sure there are no NA
-     # Make sure there is numeric information
-     # Make sure feature_id columns are available
-     # Make sure sample_id column is available
-     # Make sure no non-feature_id or non-sample_id columns are there to confuse downstream functions. 
-     assert True
-     return None
+  def _validate_quantification_table(self, table : pd.DataFrame) -> None:
+    """
+    NOT IMPLEMENTED. 
+    Function validates quantification table input against spectral data.
+    """
+    # Use self.spectra_matchms to get feature_ids to compare against quantification table
+
+    # Make sure there are no NA
+    # Make sure there is numeric information
+    # Make sure feature_id columns are available
+    # Make sure sample_id column is available
+    # Make sure no non-feature_id or non-sample_id columns are there to confuse downstream functions. 
+    assert True
+    return None
   
-  def _validate_treatment_data(self):
+  def _validate_treatment_data(self, table : pd.DataFrame):
     """
     NOT IMPLEMENTED
     Function validates treatment information input. Expects treatment information to be a pandas.DataFrame with
