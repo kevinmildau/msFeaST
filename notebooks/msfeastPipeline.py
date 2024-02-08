@@ -256,21 +256,23 @@ class Msfeast:
   def attach_spectral_similarity_array(
       self, 
       similarity_array : np.ndarray, 
-      similarity_measure_name : str = "unspecified"
+      score_name : str = "unspecified"
       ) -> None:
-    """ NOT IMPLEMENTED
-    --> attach similarities and check for agreement in dimensions with spectra list
-    --> Require: at least order alignment between spectra list and similarity matrix
-    --> Possibly: 
-        implement the similarities in a non-ambiguous format with all respective feature_ids explicit (sim matrix + 
-        feature_id list in order of the matrix). Then, make sure they are ordered correctly.
     """
-    # validate similarities to match feature_id length (implied order agreement!)
-    # validate similarities to be in range 0 to 1
-    # warn that similarity matrix must follow feature_id ordering provided (uncheckable!). 
-    # attach the similarity matrix
+    Function attaches pre-computed similarity matrix in format of square np.ndarray to pipeline. Requires spectra to be
+    loaded for size agreement assessment.
+
+    Parameters
+      similarity_array : np.ndarray square form with shape n_spectra by n_spectra. Similarities in range 0 to 1. 
+    Returns
+      None. Attaches similarity_array to self.
+    """
+    assert self.spectra_matchms is not None, (
+      "Error: pipeline requires spectra to be attached prior to similarity computation."
+    )
+    _assert_similarity_matrix(similarity_array, n_spectra=len(self.spectra_matchms))
     self.similarity_array = similarity_array
-    self.similarity_score = similarity_measure_name
+    self.similarity_score_name = score_name
     return None
   
   def run_spectral_similarity_computations(
