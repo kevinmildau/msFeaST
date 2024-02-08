@@ -305,7 +305,7 @@ class Msfeast:
     if score_name == "spec2vec":
       similarity_array = _compute_similarities_s2v(self.spectra_matchms, model_directory)
     if score_name == "ModifiedCosine":
-      similarity_array = _compute_similarities_cosine(self.spectra, cosine_type="ModifiedCosine")
+      similarity_array = _compute_similarities_cosine(self.spectra_matchms, cosine_type="ModifiedCosine")
       # if successful, upade object and attach similarities
     self.similarity_array = similarity_array
     self._attach_settings_used(score_name = self.score_name)
