@@ -146,6 +146,7 @@ class Msfeast:
     # Implement file extension check to see whether a csv or tsv file is provided
     self._validate_quantification_table()
     return None
+  
   def load_treatment_table_from_file(self, filepath : str) -> None:
     """
     NOT IMPLEMENTED
@@ -154,6 +155,7 @@ class Msfeast:
     # Implement file extension check to see whether a csv or tsv file is provided
     self._validate_treatment_data()
     return None
+  
   def attach_spectral_data(
       self, 
       spectra : List[matchms.Spectrum], 
@@ -175,6 +177,7 @@ class Msfeast:
     """
     self._validate_spectra()
     return None
+  
   def attach_quantification_table(self, table : pd.DataFrame) -> None :
     """
     NOT IMPLEMENTED
@@ -184,6 +187,7 @@ class Msfeast:
     # Implement file extension check to see whether a csv or tsv file is provided
     self._validate_quantification_table()
     return None
+  
   def attach_treatment_table(self, table : pd.DataFrame) -> None:
     """
     NOT IMPLEMENTED
@@ -192,6 +196,7 @@ class Msfeast:
     # Implement file extension check to see whether a csv or tsv file is provided
     self._validate_treatment_data()
     return None
+  
   def _validate_quantification_table(self) -> None:
      """
      NOT IMPLEMENTED. 
@@ -204,6 +209,7 @@ class Msfeast:
      # Make sure no non-feature_id or non-sample_id columns are there to confuse downstream functions. 
      assert True
      return None
+  
   def _validate_spectra(self) -> None:
     """
     NOT IMPLEMENTED
@@ -215,6 +221,7 @@ class Msfeast:
     # Make sure spectrum has feature_id
     assert True
     return None
+  
   def _validate_treatment_data(self):
     """
     NOT IMPLEMENTED
@@ -230,6 +237,7 @@ class Msfeast:
     # Make sure there are three instances of each treatment id at least, otherwise warn of possible issues in stats
     assert True
     return None
+  
   def process_spectra(self, spectra):
     """
     NOT IMPLEMENTED
@@ -242,6 +250,7 @@ class Msfeast:
     # validate quantification table
     # update spectra and quantification table
     return None
+  
   def attach_spectral_similarity_array(
       self, 
       similarity_array : np.ndarray, 
@@ -261,6 +270,7 @@ class Msfeast:
     self.similarity_array = similarity_array
     self.similarity_score = similarity_measure_name
     return None
+  
   def run_spectral_similarity_computations(
       self, 
       method = "modified_cosine_score", 
@@ -286,6 +296,7 @@ class Msfeast:
       self.similarity_array = values
     self.similarity_score = method # record used similarity matrix approach 
     return None
+  
   def get_spectral_similarity_array(self) -> Union[np.ndarray, None]:
     """
     Returns copy of the spectral similarity array from pipeline.
@@ -295,6 +306,7 @@ class Msfeast:
     else: 
       warn("Similarity array not available. Returning None instead.")
       return None
+  
   def run_kmedoid_grid(self, values_of_k = None):
     """
     NOT IMPLEMENTED
@@ -368,10 +380,10 @@ class Msfeast:
     plot = ...
     return plot
   
-
   def selectEmbeddingIndex(self):
     # make sure that the index is available in the visual overviews
     return None
+  
   def run_r_testing_routine (self, filepath, overwrite = False):
     """
     NOT IMPLEMENTED
@@ -393,6 +405,7 @@ class Msfeast:
     self.importGlobaltest(filepath)
     _statisticsDataComputed = True
     return None
+  
   def _run_r_routine(self, file_directory, filepath, time_limit : int = 60):
     """
     NOT IMPLEMENTED
@@ -401,16 +414,19 @@ class Msfeast:
     or a time limit is exceeded. The default time limit is 60 seconds.
     """
     return None
+  
   def _export_r_input_data(self, file_directory):
     """
     NOT IMPLEMENTED
     """
     return None
+  
   def _try_r_connection(self, file_directory):
     """
     NOT IMPLEMENTED
     """
     return None
+  
   def _generate_r_script(self, directory_path, filename):
     """
     NOT IMPLEMENTED
@@ -418,6 +434,7 @@ class Msfeast:
     R code is a constant from the python module and standalone code.
     """
     return None
+  
   def _import_r_results(self, directory_path : str):
     """
     NOT IMPLEMENTED
@@ -427,6 +444,7 @@ class Msfeast:
     # add default nodeSize conversions to the expected R outputs, deal with NA values by giving sensible defaults
     # if any NAs detected, print corresponding warning that this is unexpected
     return None
+  
   def generate_json_dict(self) -> Dict: 
     """
     NOT IMPLEMENTED
@@ -437,6 +455,7 @@ class Msfeast:
     # stats data incorporation
     # Multiple steps creation various lists and or dicts of dicts
     return {}
+  
   def export_to_json_file(self, filepath = None, force = False):
     """ 
     NOT IMPLEMENTED
@@ -451,6 +470,7 @@ class Msfeast:
     output_dict = self.generate_json_dict()
     # write to file
     return None
+  
   def validate_complete(self):
     """
     NOT IMPLEMENTED
@@ -461,8 +481,6 @@ class Msfeast:
     isValid = False
     return isValid
 
-
-
 ########################################################################################################################
 # Utility functions required by msFeaST that are be purely functions
 
@@ -472,6 +490,7 @@ def _add_feature_id_key(spectra : List[matchms.Spectrum], identifier_key : str):
     assert spectrum.get(identifier_key) is not None, "Error provided identifier key does not point to valid id!"
     spectrum.set(key = "feature_id", value = spectrum.get(identifier_key))
   return spectra
+
 def _assert_feature_ids_valid(feature_ids : List[str]) -> None:
   """ Makes sure that feature_id entries are valid and unique."""
   assert isinstance(feature_ids, list), f"Error: expect feature_ids to be type list but received {type(feature_ids)}!"
@@ -486,12 +505,14 @@ def _assert_feature_ids_valid(feature_ids : List[str]) -> None:
     "Error: Non-unique (duplicate) feature_ids detected. All feature_ids for spectra must be unique strings."
   )
   return None
+
 def _extract_feature_ids_from_spectra(spectra : List[matchms.Spectrum]) -> List[str]:
   """ Extract feature ids from list of matchms spectra in string format. """
   # Extract feature ids from matchms spectra. 
   feature_ids = [str(spec.get("feature_id")) for spec in spectra]
   _assert_feature_ids_valid(feature_ids)
   return feature_ids
+
 def _check_spectrum_information_availability(
     spectra : List[matchms.Spectrum], 
     identifier_key : str = "feature_id"
