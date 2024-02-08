@@ -528,7 +528,7 @@ def _validate_spectra(
     assert spectrum.get("precursor_mz") is not None, (
       "Error: All spectra must have valid precursor_mz value."
     )
-    if spectrum.intensities is None or spectrum.intensitites == [] or spectrum.mz is None or spectrum.mz == []:
+    if spectrum.intensities is None or spectrum.mz is None: # is none also true for empty list []
       empty_spectra_detected = True
   if empty_spectra_detected:
     warn((
