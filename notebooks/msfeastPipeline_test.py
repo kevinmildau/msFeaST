@@ -1,3 +1,8 @@
+# run using thew following line of code from within notebook directory:
+# pytest
+# or for showing prints:
+# pytest -s
+
 import msfeastPipeline as msfeast
 import pytest
 import os
