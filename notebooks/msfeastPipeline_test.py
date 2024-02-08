@@ -42,4 +42,20 @@ def test_data_attach():
   assert all(pipeline.treatment_table == treat_table)
   assert all(pipeline.quantification_table == quant_table)
 
+def test_cosine_sim():
+  import pandas as pd
+  import numpy as np
+  treat_table = pd.read_csv(filepath_test_treat_table)
+  quant_table = pd.read_csv(filepath_test_quant_table)
+  pipeline = msfeast.Msfeast()
+  pipeline.attach_spectral_data_from_file(filepath_test_spectra, identifier_key="scans")
+  pipeline.attach_quantification_table(quant_table)
+  pipeline.attach_treatment_table(treat_table)
+  assert all(pipeline.treatment_table == treat_table)
+  assert all(pipeline.quantification_table == quant_table)
+  pipeline.run_spectral_similarity_computations("ModifiedCosine")
+  assert isinstance(pipeline.similarity_array, np.ndarray)
+  n_spec = len(pipeline.spectra_matchms)
+  assert pipeline.similarity_array.shape == (n_spec, n_spec)
+
 print("End of integration testing reached.")
