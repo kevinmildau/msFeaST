@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import pandas as pd
 import numpy as np
 import matchms
@@ -108,9 +108,10 @@ class Msfeast:
   quantification_table: pd.DataFrame | None = None
   treatment_table: pd.DataFrame | None = None
   spectra_matchms: list[matchms.Spectrum] | None = None
-
-  similarity_score : Union[None, str] = None
   similarity_array : Union[None, np.ndarray] = None
+
+  # settings used dictionary, initialized as empty
+  _settings_used : dict = field(default_factory= lambda: {})
 
   def attach_spectral_data_from_file(self, filepath : str, identifier_key : str = "feature_id") -> None:
     """ 
