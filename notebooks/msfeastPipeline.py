@@ -310,46 +310,6 @@ class Msfeast:
     self.similarity_array = similarity_array
     self._attach_settings_used(score_name = self.score_name)
     return None
-  
-  def attach_spectral_similarity_arrays(
-    self, 
-    primary_score, 
-    secondary_score, 
-    tertiary_score, 
-    score_names : List[str] = ["primary", "secondary", "tertiary"], 
-    verbose : bool = True) -> None:
-    """ Attaches spectral similarity array computed elsewhere & checks compatibility with spectra. 
-    
-    Parameters:
-      primary_score : np.ndarray of square shape of len(self.spectra_matchs) with values between 0 and 1 
-        indicating spectral similarity.
-      secondary_score : np.ndarray of square shape of len(self.spectra_matchs) with values between 0 and 1 
-        indicating spectral similarity.
-      tertiary_score : np.ndarray of square shape of len(self.spectra_matchs) with values between 0 and 1 
-        indicating spectral similarity.
-      score_names : List[str] with score names. If not provided, defaults to ["primary", "secondary", "tertiary"]
-      verbose : bool = True that prints warning message about iloc alignment requirement. Set to false to suppress.
-    Returns:
-      Attaches similarity matrices to self. Returns None.
-    """
-    n_spectra = len(self.spectra_matchms)
-    _assert_similarity_matrix(primary_score, n_spectra)
-
-    if verbose is True:
-      warn((
-          "Beware of order misalignment: attach_spectral_similarity_arrays() assumes that the provided score "
-          "matrices align in iloc to feature_id mapping with the spectra list provided. If spectra have been "
-          "reordered in any way this mapping may not hold!"
-        )
-      )
-    self.primary_score = primary_score
-    self.secondary_score = secondary_score
-    self.tertiary_score = tertiary_score
-    self.score_names = score_names
-    self._add_similarities_complete = True
-    self._spectral_processing_complete = True # similarity matrices were computed, this step is skipped and locked
-    self._attach_settings_used(score_names = self.score_names)
-    return None
 
   def get_spectral_similarity_array(self) -> Union[np.ndarray, None]:
     """
