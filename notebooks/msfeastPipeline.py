@@ -531,7 +531,8 @@ def _assert_filepath_exists(filepath : str) -> None:
 
 def _load_spectral_data(filepath : str, identifier_key : str = "feature_id") -> List[matchms.Spectrum]:
   """ Loads spectra from file and validates identifier availability """
-  spectra_matchms = list(matchms.importing.load_from_mgf(filepath))
+  _assert_filepath_exists(filepath)
+  spectra_matchms = list(matchms.importing.load_from_mgf(filepath)) # this may cause its own assert errors. 
   assert isinstance(spectra_matchms, list), "Error: spectral input must be type list[matchms.Spectrum]"
   for spec in spectra_matchms:
     assert isinstance(spec, matchms.Spectrum), "Error: all entries in list must be type spectrum."
