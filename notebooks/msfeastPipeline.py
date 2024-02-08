@@ -272,7 +272,7 @@ class Msfeast:
     )
     _assert_similarity_matrix(similarity_array, n_spectra=len(self.spectra_matchms))
     self.similarity_array = similarity_array
-    self.similarity_score_name = score_name
+    self._attach_settings_used(score_name = score_name)
     return None
   
   
@@ -308,7 +308,7 @@ class Msfeast:
       similarity_array = _compute_similarities_cosine(self.spectra_matchms, cosine_type="ModifiedCosine")
       # if successful, upade object and attach similarities
     self.similarity_array = similarity_array
-    self._attach_settings_used(score_name = self.score_name)
+    self._attach_settings_used(score_name = score_name)
     return None
 
   def get_spectral_similarity_array(self) -> Union[np.ndarray, None]:
@@ -483,6 +483,13 @@ class Msfeast:
     # construct json string for entire dataset
     output_dict = self.generate_json_dict()
     # write to file
+    return None
+  
+  def _attach_settings_used(self, **kwargs) -> None:
+    """Helper function attaches used settings to settings dictionary via key value pairs passed as kwargs. """
+    for key, value in kwargs.items():
+        if key is not None and value is not None:
+            self._settings_used[key] = value
     return None
   
   def validate_complete(self):
