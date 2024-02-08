@@ -513,11 +513,18 @@ def _check_spectrum_information_availability(
   return None  
 
 def _assert_filepath_valid(filepath : str) -> None:
+  """ 
+  Helper Function checks whether the provided filepath is valid (str, in existing folder etc.), the file doesn't need to 
+  exist. The function raises an assert error if not.
+  """
   assert isinstance(filepath, str), f"Error: expected filepath to be string but received {type(filepath)}"
   assert os.path.isfile(filepath), "Error: supplied filepath is not valid."
   return None
 
 def _assert_filepath_exists(filepath : str) -> None:
+  """ 
+  Helper Function checks whether the provided filepath is valid and exists. The function raises an assert error if not. 
+  """
   assert isinstance(filepath, str), f"Error: expected filepath to be string but received {type(filepath)}"
   assert os.path.exists(filepath), "Error: supplied filepath does not point to existing file."
   return None
