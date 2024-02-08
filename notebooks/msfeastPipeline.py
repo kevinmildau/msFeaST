@@ -275,32 +275,82 @@ class Msfeast:
     self.similarity_score_name = score_name
     return None
   
+  
   def run_spectral_similarity_computations(
       self, 
-      method = "modified_cosine_score", 
-      model_directory = "not_available"
-      ) -> None:
-    """ 
-    NOT IMPLEMENTED
-    DELEGATOR FUNCTION 
-    --> refers to specific functions for computing the different measures
-    --> specifies similarity matrix for use in the remainder of the tool.
+      score_name : str = "ModifiedCosine",
+      model_directory: Union[str, None] = None, 
+      force : bool = False) -> None:
+    """ Runs and attaches spectral similarity measures using self.spectra. Requires model_directory_path as input.
+    
+    Parameters
+        score_name : str indicating the score_name to use, can be "ModifiedCosine", "spec2vec", "ms2deepscore", 
+          "CosineHungarian", or "CosineGreedy".
+        model_directory_path : str path to directory containing model files. Assumes one set of model files only!
+        force : bool defaulting to false indicating whether existing similarity matrices can be overwritten or not.
+    Returns
+        Attaches similarity matrices to self. Returns None.
     """
-    # check that: spectra are available, check method and whether model available if required
-    if method == "ms2deepscore" and model_directory == "not_available":
-      # print warning message and indicate object unchanged
-      ...
-    if method == "spec2vec" and model_directory == "not_available":
-      # print warning message and indicate object unchanged
-      ...
-    if method == "modified_cosine_score":
-      # check input validity and run data
-      values = _compute_similarities_cosine(self.spectra, cosine_type="ModifiedCosine")
+    if force is False:
+      assert (self.similarity_array is None), (
+        "Error: Similarities were already computed or set. "
+        "To replace existing scores set Force to True or re-initialize the pipeline."
+      )
+    if score_name in ["ms2deepscore", "spec2vec"] and model_directory is None:
+      warn(
+        "Warning: when using ML based scores a model directory with pre-trained models needs to be provided. Not run."
+      )
+    if score_name == "ms2deepscore":
+      similarity_array = _compute_similarities_ms2ds(self.spectra_matchms, model_directory)
+    if score_name == "spec2vec":
+      similarity_array = _compute_similarities_s2v(self.spectra_matchms, model_directory)
+    if score_name == "ModifiedCosine":
+      similarity_array = _compute_similarities_cosine(self.spectra, cosine_type="ModifiedCosine")
       # if successful, upade object and attach similarities
-      self.similarity_array = values
-    self.similarity_score = method # record used similarity matrix approach 
+    self.similarity_array = similarity_array
+    self._attach_settings_used(score_name = self.score_name)
     return None
   
+  def attach_spectral_similarity_arrays(
+    self, 
+    primary_score, 
+    secondary_score, 
+    tertiary_score, 
+    score_names : List[str] = ["primary", "secondary", "tertiary"], 
+    verbose : bool = True) -> None:
+    """ Attaches spectral similarity array computed elsewhere & checks compatibility with spectra. 
+    
+    Parameters:
+      primary_score : np.ndarray of square shape of len(self.spectra_matchs) with values between 0 and 1 
+        indicating spectral similarity.
+      secondary_score : np.ndarray of square shape of len(self.spectra_matchs) with values between 0 and 1 
+        indicating spectral similarity.
+      tertiary_score : np.ndarray of square shape of len(self.spectra_matchs) with values between 0 and 1 
+        indicating spectral similarity.
+      score_names : List[str] with score names. If not provided, defaults to ["primary", "secondary", "tertiary"]
+      verbose : bool = True that prints warning message about iloc alignment requirement. Set to false to suppress.
+    Returns:
+      Attaches similarity matrices to self. Returns None.
+    """
+    n_spectra = len(self.spectra_matchms)
+    _assert_similarity_matrix(primary_score, n_spectra)
+
+    if verbose is True:
+      warn((
+          "Beware of order misalignment: attach_spectral_similarity_arrays() assumes that the provided score "
+          "matrices align in iloc to feature_id mapping with the spectra list provided. If spectra have been "
+          "reordered in any way this mapping may not hold!"
+        )
+      )
+    self.primary_score = primary_score
+    self.secondary_score = secondary_score
+    self.tertiary_score = tertiary_score
+    self.score_names = score_names
+    self._add_similarities_complete = True
+    self._spectral_processing_complete = True # similarity matrices were computed, this step is skipped and locked
+    self._attach_settings_used(score_names = self.score_names)
+    return None
+
   def get_spectral_similarity_array(self) -> Union[np.ndarray, None]:
     """
     Returns copy of the spectral similarity array from pipeline.
@@ -571,6 +621,14 @@ def _assert_filepath_exists(filepath : str) -> None:
   assert os.path.exists(filepath), "Error: supplied filepath does not point to existing file."
   return None
 
+def _assert_directory_exists(directory : str) -> None:
+  """ 
+  Helper Function checks whether the provided filepath is valid and exists. The function raises an assert error if not. 
+  """
+  assert isinstance(directory, str), f"Error: expected directory to be string but received {type(directory)}"
+  assert os.path.isdir(directory), "Error: model directory path must point to an existing directory!"
+  return None
+
 def _load_spectral_data(filepath : str, identifier_key : str = "feature_id") -> List[matchms.Spectrum]:
   """ Loads spectra from file and validates identifier availability """
   _assert_filepath_exists(filepath)
@@ -676,6 +734,25 @@ def _extract_similarity_scores_from_matchms_cosine_array(
         for elem in row:
             sim_data.append(float(elem[0]))
     return(np.array(sim_data).reshape(tuple_array.shape[0], tuple_array.shape[1]))
+
+def _convert_similarity_to_distance(similarity_matrix : np.ndarray) -> np.ndarray:
+  """ 
+  Converts pairwise similarity matrix to distance matrix with values between 0 and 1. Assumes that the input is a
+  similarity matrix with values in range 0 to 1 up to floating point error.
+  """
+  distance_matrix = 1.- similarity_matrix
+  distance_matrix = np.round(distance_matrix, 6) # Round to deal with floating point issues
+  distance_matrix = np.clip(distance_matrix, a_min = 0, a_max = 1) # Clip to deal with floating point issues
+  return distance_matrix
+
+def _assert_similarity_matrix(scores : np.ndarray, n_spectra : int) -> None:
+  """ Function checks whether similarity matrix corresponds to expected formatting. Aborts code if not. """
+  assert (isinstance(scores, np.ndarray)), "Error: input scores must be type np.ndarray."
+  assert scores.shape[0] == scores.shape[1] == n_spectra, (
+    "Error: score dimensions must be square & correspond to n_spectra"
+  )
+  assert np.logical_and(scores >= 0, scores <= 1).all(), "Error: all score values must be in range 0 to 1."
+  return None
 
 def _return_model_filepath(
     path : str, 
