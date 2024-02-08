@@ -413,13 +413,26 @@ class Msfeast:
     # make sure that the index is available in the visual overviews
     return None
   
-  def run_r_testing_routine (self, filepath, overwrite = False):
+  def run_r_testing_routine (self, directory, overwrite = False):
     """
     NOT IMPLEMENTED
     Function writes r inputs to file, writes r script to file, tests r availabiltiy, runs test, and imports r results.
     """
     # assess all data required available
     # construct python structures suitable for file writing
+    
+    self.assignment_table # -->
+    self.quantification_table # --> 
+    self.treatment_table # --> turn into contrasts
+    
+    # json filenames input for R; the one argument to pass to R so it can find all the rest
+    # could also contain all info, but that makes r parsing more difficult than reading csvs...
+    filenames_dict = {
+      "assignment_table": os.path.join(directory, "assignment_table.csv"),
+      "quantification_table": os.path.join(directory, "quantification_table.csv"),
+      "treatment_table": os.path.join(directory, "treatment_table.csv"),
+    }
+
     self._generate_r_script()
     self._export_r_input_data()
     self._try_r_connection()
@@ -545,7 +558,6 @@ class Msfeast:
     selected_k = self.kmedoid_grid[iloc].k
     self._attach_settings_used(kmedoid_n_clusters = selected_k)
     return None
-
 
   def _attach_settings_used(self, **kwargs) -> None:
     """Helper function attaches used settings to settings dictionary via key value pairs passed as kwargs. """
