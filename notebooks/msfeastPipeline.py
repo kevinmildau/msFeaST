@@ -599,7 +599,7 @@ class Msfeast:
     feature_ids = _extract_feature_ids_from_spectra(self.spectra_matchms)
     self.assignment_table = pd.DataFrame(data = {
         "feature_id" : feature_ids,  
-        "classification" : [f"group_{clust}" for clust in self.kmedoid_grid[iloc].cluster_assignments]
+        "set_id" : [f"group_{clust}" for clust in self.kmedoid_grid[iloc].cluster_assignments]
       }
     )
     selected_k = self.kmedoid_grid[iloc].k
