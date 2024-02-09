@@ -1,0 +1,236 @@
+{
+  "feature_specific": {
+    "32": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 28,
+        "log2FoldChange": -3.7292
+      }
+    },
+    "112": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 41,
+        "log2FoldChange": -0.5581
+      }
+    },
+    "132": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 41,
+        "log2FoldChange": -7.5507
+      }
+    },
+    "138": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 7,
+        "log2FoldChange": 0.5685
+      }
+    },
+    "189": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 41,
+        "log2FoldChange": -3.9444
+      }
+    },
+    "201": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 41,
+        "log2FoldChange": 7.0906
+      }
+    },
+    "216": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 47,
+        "log2FoldChange": -2.0922
+      }
+    },
+    "222": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 41,
+        "log2FoldChange": 1.6617
+      }
+    },
+    "243": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 52,
+        "log2FoldChange": -8.9447
+      }
+    },
+    "249": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 98,
+        "log2FoldChange": 4.7353
+      }
+    },
+    "272": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 7,
+        "log2FoldChange": -0.8069
+      }
+    },
+    "276": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 95,
+        "log2FoldChange": -5.9068
+      }
+    },
+    "278": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 95,
+        "log2FoldChange": -3.5158
+      }
+    },
+    "299": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 28,
+        "log2FoldChange": 3.4755
+      }
+    },
+    "300": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 95,
+        "log2FoldChange": 0.2566
+      }
+    },
+    "315": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 100,
+        "log2FoldChange": -10.2493
+      }
+    },
+    "322": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 41,
+        "log2FoldChange": -2.8311
+      }
+    },
+    "325": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 47,
+        "log2FoldChange": -3.3761
+      }
+    },
+    "328": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 99,
+        "log2FoldChange": -0.2152
+      }
+    },
+    "342": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 95,
+        "log2FoldChange": -2.8622
+      }
+    },
+    "396": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 7,
+        "log2FoldChange": -8.0089
+      }
+    },
+    "408": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 41,
+        "log2FoldChange": -2.2325
+      }
+    },
+    "433": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 95,
+        "log2FoldChange": -1.8106
+      }
+    },
+    "434": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 98,
+        "log2FoldChange": -2.6455
+      }
+    },
+    "438": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 41,
+        "log2FoldChange": -4.7849
+      }
+    },
+    "444": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 41,
+        "log2FoldChange": 4.9621
+      }
+    },
+    "471": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 41,
+        "log2FoldChange": -0.529
+      }
+    },
+    "481": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 7,
+        "log2FoldChange": 1.1684
+      }
+    },
+    "494": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 27,
+        "log2FoldChange": -2.844
+      }
+    },
+    "495": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestFeatureContribution": 28,
+        "log2FoldChange": 2.1783
+      }
+    }
+  },
+  "set_specific": {
+    "group_km_2": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestPValue": 5.9623e-08
+      }
+    },
+    "group_km_4": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestPValue": 8.1586e-08
+      }
+    },
+    "group_km_6": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestPValue": 0.3035
+      }
+    },
+    "group_km_8": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestPValue": 4.6562e-06
+      }
+    },
+    "group_km_3": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestPValue": 0.0746
+      }
+    },
+    "group_km_0": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestPValue": 0.0088
+      }
+    },
+    "group_km_9": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestPValue": 3.162e-13
+      }
+    },
+    "group_km_7": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestPValue": 5.2298e-07
+      }
+    },
+    "group_km_5": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestPValue": 0.5439
+      }
+    },
+    "group_km_1": {
+      "FB_Hericium_vs_FB_Pleurotus": {
+        "globalTestPValue": 0.0088
+      }
+    }
+  }
+}
