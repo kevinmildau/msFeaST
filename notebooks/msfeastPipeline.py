@@ -4,6 +4,8 @@ import numpy as np
 import matchms
 import typing
 import os
+import time
+import subprocess
 from typing import List, TypedDict, Tuple, Dict, NamedTuple, Union
 from warnings import warn
 import copy # for safer get methods  pipeline internal variables
@@ -23,6 +25,7 @@ import gensim
 
 # plotting functionalities
 import plotly
+import plotly.express
 
 # ms2deepscore currently not working with macos m1 processors. Only include if ready to test in windows / linux.
 # ms2deepscore dependencies (does not appear to work for Python 3.10 ; check compatible python version)
@@ -413,7 +416,7 @@ class Msfeast:
     # make sure that the index is available in the visual overviews
     return None
   
-  def run_r_testing_routine (self, directory, overwrite = False):
+  def run_r_testing_routine (self, directory, overwrite = False, max_seconds : int = 4):
     """
     NOT IMPLEMENTED
     Function writes r inputs to file, writes r script to file, tests r availabiltiy, runs test, and imports r results.
@@ -427,25 +430,69 @@ class Msfeast:
     
     # json filenames input for R; the one argument to pass to R so it can find all the rest
     # could also contain all info, but that makes r parsing more difficult than reading csvs...
-    filenames_dict = {
-      "assignment_table": os.path.join(directory, "assignment_table.csv"),
-      "quantification_table": os.path.join(directory, "quantification_table.csv"),
-      "treatment_table": os.path.join(directory, "treatment_table.csv"),
-    }
+    
+    directory = "tmp_output"
+    filepath_assignment_table = str(os.path.join(directory, "assignment_table.csv"))
+    filepath_quantification_table = str(os.path.join(directory, "test_quant_table.csv"))
+    filepath_treatment_table = str(os.path.join(directory, "test_treat_table.csv"))
 
-    self._generate_r_script()
-    self._export_r_input_data()
-    self._try_r_connection()
-    self._run_r_routine()
-    self._import_r_results()
+    # Write R input data to file
+    self.quantification_table = self.quantification_table.reset_index(drop=True)
+    self.treatment_table = self.treatment_table.reset_index(drop=True)
+    self.assignment_table = self.assignment_table.reset_index(drop=True)
+    
+    # Required to remove the unnamed = 0 index column that is created somewhere... --> Add 
+    self.quantification_table.drop(
+      self.quantification_table.columns[
+          self.quantification_table.columns.str.contains('Unnamed', case=False)], 
+      axis=1, inplace=True
+    )
+    self.treatment_table.drop(
+      self.treatment_table.columns[
+        self.treatment_table.columns.str.contains('Unnamed', case=False)], 
+      axis=1, inplace=True
+    )
+    self.assignment_table.drop(
+      self.assignment_table.columns[
+        self.assignment_table.columns.str.contains('Unnamed', case=False)], 
+      axis=1, inplace=True
+    )
+
+    # Setting index to false is often not enough for pandas to remove it as the index is sometimes added as an unnamed 
+    # column
+    self.quantification_table.to_csv(filepath_quantification_table, index = False)
+    self.treatment_table.to_csv(filepath_treatment_table, index = False)
+    self.assignment_table.to_csv(filepath_assignment_table, index = False)
+
+    # Run R Code
+    subprocess.run((
+        f"Rscript run_mock_msfeast.R {filepath_quantification_table} " 
+        f"{filepath_treatment_table} " 
+        f"{filepath_assignment_table}"
+      ), 
+      shell=True
+    )
+
+    
+    #if os.path.isfile(filepath):
+    #  print("there is a file")
+    #else:
+    #  raise ValueError(f"{filepath} is does not point to existing file.")
+
+    #self._generate_r_script()
+    #self._export_r_input_data()
+    #self._try_r_connection()
+    #self._run_r_routine()
+    #self._import_r_results()
     # determine file_names; (date, time, run/file_prefix, default file suffix)
     # write files to directory
     # run R interface call & wait for run execution
     # --> if just waiting for bash feedback works, great, otherwise
     # --> wait until R output files appear in directory
     # load r data and attach to msfeast session data
-    self.importGlobaltest(filepath)
-    _statisticsDataComputed = True
+    #
+
+    #self.importGlobaltest(filepath)
     return None
   
   def _run_r_routine(self, file_directory, filepath, time_limit : int = 60):
