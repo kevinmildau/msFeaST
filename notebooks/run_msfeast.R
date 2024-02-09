@@ -67,11 +67,6 @@ constructEmptyNamedList <- function(entryNamesList){
   return (emptyList)
 }
 
-extractFeatureSetData <- function(){
-  # Function Extracts data for specified contrast and feature set  from the full data tibble
-  # The obvious thing to do for univariate methods is to have a set of one features
-}
-
 runHandlerLog2FoldChange <- function(resultsListEnv, feature_id, contrast, contrast_name, quantification_table, metadata_table){
   # Extract contrast specific data
   contrast <- contrasts[[contrast_name]]
