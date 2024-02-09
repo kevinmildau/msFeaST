@@ -1,3 +1,4 @@
+
 rm(list = ls())
 
 #' generateConfigurations
@@ -85,7 +86,6 @@ runHandlerLog2FoldChange <- function(resultsListEnv, feature_id, contrast, contr
       levels = c(treatment_reference_id, treatment_treatment_id))) %>%
     mutate(treatment = as.numeric(treatment)-1)
   
-  print(tmpAllData)
   referenceIntensities <- tmpAllData %>%
     filter(., treatment == 0) %>%
     select(., -c(treatment, sample_id)) %>%
@@ -96,7 +96,6 @@ runHandlerLog2FoldChange <- function(resultsListEnv, feature_id, contrast, contr
     select(., -c(treatment, sample_id)) %>%
     pull(.)
   
-  print(referenceIntensities)
   ratio <- mean(treatmentIntensities) / mean(referenceIntensities)
   log2ratio <- log2(ratio)
   
@@ -104,14 +103,19 @@ runHandlerLog2FoldChange <- function(resultsListEnv, feature_id, contrast, contr
     select(-c("sample_id", "treatment")) %>%
     as.matrix(.)
   
-  # get the actual value
-  value = runif(1, 0.001, 100)
-  
   # Attach to output
   resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["log2FoldChange"] <- list(log2ratio)
 }
 
-runHandlerGlobalTest <- function(resultsListEnv, feature_set_name, feature_set_members, contrast, contrast_name, quantification_table, metadata_table){
+runHandlerGlobalTest <- function(
+  resultsListEnv, 
+  feature_set_name, 
+  feature_set_members, 
+  contrast, 
+  contrast_name, 
+  quantification_table, 
+  metadata_table
+  ){
   # Extract contrast specific data
   contrast <- contrasts[[contrast_name]]
   feature_ids <- feature_sets[[feature_set_name]]
@@ -144,6 +148,8 @@ runHandlerGlobalTest <- function(resultsListEnv, feature_set_name, feature_set_m
   
   # Attach to output
   resultsListEnv$"set_specific"[[feature_set_name]][[contrast_name]]["globalTestPValue"] <- list(p_value) 
+  
+  # Feature specific global test results are mocked!
   for (feature_id in feature_set_members){
     resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["globalTestFeatureContribution"] <- list(value2)
   }
@@ -247,6 +253,7 @@ if (TRUE){
     sample_id = paste0("sample_", seq(1, n_samples, 1)),
     treatment = rep(treatment_ids, length.out = n_samples)
   )
+
   feature_ids <- paste0("feature_", seq(1:n_features))
   set_ids <- paste0("set_", seq(1:n_sets))
   quantification_table <- tibble(
@@ -262,6 +269,7 @@ if (TRUE){
     set_id = rep(set_ids, length.out = n_features)
   )
   generateFeatureSetList <- function(feature_groupings_df){
+    set_ids <- unique(feature_groupings_df$set_id)
     feature_sets <-constructEmptyNamedList(set_ids)
     for (set in set_ids){
       feature_sets[[set]] <- feature_groupings %>% filter(set_id == set) %>% pull(feature_id)
