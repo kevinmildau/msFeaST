@@ -103,7 +103,7 @@ if __name__ == "__main__":
   assert isinstance(pipeline.similarity_array, np.ndarray)
   n_spec = len(pipeline.spectra_matchms)
   assert pipeline.similarity_array.shape == (n_spec, n_spec)
-  pipeline.run_and_attach_kmedoid_grid([8,9,10,10,12,13,14,15])
+  pipeline.run_and_attach_kmedoid_grid([10])
   #msfeast._plot_kmedoid_grid(pipeline.kmedoid_grid)
   pipeline.select_kmedoid_settings(iloc = 0)
   assert isinstance(pipeline.assignment_table, pd.DataFrame)
