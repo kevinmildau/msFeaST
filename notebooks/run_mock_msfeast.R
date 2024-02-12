@@ -193,9 +193,12 @@ run_and_attach_global_test_on_feature_set <- function(
 }
 
 
-#' run_msfeast
+
+#' @title run_msfeast
 #' 
-#' Main interface function for msFeaST. This function provides a convenience wrapper to the globaltest (v5.50.0) package.
+#' @description Main interface function for msFeaST. This function provides a convenience wrapper to the globaltest 
+#' (v5.50.0) package.
+#' 
 #' Given the quantification table, metadata_table, feature_sets, contrasts and measures, the function
 #'  1. Initializes configurations for each test
 #'  2. Initialize output data structures (hierarchical named lists for json export) 
@@ -204,21 +207,27 @@ run_and_attach_global_test_on_feature_set <- function(
 #'    -> run the test handler -> add results to respective output structures
 #'  4. Return results output structures as nested named lists and json strings
 #'
-#' Input Data assumptions:
-#' --> all feature_id, sample_id, feature_set_id, condition_id values must be unique in their respective columns.
-#' --> column names must exactly match expectations posited
 #'
-#' @param quantification_table A tibble (data frame) with a sample_id column (character) and a column for each feature_id containing the respective measurement values (float)
-#' @param metadata_table A tibble with a sample_id column (character) and a condition_id column (character). The condition_id is expected to contain both the control/reference group and treatment/comparison groups. It is used to extract relevant samples for each contrast.
-#' @param feature_sets A named list with keys representing feature_set_id (character) and sub-list elements representing feature_id (character)
+#' @param quantification_table A tibble (data frame) with a sample_id column (character) and a column for each 
+#' feature_id containing the respective measurement values (float)
+#' @param metadata_table A tibble with a sample_id column (character) and a condition_id column (character). The 
+#' condition_id is expected to contain both the control/reference group and treatment/comparison groups. It is used to 
+#' extract relevant samples for each contrast.
+#' @param feature_sets A named list with keys representing feature_set_id (character) and sub-list elements representing 
+#' feature_id (character)
 #' @param feature_ids A list with feature_ids (character)
-#' @param contrasts A list of 2-tuples containing the control/reference category and the treatment/comparison category (character). 
-#' @param measures A list of measures to use for comparative purposes. These must match one or more of the following supported measures: c("globalTest", "log2FoldChange")
+#' @param contrasts A list of 2-tuples containing the control/reference category and the treatment/comparison category 
+#' (character). 
+#' @param measures A list of measures to use for comparative purposes. These must match one or more of the following 
+#' supported measures: c("globalTest", "log2FoldChange")
 #'
 #' @return
-#' @export
-#'
-#' @examples
+#' @Details Data assumptions:
+#' --> all feature_id, sample_id, feature_set_id, condition_id values must be unique in their respective columns.
+#' --> column names must exactly match expectations posited
+#' \dontrun{
+#' ...
+#' }
 run_msfeast <- function(
     quantification_table, 
     metadata_table,
