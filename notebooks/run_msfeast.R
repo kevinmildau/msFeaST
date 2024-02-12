@@ -181,8 +181,6 @@ run_and_attach_global_test_on_feature_set <- function(
   resultsListEnv$"set_specific"[[feature_set_name]][[contrast_name]]["globalTestPValue"] <- list(p_value) 
 
   # Feature specific global test results are mocked!
-  #print(resultsListEnv$"feature_specific")
-  print(feature_set_members)
   for (feature_id in feature_set_members){
     resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["globalTestFeatureContribution"] <- list(value2)
   }
