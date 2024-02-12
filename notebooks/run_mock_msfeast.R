@@ -1,37 +1,32 @@
 #!/usr/bin/env Rscript
 
-run_integration_test <- function(){
-  # test package loading
-  # test single globaltest instance with known result
-  # test single foldchange instance with known result
-  # test a mock demo scenario with all elements checking out 
-}
-
-#' generateConfigurations
-#' 
-#' Creates configuration data frame (list) from inputs.
-#'
+#' @title generateConfigurations
+#' @description Creates configuration data frame (list) from inputs.
 #' @param measures List of measures c("globalTest", "log2FoldChange") are supported. Must be a list even if scalar.
-#' @param contrasts List of contrasts. Named list, where names are contrast names, and sub-list elements are treatment identifiers. For example: list("contrast_ctrl_vs_trt" = list(reference="ctrl", treatment="trt"))
-#' @param feature_ids List of feature identifiers (character)
-#' @param feature_sets List of feature sets, where names in the list are feature set ids, and list elements are lists with feature identifiers.
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @param contrasts List of contrasts. Named list, where names are contrast names, and sub-list elements are treatment 
+#' identifiers. For example: list("contrast_ctrl_vs_trt" = list(reference="ctrl", treatment="trt"))
+#' @param feature_ids List of feature identifiers (character). For example: list("feature_1", "feature_2").
+#' @param feature_sets List of feature sets, where names in the list are feature set ids (character), and list elements 
+#' are lists with feature identifiers (character). For example: list("set_1" = list("feature_1", "feature_2"), ...).
+#' @details 
+#' generates configurations for msfeast linear situation run
+#' Configurations takes the form of a data frame with columns: 
+#' measure, feature_set, feature_id, contrast, feature_set_members
+#' --> measure is a string, with globalTest or log2FoldChange as an entry
+#' --> feature_set is a string or NA, with the feature_set id entry that is NA if the config measure is log2foldChange 
+#'     (feature level)
+#' --> feature_id is a string or NA, with a feature_id entry that is NA if the config measure is globalTest (set level)
+#' --> contrast is a list of strings, with the first string indicating the reference treatment, and the second string to
+#'     other treatment
+#' @examples 
+#' \dontrun{
+#' ...
+#' }
 generateConfigurations <- function(measures, contrasts, feature_ids, feature_sets){
-  # generates configurations for msfeast linear situation run
-  # Configurations takes the form of a data frame with columns: 
-  # measure, feature_set, feature_id, contrast, feature_set_members
-  # --> measure is a string, with globalTest or log2FoldChange as an entry
-  # --> feature_set is a string or NA, with the feature_set id entry that is NA if the config measure is log2foldChange (feature level)
-  # --> feature_id is a string or NA, with a feature_id entry that is NA if the config measure is globalTest (set level)
-  # --> contrast is a list of strings, with the first string indicating the reference treatment, and the second string to other treatment
-
-  feature_set_names <- names(feature_sets)
+  feature_set_names <- names(feature_sets) # Names from named list
   configurations <- data.frame()
-  for (current_measure in measures){
+  # globalTest & log2FoldChange are currently accepted measures.
+  for (current_measure in measures){ 
     configurations = switch(
       current_measure,
       "globalTest" = rbind(
@@ -248,7 +243,7 @@ run_msfeast <- function(
   resultsListEnv <- listenv::listenv(
     feature_specific = construct_empty_named_list(feature_ids),
     set_specific = construct_empty_named_list(names(feature_sets)))
-  
+
 
   # Loop through all configurations and attach relevant metadata to output container
   # Each row in configurations is dealt with separately, where the required information
@@ -384,6 +379,16 @@ generateFeatureSetList <- function(feature_groupings_df){
   return(feature_sets)
 }
 
+
+
+run_integration_test <- function(){ 
+  # test package loading
+  # test single globaltest instance with known result
+  # test single foldchange instance with known result
+  # test a mock demo scenario with all elements checking out 
+  return(TRUE)
+}
+
 ########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################
@@ -455,6 +460,7 @@ if (sys.nframe() == 0){
   }
   feature_ids <- assignment_table$feature_id
   print("R Routine: running global test and fold change computations...")
+  
   out <- run_msfeast(
     quantification_table = quantification_table, 
     metadata_table = treatment_table, 
@@ -463,7 +469,6 @@ if (sys.nframe() == 0){
     contrasts = contrasts)
 
   print("R Routine: exporting globaltest and log fold change computations...")
-  #str(out)
 
   json_output <- jsonlite::toJSON(out, pretty = T, simplifyVector = F, flatten = TRUE, auto_unbox = T)
   writeLines(json_output, "tmp_output/test_output.json")
