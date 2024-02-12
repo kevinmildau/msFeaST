@@ -374,6 +374,42 @@ generateFeatureSetList <- function(feature_groupings_df){
 
 
 
+#' @title load_libraries
+#' @description Function attempts to load libraries and returns simple error message if not found.
+load_libraries <- function(){
+  tryCatch(
+    {suppressPackageStartupMessages(library("readr"))}, 
+    error = function(error_message){
+      print("R Routine: ERROR: readr package Not Found. Stopping Code Execution."); 
+      q();
+    }
+  )
+  tryCatch(
+    {suppressPackageStartupMessages(library("dplyr"))}, 
+    error = function(error_message){
+      print("R Routine: ERROR: dplyr package Not Found. Stopping Code Execution.");
+      q();
+    }
+  )
+  tryCatch(
+    {suppressPackageStartupMessages(library("tibble"))}, 
+    error = function(error_message){
+      print("R Routine: ERROR: tibble package Not Found. Stopping Code Execution."); 
+      q();
+    }
+  )
+  tryCatch(
+    {suppressPackageStartupMessages(library("globaltest"))}, 
+    error = function(error_message){
+      print("R Routine: ERROR: globaltest package Not Found. Stopping Code Execution."); 
+      q();
+    }
+  )
+  return (TRUE)
+}
+
+
+
 run_integration_test <- function(){ 
   # test package loading
   # test single globaltest instance with known result
