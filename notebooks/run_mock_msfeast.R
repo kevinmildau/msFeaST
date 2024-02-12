@@ -338,8 +338,34 @@ attempt_file_creation <- function(filepath) {
 
 
 
+#' @title construct_empty_named_list
+#' @description Creates a named list using names from given list of entry names. Each entry contains an empty list. This
+#' is used as a generic data container.
+#' @param param A character vector; cannot be scalar.
+#' @return Returns list with specified entries containing empty lists each.
+#' @details 
+#' @examples 
+#' \dontrun{
+#' ...
+#' }
+construct_empty_named_list <- function(names_list){
+  # Assert correct inputs
+  if(! (is.character(names_list) && length(names_list) >= 1)){
+    stop(paste("Expected character vector input but received", typeof(names_list)))
+  }
+  if(!all(sapply(names_list, is.character))){ 
+    stop(paste(
+        "Expected list of character entries but received other entry types:", 
+        paste(sapply(names_list, typeof), collapse = " ")
+      )
+    )
+  }
+  # Create the named list
+  emptyList <- sapply(names_list, function(x) list())
   return (emptyList)
 }
+
+
 
 generateFeatureSetList <- function(feature_groupings_df){
   # Assert input is tibble
