@@ -174,15 +174,40 @@ run_and_attach_global_test_on_feature_set <- function(
   model_output <- globaltest::gt(tmpResponse, tmpFeatureData, model = "linear")
   p_value <- model_output@result[[1]] # extracts the p-value
 
-  value1 = runif(1,0,1)
-  value2 = sample(1:100, 1)
-  
+  # extraction of results leads to the construction of an RPlots.pdf
+  table <- extract(covariates(model_output))
+  extras_table <- table@extra
+  results_table <- table@result
+
+  # assert output tables  as expected
+  if (! is.data.frame(extras_table)){stop(paste("Expected data frame but received", typeof(extras_table)))}
+  if (! is.matrix(results_table)){stop(paste("Expected matrix but received", typeof(results_table)))}
   # Attach to output
   resultsListEnv$"set_specific"[[feature_set_name]][[contrast_name]]["globalTestPValue"] <- list(p_value) 
 
   # Feature specific global test results are mocked!
   for (feature_id in feature_set_members){
-    resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["globalTestFeatureContribution"] <- list(value2)
+    # Extract effect direction for individual feature as pos or neg character string
+    # rownames persist for arbitrary table size, alias column of globaltest disappears when nrow == 1
+    tmp_index <- which(rownames(extras_table) == feature_id)
+    effect_direction <- substr(
+      extras_table[tmp_index, , drop = FALSE]$direction,
+      start = 1, stop = 3
+    )
+    # Extract pvalue and statistic
+    tmp_index <- which(rownames(results_table) == feature_id)
+    feature_specific_p_value <- results_table[tmp_index, ]["p-value"] # matrix & named vector accessing
+    feature_specific_statistic <- results_table[tmp_index, ]["Statistic"] # matrix & named vector accessing
+    # Attach data 
+    resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["globalTestFeaturePValue"] <- list(
+      feature_specific_p_value
+    )
+    resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["globalTestFeatureStatistic"] <- list(
+      feature_specific_statistic
+    )
+    resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["globalTestFeatureEffectDirection"] <- list(
+      effect_direction
+    )
   }
 }
 
