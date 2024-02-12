@@ -372,9 +372,8 @@ generateFeatureSetList <- function(feature_groupings_df){
   if(!is_tibble(feature_groupings_df)){
     stop(paste("Expected tibble, but received ", typeof(feature_groupings_df)))
   }
-
   set_ids <- unique(feature_groupings_df$set_id)
-  feature_sets <- constructEmptyNamedList(set_ids)
+  feature_sets <- construct_empty_named_list(set_ids)
   for (set in set_ids){
     feature_sets[[set]] <- feature_groupings_df %>% filter(set_id == set) %>% pull(feature_id)
   }
