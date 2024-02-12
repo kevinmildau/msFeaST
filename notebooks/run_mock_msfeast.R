@@ -71,7 +71,21 @@ generateConfigurations <- function(measures, contrasts, feature_ids, feature_set
 }
 
 
-runHandlerLog2FoldChange <- function(resultsListEnv, feature_id, contrast, contrast_name, quantification_table, metadata_table){
+
+#' @title run_and_attach_log2foldchange_on_feature
+#' @description Runs log2foldchange scenario on specified feature and attaches results to resultsListEnv.
+#' @param ...
+#' @return ...
+#' @details
+#' Extracts relevant data to construct new scenario specific tables. Runs fold change computations. Attaches results
+#' to resultsListEnv in place! (no copy behavior since env is used)
+#' @examples 
+#' \dontrun{
+#' ...
+#' }
+#' 
+run_and_attach_log2foldchange_on_feature <- function(
+  resultsListEnv, feature_id, contrast, contrast_name, quantification_table, metadata_table){
   # Extract contrast specific data
   contrast <- contrasts[[contrast_name]]
   # get sample_ids
