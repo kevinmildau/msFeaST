@@ -410,6 +410,32 @@ load_libraries <- function(){
 
 
 
+#' @title create_contrasts_list
+#' @description Creates a named list with contrast names as keys, and character vector containing the respective
+#' contrast specific character strings for accessing.
+#' @param treatment_ids character vector with treatment identifiers
+#' @param ref_treat  a single treatment identifier character to be used as reference
+#' @return Named list with contrast name and constituent treatment ids, e.g. : 
+#' list("treat_1_vs_treat_2" = c("reference" = "treat_1", "treatment" = "treat_2"), ...)
+#' @details ...
+#' @examples 
+#' \dontrun{
+#' ...
+#' }
+create_contrasts_list <- function(treatment_ids, ref_treat){
+  # check input requirement number of treatments 2 or larger.
+  if (length(treatment_ids) < 2){stop(paste("Expected 2 treatments or more but received", length(treatment_ids)))}
+  contrasts = list()
+  for (iloc in 1:(length(treatment_ids)-1)){
+    current_treatment <- treatment_ids[iloc+1]
+    contrast_name <- paste0(ref_treat, "_vs_", current_treatment)
+    contrasts[[contrast_name]] <- c(reference = ref_treat, treatment = current_treatment)
+  }
+  return(contrasts)
+}
+
+
+
 run_integration_test <- function(){ 
   # test package loading
   # test single globaltest instance with known result
