@@ -123,7 +123,21 @@ run_and_attach_log2foldchange_on_feature <- function(
   resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["log2FoldChange"] <- list(log2ratio)
 }
 
-runHandlerGlobalTest <- function(
+
+
+#' @title run_and_attach_global_test_on_feature_set
+#' @description Runs globaltest scenario on specified feature set and attaches results to resultsListEnv.
+#' @param ...
+#' @return ...
+#' @details
+#' Extracts relevant data to construct new scenario specific tables. Runs globaltest computations. Attaches results
+#' to resultsListEnv in place! (no copy behavior since env is used)
+#' @examples 
+#' \dontrun{
+#' ...
+#' }
+#' 
+run_and_attach_global_test_on_feature_set <- function(
   resultsListEnv, 
   feature_set_name, 
   feature_set_members, 
