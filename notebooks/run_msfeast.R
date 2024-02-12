@@ -276,7 +276,7 @@ run_msfeast <- function( quantification_table, metadata_table, feature_sets, fea
 #' @title validate_input_filepaths
 #' @description Function ensures that provided input aligns with msfeast.R expectations
 #' @param input_filepaths list of character string entries with filepaths to use in msfeast.
-#'    quantification_table, treatment_table, assignment_table, and the R output json location.  
+#'    quantification_table, treatment_table, assignment_table, and the R output json location.
 #' @return ...
 #' @details ...
 #' @examples 
@@ -473,13 +473,13 @@ if (sys.nframe() == 0){
   quantification_table <- read_delim(input_filepaths[1], delim = ",", show_col_types = FALSE) %>%
     rename_all(~ as.character(.)) %>% # ensure that feature_id column names are character!
     mutate(sample_id = as.character(sample_id)) # enfore character entries
-  
+
   treatment_table <- read_delim(input_filepaths[2], delim = ",", show_col_types = FALSE) %>%
     mutate_all(as.character) # enfore character entries
   treatment_ids = unique(treatment_table$treatment)
   ref_treat <- treatment_ids[1]
   contrasts <- create_contrasts_list(treatment_ids, ref_treat)
-  
+
   assignment_table <- read_delim(input_filepaths[3], delim = ",", show_col_types = FALSE) %>%
     mutate_all(as.character) # enfore character entries
   feature_ids <- assignment_table$feature_id
@@ -506,4 +506,5 @@ if (sys.nframe() == 0){
 
   print("R Routine: complete, file saved, exiting R session." )
 }
+
 
