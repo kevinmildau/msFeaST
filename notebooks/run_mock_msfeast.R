@@ -153,7 +153,9 @@ run_and_attach_global_test_on_feature_set <- function(
   treatment_reference_id <- contrast[[1]]
   treatment_treatment_id <- contrast[[2]]
 
-  tmpMetaData <- metadata_table[which(metadata_table$treatment %in% c(treatment_reference_id, treatment_treatment_id)),]
+  tmpMetaData <- metadata_table[
+    which(metadata_table$treatment %in% c(treatment_reference_id, treatment_treatment_id)),
+  ]
   sample_ids <- pull(tmpMetaData, sample_id)
 
   tmpAllData <- quantification_table %>% 
