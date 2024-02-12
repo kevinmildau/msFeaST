@@ -453,6 +453,7 @@ run_integration_test <- function(){
 
 # runs only if script called by itself, equivalent to python if __name__ == __main__
 if (sys.nframe() == 0){
+  pdf(NULL) # prevent pdf creation because of globaltest unsuppressable png creation
   print(c("Starting Routine log at ", as.character(Sys.time())))
   measures <- c( "log2FoldChange", "globalTest") # constant
 
