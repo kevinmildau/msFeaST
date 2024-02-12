@@ -435,6 +435,7 @@ class Msfeast:
     filepath_assignment_table = str(os.path.join(directory, "assignment_table.csv"))
     filepath_quantification_table = str(os.path.join(directory, "test_quant_table.csv"))
     filepath_treatment_table = str(os.path.join(directory, "test_treat_table.csv"))
+    filepath_r_output_json = str(os.path.join(directory,"test_r_output.json"))
 
     # Write R input data to file
     self.quantification_table = self.quantification_table.reset_index(drop=True)
@@ -468,7 +469,8 @@ class Msfeast:
     subprocess.run((
         f"Rscript run_msfeast.R {filepath_quantification_table} " 
         f"{filepath_treatment_table} " 
-        f"{filepath_assignment_table}"
+        f"{filepath_assignment_table} "
+        f"{filepath_r_output_json}"
       ), 
       shell=True
     )
