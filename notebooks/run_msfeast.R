@@ -191,19 +191,15 @@ run_and_attach_global_test_on_feature_set <- function(
 
 
 #' @title run_msfeast
-#' 
 #' @description Main interface function for msFeaST. This function provides a convenience wrapper to the globaltest 
 #' (v5.50.0) package.
-#' 
 #' Given the quantification table, metadata_table, feature_sets, contrasts and measures, the function
-#'  1. Initializes configurations for each test
-#'  2. Initialize output data structures (hierarchical named lists for json export) 
+#'  1. Initialize configurations for each test
+#'  2. Initialize output data structures (hierarchical named lists for json export (based on env)) 
 #'  3. For each configuration:
 #'    -> extract and construct relevant tables
 #'    -> run the test handler -> add results to respective output structures
 #'  4. Return results output structures as nested named lists and json strings
-#'
-#'
 #' @param quantification_table A tibble (data frame) with a sample_id column (character) and a column for each 
 #' feature_id containing the respective measurement values (float)
 #' @param metadata_table A tibble with a sample_id column (character) and a condition_id column (character). The 
@@ -216,7 +212,6 @@ run_and_attach_global_test_on_feature_set <- function(
 #' (character). 
 #' @param measures A list of measures to use for comparative purposes. These must match one or more of the following 
 #' supported measures: c("globalTest", "log2FoldChange")
-#'
 #' @return
 #' @Details Data assumptions:
 #' --> all feature_id, sample_id, feature_set_id, condition_id values must be unique in their respective columns.
@@ -224,18 +219,12 @@ run_and_attach_global_test_on_feature_set <- function(
 #' \dontrun{
 #' ...
 #' }
-run_msfeast <- function(
-    quantification_table, 
-    metadata_table,
-    feature_sets,
-    feature_ids,
-    contrasts,
-    measures = list("globalTest", "log2FoldChange")
-    ){
+run_msfeast <- function( quantification_table, metadata_table, feature_sets, feature_ids, contrasts, 
+  measures = list("globalTest", "log2FoldChange")){
   
   # Create configuration table used for looping over all measure configurations
   # configurations is a data_frame type of list (named columns, nrow and ncol attributes)
-  configurations <- generateConfigurations(measures, contrasts, feature_ids, feature_sets)
+  configurations <- generate_configurations(measures, contrasts, feature_ids, feature_sets)
   n_configurations <- nrow(configurations)
   # Create empty output data container.
   # A named list with two entries, each named lists with keys for feature and set
