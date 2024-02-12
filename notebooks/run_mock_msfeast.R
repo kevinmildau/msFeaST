@@ -248,6 +248,16 @@ run_msfeast <- function(
   return(resultsList)
 }
 
+#' @title validate_input_filepaths
+#' @description Function ensures that provided input aligns with msfeast.R expectations
+#' @param input_filepaths list of character string entries with filepaths to use in msfeast.
+#'    quantification_table, treatment_table, assignment_table, and the R output json location.  
+#' @return ...
+#' @details ...
+#' @examples 
+#' \dontrun{
+#' ...
+#' }
 validate_input_filepaths <- function(input_filepaths){
   # Function checks whether provided input filepaths (list of character) points to existing files. Stops if not.
   if (length(input_filepaths) != 3){stop(sprintf("Expected 3 arguments, but received %s", length(input_filepaths)))}
