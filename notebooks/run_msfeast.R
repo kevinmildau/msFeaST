@@ -462,6 +462,7 @@ if (sys.nframe() == 0){
 
   print("R Routine: Validating input file paths...")
   input_filepaths <- commandArgs(trailingOnly=TRUE)
+  # file.remove(input_filepaths[4])
   validate_input_arguments(input_filepaths)
   
   print("R Routine: Loading required packages...")
