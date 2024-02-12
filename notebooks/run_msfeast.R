@@ -271,6 +271,8 @@ run_msfeast <- function( quantification_table, metadata_table, feature_sets, fea
   return(resultsList)
 }
 
+
+
 #' @title validate_input_filepaths
 #' @description Function ensures that provided input aligns with msfeast.R expectations
 #' @param input_filepaths list of character string entries with filepaths to use in msfeast.
@@ -281,12 +283,13 @@ run_msfeast <- function( quantification_table, metadata_table, feature_sets, fea
 #' \dontrun{
 #' ...
 #' }
-validate_input_filepaths <- function(input_filepaths){
+validate_input_arguments <- function(input_filepaths){
   # Function checks whether provided input filepaths (list of character) points to existing files. Stops if not.
-  if (length(input_filepaths) != 3){stop(sprintf("Expected 3 arguments, but received %s", length(input_filepaths)))}
-  for (filepath in input_filepaths){
+  if (length(input_filepaths) != 4){stop(sprintf("Expected 4 arguments, but received %s", length(input_filepaths)))}
+  for (filepath in input_filepaths[1:3]){
     if (!file.exists(filepath)){stop(paste("Provided filepath ", filepath, "does not exist!"))}
   }
+  attempt_file_creation(input_filepaths[4])
 }
 
 
