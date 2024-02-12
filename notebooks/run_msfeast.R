@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-#' @title generateConfigurations
+#' @title generate_configurations
 #' @description Creates configuration data frame (list) from inputs.
 #' @param measures List of measures c("globalTest", "log2FoldChange") are supported. Must be a list even if scalar.
 #' @param contrasts List of contrasts. Named list, where names are contrast names, and sub-list elements are treatment 
@@ -12,17 +12,18 @@
 #' generates configurations for msfeast linear situation run
 #' Configurations takes the form of a data frame with columns: 
 #' measure, feature_set, feature_id, contrast, feature_set_members
-#' --> measure is a string, with globalTest or log2FoldChange as an entry
-#' --> feature_set is a string or NA, with the feature_set id entry that is NA if the config measure is log2foldChange 
-#'     (feature level)
-#' --> feature_id is a string or NA, with a feature_id entry that is NA if the config measure is globalTest (set level)
-#' --> contrast is a list of strings, with the first string indicating the reference treatment, and the second string to
-#'     other treatment
+#' --> measure is a character string, with globalTest or log2FoldChange as an entry
+#' --> feature_set is a character string or NA, with the feature_set id entry that is NA if the config measure is 
+#'     log2foldChange (feature level)
+#' --> feature_id is a character string or NA, with a feature_id entry that is NA if the config measure is globalTest 
+#'     (set level)
+#' --> contrast is a list of character strings, with the first character string indicating the reference treatment, and 
+#'     the second character string to other treatment
 #' @examples 
 #' \dontrun{
 #' ...
 #' }
-generateConfigurations <- function(measures, contrasts, feature_ids, feature_sets){
+generate_configurations <- function(measures, contrasts, feature_ids, feature_sets){
   feature_set_names <- names(feature_sets) # Names from named list
   configurations <- data.frame()
   # globalTest & log2FoldChange are currently accepted measures.
