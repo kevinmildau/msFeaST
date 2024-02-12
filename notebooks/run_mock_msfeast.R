@@ -266,10 +266,40 @@ validate_input_filepaths <- function(input_filepaths){
   }
 }
 
-constructEmptyNamedList <- function(entryNamesList){
-  # Construct empty named list with provided names list. 
-  # Each name will be associated with an empty list entry.
-  emptyList <- sapply(entryNamesList, function(x) list())
+
+
+#' @title attempt_file_creation
+#' @description Attempts creating a file in specified filepath.
+#' @param filepath A character specifying a filepath.
+#' @return TRUE if successful, stops if not.
+#' @details ...
+#' @examples 
+#' \dontrun{
+#' ...
+#' }
+attempt_file_creation <- function(filepath) {
+  # Attempt to open the file for writing
+  if (file.exists(filepath)){
+    stop(
+      paste(
+        "File with path", 
+        filepath, 
+        "already exists! Remove, rename, or specify alternative output filepath to run msfeast."
+      )
+    )
+  }
+  if (!file.exists(filepath)){
+    tryCatch({
+      write("", file = filepath)
+    }, error = function(e) {
+      stop("Error in file creation attempt.")
+    })
+  }
+  return(TRUE)
+}
+
+
+
   return (emptyList)
 }
 
