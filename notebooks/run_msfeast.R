@@ -444,6 +444,8 @@ run_integration_test <- function(){
   return(TRUE)
 }
 
+
+
 ########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################
@@ -454,33 +456,17 @@ run_integration_test <- function(){
 # runs only if script called by itself, equivalent to python if __name__ == __main__
 if (sys.nframe() == 0){
   print(c("Starting Routine log at ", as.character(Sys.time())))
+  measures <- c( "log2FoldChange", "globalTest") # constant
 
   print("R Routin: run integration test...")
   run_integration_test() # <-- currently empty
 
   print("R Routine: Validating input file paths...")
-  # Read input arguments
-  input_filepaths <- commandArgs(trailingOnly=TRUE) # returns list of arguments? 
-  validate_input_filepaths(input_filepaths)
+  input_filepaths <- commandArgs(trailingOnly=TRUE)
+  validate_input_arguments(input_filepaths)
   
-  ######################################################################################################################
   print("R Routine: Loading required packages...")
-  tryCatch(
-    {suppressPackageStartupMessages(library("readr"))}, 
-    error = function(error_message){print("R Routine: ERROR: readr package Not Found. Stopping Code Execution."); q();}
-  )
-  tryCatch(
-    {suppressPackageStartupMessages(library("dplyr"))}, 
-    error = function(error_message){print("R Routine: ERROR: dplyr package Not Found. Stopping Code Execution."); q();}
-  )
-  tryCatch(
-    {suppressPackageStartupMessages(library("tibble"))}, 
-    error = function(error_message){print("R Routine: ERROR: tibble package Not Found. Stopping Code Execution."); q();}
-  )
-  tryCatch(
-    {suppressPackageStartupMessages(library("globaltest"))}, 
-    error = function(error_message){print("R Routine: ERROR: globaltest package Not Found. Stopping Code Execution."); q();}
-  )
+  load_libraries()
 
   ######################################################################################################################
   print("R Routine: Reading input files...")
@@ -490,30 +476,20 @@ if (sys.nframe() == 0){
   
   treatment_table <- read_delim(input_filepaths[2], delim = ",", show_col_types = FALSE) %>%
     mutate_all(as.character) # enfore character entries
+  treatment_ids = unique(treatment_table$treatment)
+  ref_treat <- treatment_ids[1]
+  contrasts <- create_contrasts_list(treatment_ids, ref_treat)
   
   assignment_table <- read_delim(input_filepaths[3], delim = ",", show_col_types = FALSE) %>%
     mutate_all(as.character) # enfore character entries
+  feature_ids <- assignment_table$feature_id
+  feature_sets <- generateFeatureSetList(assignment_table)
+  
+  joint_validate_input_tables <- function(quantification_table, treatment_table, assignment_table){
+    # NOT IMPLEMENTED
+  }
 
   ######################################################################################################################
-  print("R Routine: Creating intermediate data structures for testing...")
-  feature_sets <- generateFeatureSetList(assignment_table)
-  measures <- c( "log2FoldChange", "globalTest")
-  treatment_ids = unique(treatment_table$treatment)
-  ref_treat <- treatment_ids[1]
-
-  print(treatment_ids)
-  print(ref_treat)
-
-  # check input requirement number of treatments 2 or larger.
-  if (length(treatment_ids) < 2){stop(paste("Expected 2 treatments or more but received", length(treatment_ids)))}
-
-  contrasts = list()
-  for (iloc in 1:(length(treatment_ids)-1)){
-    current_treatment <- treatment_ids[iloc+1]
-    contrast_name <- paste0(ref_treat, "_vs_", current_treatment)
-    contrasts[[contrast_name]] <- c(reference = ref_treat, treatment = current_treatment)
-  }
-  feature_ids <- assignment_table$feature_id
   print("R Routine: running global test and fold change computations...")
   
   out <- run_msfeast(
@@ -526,7 +502,7 @@ if (sys.nframe() == 0){
   print("R Routine: exporting globaltest and log fold change computations...")
 
   json_output <- jsonlite::toJSON(out, pretty = T, simplifyVector = F, flatten = TRUE, auto_unbox = T)
-  writeLines(json_output, "tmp_output/test_output.json")
+  writeLines(json_output, input_filepaths[4])
 
   print("R Routine: complete, file saved, exiting R session." )
 }
