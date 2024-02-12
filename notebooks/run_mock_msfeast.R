@@ -246,10 +246,9 @@ run_msfeast <- function(
   # identifiers Code Assumption: at least one group and one feature specific measure 
   # is computed (no fully empty list). 
   resultsListEnv <- listenv::listenv(
-    feature_specific = constructEmptyNamedList(feature_ids),
-    set_specific = constructEmptyNamedList(names(feature_sets)))
+    feature_specific = construct_empty_named_list(feature_ids),
+    set_specific = construct_empty_named_list(names(feature_sets)))
   
-  print("-----> checkpoint")
 
   # Loop through all configurations and attach relevant metadata to output container
   # Each row in configurations is dealt with separately, where the required information
@@ -263,7 +262,7 @@ run_msfeast <- function(
     # NOTE THE INPLACE MODIFICATION OF resultsListEnv WITHIN THE HANDLERS!
     switch(
       current_measure,
-      "globalTest" = runHandlerGlobalTest(
+      "globalTest" = run_and_attach_global_test_on_feature_set(
         resultsListEnv = resultsListEnv,
         feature_set_name = configurations$feature_set[[row_number]],
         feature_set_members = configurations$feature_set_members[[row_number]][[1]],
@@ -272,7 +271,7 @@ run_msfeast <- function(
         quantification_table = quantification_table, 
         metadata_table = metadata_table
       ),
-      "log2FoldChange" = runHandlerLog2FoldChange(
+      "log2FoldChange" = run_and_attach_log2foldchange_on_feature(
         resultsListEnv = resultsListEnv,
         feature_id = configurations$feature_id[[row_number]],
         contrast = configurations$contrast[[row_number]],
