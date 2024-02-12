@@ -466,7 +466,7 @@ class Msfeast:
 
     # Run R Code
     subprocess.run((
-        f"Rscript run_mock_msfeast.R {filepath_quantification_table} " 
+        f"Rscript run_msfeast.R {filepath_quantification_table} " 
         f"{filepath_treatment_table} " 
         f"{filepath_assignment_table}"
       ), 
