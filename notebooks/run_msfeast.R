@@ -1,28 +1,32 @@
+#!/usr/bin/env Rscript
 
-rm(list = ls())
-
-#' generateConfigurations
-#' 
-#' Creates configuration data frame (list) from inputs.
-#'
+#' @title generateConfigurations
+#' @description Creates configuration data frame (list) from inputs.
 #' @param measures List of measures c("globalTest", "log2FoldChange") are supported. Must be a list even if scalar.
-#' @param contrasts List of contrasts. Named list, where names are contrast names, and sub-list elements are treatment identifiers. For example: list("contrast_ctrl_vs_trt" = list(reference="ctrl", treatment="trt"))
-#' @param feature_ids List of feature identifiers (character)
-#' @param feature_sets List of feature sets, where names in the list are feature set ids, and list elements are lists with feature identifiers.
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @param contrasts List of contrasts. Named list, where names are contrast names, and sub-list elements are treatment 
+#' identifiers. For example: list("contrast_ctrl_vs_trt" = list(reference="ctrl", treatment="trt"))
+#' @param feature_ids List of feature identifiers (character). For example: list("feature_1", "feature_2").
+#' @param feature_sets List of feature sets, where names in the list are feature set ids (character), and list elements 
+#' are lists with feature identifiers (character). For example: list("set_1" = list("feature_1", "feature_2"), ...).
+#' @details 
+#' generates configurations for msfeast linear situation run
+#' Configurations takes the form of a data frame with columns: 
+#' measure, feature_set, feature_id, contrast, feature_set_members
+#' --> measure is a string, with globalTest or log2FoldChange as an entry
+#' --> feature_set is a string or NA, with the feature_set id entry that is NA if the config measure is log2foldChange 
+#'     (feature level)
+#' --> feature_id is a string or NA, with a feature_id entry that is NA if the config measure is globalTest (set level)
+#' --> contrast is a list of strings, with the first string indicating the reference treatment, and the second string to
+#'     other treatment
+#' @examples 
+#' \dontrun{
+#' ...
+#' }
 generateConfigurations <- function(measures, contrasts, feature_ids, feature_sets){
-  # generates configurations for msfeast linear situation run
-  print(feature_sets)
-  print(contrasts)
-  print(feature_ids)
-  print(measures) # is a list, should be character vector!
-  feature_set_names <- names(feature_sets)
+  feature_set_names <- names(feature_sets) # Names from named list
   configurations <- data.frame()
-  for (current_measure in measures){
+  # globalTest & log2FoldChange are currently accepted measures.
+  for (current_measure in measures){ 
     configurations = switch(
       current_measure,
       "globalTest" = rbind(
@@ -61,17 +65,24 @@ generateConfigurations <- function(measures, contrasts, feature_ids, feature_set
   return (configurations)
 }
 
-constructEmptyNamedList <- function(entryNamesList){
-  # Construct empty named list with provided names list. Each name will be associated with an empty list entry.
-  # To create a list of certain length, the vector constructor needs to be used
-  emptyList <- sapply(entryNamesList, function(x) list())
-  return (emptyList)
-}
 
-runHandlerLog2FoldChange <- function(resultsListEnv, feature_id, contrast, contrast_name, quantification_table, metadata_table){
+
+#' @title run_and_attach_log2foldchange_on_feature
+#' @description Runs log2foldchange scenario on specified feature and attaches results to resultsListEnv.
+#' @param ...
+#' @return ...
+#' @details
+#' Extracts relevant data to construct new scenario specific tables. Runs fold change computations. Attaches results
+#' to resultsListEnv in place! (no copy behavior since env is used)
+#' @examples 
+#' \dontrun{
+#' ...
+#' }
+#' 
+run_and_attach_log2foldchange_on_feature <- function(
+  resultsListEnv, feature_id, contrast, contrast_name, quantification_table, metadata_table){
   # Extract contrast specific data
   contrast <- contrasts[[contrast_name]]
-  
   # get sample_ids
   treatment_reference_id <- contrast[[1]]
   treatment_treatment_id <- contrast[[2]]
@@ -98,7 +109,7 @@ runHandlerLog2FoldChange <- function(resultsListEnv, feature_id, contrast, contr
   
   ratio <- mean(treatmentIntensities) / mean(referenceIntensities)
   log2ratio <- log2(ratio)
-  
+
   tmpFeatureData <- tmpAllData %>% 
     select(-c("sample_id", "treatment")) %>%
     as.matrix(.)
@@ -107,7 +118,21 @@ runHandlerLog2FoldChange <- function(resultsListEnv, feature_id, contrast, contr
   resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["log2FoldChange"] <- list(log2ratio)
 }
 
-runHandlerGlobalTest <- function(
+
+
+#' @title run_and_attach_global_test_on_feature_set
+#' @description Runs globaltest scenario on specified feature set and attaches results to resultsListEnv.
+#' @param ...
+#' @return ...
+#' @details
+#' Extracts relevant data to construct new scenario specific tables. Runs globaltest computations. Attaches results
+#' to resultsListEnv in place! (no copy behavior since env is used)
+#' @examples 
+#' \dontrun{
+#' ...
+#' }
+#' 
+run_and_attach_global_test_on_feature_set <- function(
   resultsListEnv, 
   feature_set_name, 
   feature_set_members, 
@@ -119,46 +144,56 @@ runHandlerGlobalTest <- function(
   # Extract contrast specific data
   contrast <- contrasts[[contrast_name]]
   feature_ids <- feature_sets[[feature_set_name]]
-  
   # get sample_ids
   treatment_reference_id <- contrast[[1]]
   treatment_treatment_id <- contrast[[2]]
-  tmpMetaData <- metadata_table[which(metadata_table$treatment %in% c(treatment_reference_id, treatment_treatment_id)),]
+
+  tmpMetaData <- metadata_table[
+    which(metadata_table$treatment %in% c(treatment_reference_id, treatment_treatment_id)),
+  ]
   sample_ids <- pull(tmpMetaData, sample_id)
+
   tmpAllData <- quantification_table %>% 
     filter(., sample_id %in% sample_ids) %>%
     select(., all_of( c("sample_id", feature_ids))) %>%
     left_join(., tmpMetaData, by= "sample_id")
+
   tmpResponse <- tmpAllData %>% select(treatment) %>%
     mutate(treatment = factor(
       treatment, 
       levels = c(treatment_reference_id, treatment_treatment_id))) %>%
     mutate(treatment = as.numeric(treatment)-1) %>%
     as.matrix(.)
+
   tmpFeatureData <- tmpAllData %>% 
     select(-c("sample_id", "treatment")) %>%
     as.matrix(.)
-  
+
   # get the actual values
   model_output <- globaltest::gt(tmpResponse, tmpFeatureData, model = "linear")
   p_value <- model_output@result[[1]] # extracts the p-value
-  
+
   value1 = runif(1,0,1)
   value2 = sample(1:100, 1)
   
   # Attach to output
   resultsListEnv$"set_specific"[[feature_set_name]][[contrast_name]]["globalTestPValue"] <- list(p_value) 
-  
+
   # Feature specific global test results are mocked!
+  #print(resultsListEnv$"feature_specific")
+  print(feature_set_members)
   for (feature_id in feature_set_members){
     resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["globalTestFeatureContribution"] <- list(value2)
   }
 }
 
 
-#' run_msfeast
+
+#' @title run_msfeast
 #' 
-#' Main interface function for msFeaST. This function provides a convenience wrapper to the globaltest (v5.50.0) package.
+#' @description Main interface function for msFeaST. This function provides a convenience wrapper to the globaltest 
+#' (v5.50.0) package.
+#' 
 #' Given the quantification table, metadata_table, feature_sets, contrasts and measures, the function
 #'  1. Initializes configurations for each test
 #'  2. Initialize output data structures (hierarchical named lists for json export) 
@@ -167,21 +202,27 @@ runHandlerGlobalTest <- function(
 #'    -> run the test handler -> add results to respective output structures
 #'  4. Return results output structures as nested named lists and json strings
 #'
-#' Input Data assumptions:
-#' --> all feature_id, sample_id, feature_set_id, condition_id values must be unique in their respective columns.
-#' --> column names must exactly match expectations posited
 #'
-#' @param quantification_table A tibble (data frame) with a sample_id column (character) and a column for each feature_id containing the respective measurement values (float)
-#' @param metadata_table A tibble with a sample_id column (character) and a condition_id column (character). The condition_id is expected to contain both the control/reference group and treatment/comparison groups. It is used to extract relevant samples for each contrast.
-#' @param feature_sets A named list with keys representing feature_set_id (character) and sub-list elements representing feature_id (character)
+#' @param quantification_table A tibble (data frame) with a sample_id column (character) and a column for each 
+#' feature_id containing the respective measurement values (float)
+#' @param metadata_table A tibble with a sample_id column (character) and a condition_id column (character). The 
+#' condition_id is expected to contain both the control/reference group and treatment/comparison groups. It is used to 
+#' extract relevant samples for each contrast.
+#' @param feature_sets A named list with keys representing feature_set_id (character) and sub-list elements representing 
+#' feature_id (character)
 #' @param feature_ids A list with feature_ids (character)
-#' @param contrasts A list of 2-tuples containing the control/reference category and the treatment/comparison category (character). 
-#' @param measures A list of measures to use for comparative purposes. These must match one or more of the following supported measures: c("globalTest", "log2FoldChange")
+#' @param contrasts A list of 2-tuples containing the control/reference category and the treatment/comparison category 
+#' (character). 
+#' @param measures A list of measures to use for comparative purposes. These must match one or more of the following 
+#' supported measures: c("globalTest", "log2FoldChange")
 #'
 #' @return
-#' @export
-#'
-#' @examples
+#' @Details Data assumptions:
+#' --> all feature_id, sample_id, feature_set_id, condition_id values must be unique in their respective columns.
+#' --> column names must exactly match expectations posited
+#' \dontrun{
+#' ...
+#' }
 run_msfeast <- function(
     quantification_table, 
     metadata_table,
@@ -195,15 +236,15 @@ run_msfeast <- function(
   # configurations is a data_frame type of list (named columns, nrow and ncol attributes)
   configurations <- generateConfigurations(measures, contrasts, feature_ids, feature_sets)
   n_configurations <- nrow(configurations)
-  
   # Create empty output data container.
   # A named list with two entries, each named lists with keys for feature and set
   # identifiers Code Assumption: at least one group and one feature specific measure 
   # is computed (no fully empty list). 
   resultsListEnv <- listenv::listenv(
-    feature_specific = constructEmptyNamedList(feature_ids),
-    set_specific = constructEmptyNamedList(names(feature_sets)))
-  
+    feature_specific = construct_empty_named_list(feature_ids),
+    set_specific = construct_empty_named_list(names(feature_sets)))
+
+
   # Loop through all configurations and attach relevant metadata to output container
   # Each row in configurations is dealt with separately, where the required information
   # is accessed using named column / list entries. Configurations are measure specific,
@@ -216,7 +257,7 @@ run_msfeast <- function(
     # NOTE THE INPLACE MODIFICATION OF resultsListEnv WITHIN THE HANDLERS!
     switch(
       current_measure,
-      "globalTest" = runHandlerGlobalTest(
+      "globalTest" = run_and_attach_global_test_on_feature_set(
         resultsListEnv = resultsListEnv,
         feature_set_name = configurations$feature_set[[row_number]],
         feature_set_members = configurations$feature_set_members[[row_number]][[1]],
@@ -225,7 +266,7 @@ run_msfeast <- function(
         quantification_table = quantification_table, 
         metadata_table = metadata_table
       ),
-      "log2FoldChange" = runHandlerLog2FoldChange(
+      "log2FoldChange" = run_and_attach_log2foldchange_on_feature(
         resultsListEnv = resultsListEnv,
         feature_id = configurations$feature_id[[row_number]],
         contrast = configurations$contrast[[row_number]],
@@ -240,62 +281,198 @@ run_msfeast <- function(
   return(resultsList)
 }
 
-if (TRUE){
-  library(dplyr)
-  n_samples <- 100
-  n_treatments <- 4
-  n_features <- 9
-  n_sets <- 3
+#' @title validate_input_filepaths
+#' @description Function ensures that provided input aligns with msfeast.R expectations
+#' @param input_filepaths list of character string entries with filepaths to use in msfeast.
+#'    quantification_table, treatment_table, assignment_table, and the R output json location.  
+#' @return ...
+#' @details ...
+#' @examples 
+#' \dontrun{
+#' ...
+#' }
+validate_input_filepaths <- function(input_filepaths){
+  # Function checks whether provided input filepaths (list of character) points to existing files. Stops if not.
+  if (length(input_filepaths) != 3){stop(sprintf("Expected 3 arguments, but received %s", length(input_filepaths)))}
+  for (filepath in input_filepaths){
+    if (!file.exists(filepath)){stop(paste("Provided filepath ", filepath, "does not exist!"))}
+  }
+}
+
+
+
+#' @title attempt_file_creation
+#' @description Attempts creating a file in specified filepath.
+#' @param filepath A character specifying a filepath.
+#' @return TRUE if successful, stops if not.
+#' @details ...
+#' @examples 
+#' \dontrun{
+#' ...
+#' }
+attempt_file_creation <- function(filepath) {
+  # Attempt to open the file for writing
+  if (file.exists(filepath)){
+    stop(
+      paste(
+        "File with path", 
+        filepath, 
+        "already exists! Remove, rename, or specify alternative output filepath to run msfeast."
+      )
+    )
+  }
+  if (!file.exists(filepath)){
+    tryCatch({
+      write("", file = filepath)
+    }, error = function(e) {
+      stop("Error in file creation attempt.")
+    })
+  }
+  return(TRUE)
+}
+
+
+
+#' @title construct_empty_named_list
+#' @description Creates a named list using names from given list of entry names. Each entry contains an empty list. This
+#' is used as a generic data container.
+#' @param param A character vector; cannot be scalar.
+#' @return Returns list with specified entries containing empty lists each.
+#' @details 
+#' @examples 
+#' \dontrun{
+#' ...
+#' }
+construct_empty_named_list <- function(names_list){
+  # Assert correct inputs
+  if(! (is.character(names_list) && length(names_list) >= 1)){
+    stop(paste("Expected character vector input but received", typeof(names_list)))
+  }
+  if(!all(sapply(names_list, is.character))){ 
+    stop(paste(
+        "Expected list of character entries but received other entry types:", 
+        paste(sapply(names_list, typeof), collapse = " ")
+      )
+    )
+  }
+  # Create the named list
+  emptyList <- sapply(names_list, function(x) list())
+  return (emptyList)
+}
+
+
+
+generateFeatureSetList <- function(feature_groupings_df){
+  # Assert input is tibble
+  if(!is_tibble(feature_groupings_df)){
+    stop(paste("Expected tibble, but received ", typeof(feature_groupings_df)))
+  }
+  set_ids <- unique(feature_groupings_df$set_id)
+  feature_sets <- construct_empty_named_list(set_ids)
+  for (set in set_ids){
+    feature_sets[[set]] <- feature_groupings_df %>% filter(set_id == set) %>% pull(feature_id)
+  }
+  # 
+  if(! length(feature_sets) == length(set_ids)) {
+    stop("Expected that length(feature_sets) == length(set_ids).")
+  }
+  return(feature_sets)
+}
+
+
+
+run_integration_test <- function(){ 
+  # test package loading
+  # test single globaltest instance with known result
+  # test single foldchange instance with known result
+  # test a mock demo scenario with all elements checking out 
+  return(TRUE)
+}
+
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+
+# runs only if script called by itself, equivalent to python if __name__ == __main__
+if (sys.nframe() == 0){
+  print(c("Starting Routine log at ", as.character(Sys.time())))
+
+  print("R Routin: run integration test...")
+  run_integration_test() # <-- currently empty
+
+  print("R Routine: Validating input file paths...")
+  # Read input arguments
+  input_filepaths <- commandArgs(trailingOnly=TRUE) # returns list of arguments? 
+  validate_input_filepaths(input_filepaths)
   
-  # Basic Input Expected ---------------------------------------------------------
-  treatment_ids <- paste0("treatment_", 1:n_treatments)
-  metadata_table <- tibble(
-    sample_id = paste0("sample_", seq(1, n_samples, 1)),
-    treatment = rep(treatment_ids, length.out = n_samples)
+  ######################################################################################################################
+  print("R Routine: Loading required packages...")
+  tryCatch(
+    {suppressPackageStartupMessages(library("readr"))}, 
+    error = function(error_message){print("R Routine: ERROR: readr package Not Found. Stopping Code Execution."); q();}
+  )
+  tryCatch(
+    {suppressPackageStartupMessages(library("dplyr"))}, 
+    error = function(error_message){print("R Routine: ERROR: dplyr package Not Found. Stopping Code Execution."); q();}
+  )
+  tryCatch(
+    {suppressPackageStartupMessages(library("tibble"))}, 
+    error = function(error_message){print("R Routine: ERROR: tibble package Not Found. Stopping Code Execution."); q();}
+  )
+  tryCatch(
+    {suppressPackageStartupMessages(library("globaltest"))}, 
+    error = function(error_message){print("R Routine: ERROR: globaltest package Not Found. Stopping Code Execution."); q();}
   )
 
-  feature_ids <- paste0("feature_", seq(1:n_features))
-  set_ids <- paste0("set_", seq(1:n_sets))
-  quantification_table <- tibble(
-    sample_id = paste0("sample_", seq(1, n_samples, 1)),
-  )
+  ######################################################################################################################
+  print("R Routine: Reading input files...")
+  quantification_table <- read_delim(input_filepaths[1], delim = ",", show_col_types = FALSE) %>%
+    rename_all(~ as.character(.)) %>% # ensure that feature_id column names are character!
+    mutate(sample_id = as.character(sample_id)) # enfore character entries
   
-  for (feature in feature_ids){
-    quantification_table[feature] <- rnorm(n = n_samples, mean = 1000, sd = 100)
-  }
+  treatment_table <- read_delim(input_filepaths[2], delim = ",", show_col_types = FALSE) %>%
+    mutate_all(as.character) # enfore character entries
   
-  feature_groupings <- tibble(
-    feature_id = feature_ids,
-    set_id = rep(set_ids, length.out = n_features)
-  )
-  generateFeatureSetList <- function(feature_groupings_df){
-    set_ids <- unique(feature_groupings_df$set_id)
-    feature_sets <-constructEmptyNamedList(set_ids)
-    for (set in set_ids){
-      feature_sets[[set]] <- feature_groupings %>% filter(set_id == set) %>% pull(feature_id)
-    }
-    return(feature_sets)
-  }
-  feature_sets <- generateFeatureSetList(feature_groupings)
-  measures <- c("globalTest", "log2FoldChange")
-  
-  contrasts = list()
+  assignment_table <- read_delim(input_filepaths[3], delim = ",", show_col_types = FALSE) %>%
+    mutate_all(as.character) # enfore character entries
+
+  ######################################################################################################################
+  print("R Routine: Creating intermediate data structures for testing...")
+  feature_sets <- generateFeatureSetList(assignment_table)
+  measures <- c( "log2FoldChange", "globalTest")
+  treatment_ids = unique(treatment_table$treatment)
   ref_treat <- treatment_ids[1]
+
+  print(treatment_ids)
+  print(ref_treat)
+
+  # check input requirement number of treatments 2 or larger.
+  if (length(treatment_ids) < 2){stop(paste("Expected 2 treatments or more but received", length(treatment_ids)))}
+
+  contrasts = list()
   for (iloc in 1:(length(treatment_ids)-1)){
     current_treatment <- treatment_ids[iloc+1]
     contrast_name <- paste0(ref_treat, "_vs_", current_treatment)
     contrasts[[contrast_name]] <- c(reference = ref_treat, treatment = current_treatment)
   }
+  feature_ids <- assignment_table$feature_id
+  print("R Routine: running global test and fold change computations...")
+  
   out <- run_msfeast(
     quantification_table = quantification_table, 
-    metadata_table = metadata_table, 
+    metadata_table = treatment_table, 
     feature_sets = feature_sets, 
     feature_ids = feature_ids,
     contrasts = contrasts)
-  #str(out)
-  print("Results Inspection")
-  #print(typeof(out$feature_specific$feature_1$treatment_1_vs_treatment_2))
-  #print(out$set_specific$set_1)
-  jsonlite::toJSON(out, pretty = T, simplifyVector = F, flatten = TRUE, auto_unbox = T)
+
+  print("R Routine: exporting globaltest and log fold change computations...")
+
+  json_output <- jsonlite::toJSON(out, pretty = T, simplifyVector = F, flatten = TRUE, auto_unbox = T)
+  writeLines(json_output, "tmp_output/test_output.json")
+
+  print("R Routine: complete, file saved, exiting R session." )
 }
 
