@@ -625,6 +625,60 @@ class Msfeast:
     isValid = False
     return isValid
 
+
+
+  def run_and_attach_tsne_grid(self, perplexity_values : List[int] = [10, 20, 30, 40, 50]) -> None:
+    """ Run the t-SNE grid & attach the results to pipeline instance.
+
+    Parameters:
+      perplexity_values : List[int] with the preplexity values to run tsne optimization with.
+    Returns:
+      Attaches tsne optimization results to self. Returns None.
+    """
+    # Subset perplexity values
+    perplexity_values = [perplexity for perplexity in perplexity_values if perplexity < len(self.spectra_matchms)]
+    _check_perplexities(perplexity_values, len(self.spectra_matchms))
+    distance_matrix = _convert_similarity_to_distance(self.similarity_array)
+    self.tsne_grid = _run_tsne_grid(distance_matrix, perplexity_values)
+    _print_tsne_grid(self.tsne_grid)
+    return None
+
+
+
+  def select_tsne_settings(self, iloc : int) -> None:
+    """ Select particular t-SNE coordinate setting using entry iloc. 
+    
+    Parameters:
+      iloc : int pointing towards entry in tsne grid to select for coordinates extraction.
+    Returns:
+      Attaches t-sne coordinates table to self. Returns None.
+    """
+    # check iloc valid
+    assert self.tsne_grid is not None, (
+        "Error: tsne_grid is None. Please run 'run_and_attach_tsne_grid' before selecting a value."
+    )
+    assert iloc in [x for x in range(0, len(self.tsne_grid))], (
+        f"Error: must provide iloc in range of tsne grid 0 to {len(self.tsne_grid)}"
+    )
+    embedding_coordinates_table = pd.DataFrame({"feature_id" : _extract_feature_ids_from_spectra(self.spectra_matchms)})
+    embedding_coordinates_table["x"] = self.tsne_grid[iloc].x_coordinates
+    embedding_coordinates_table["y"] = self.tsne_grid[iloc].y_coordinates
+    self.embedding_coordinates_table = embedding_coordinates_table
+    self._attach_settings_used(tsne_perplexity = self.tsne_grid[iloc].perplexity)
+    return None
+
+
+
+  def plot_selected_embedding(self) -> None:
+    """ Plots the selected t-sne embedding. """
+    assert self.embedding_coordinates_table is not None, "Error: tsne coordinates must be selected to plot embedding."
+    data = self.embedding_coordinates_table
+    fig  = plotly.express.scatter(
+      data_frame= data, x = "x", y = "y", hover_data=["feature_id"],
+      width=800, height=800
+    )
+    fig.show()
+
 ########################################################################################################################
 # Utility functions required by msFeaST that are be purely functions
 
