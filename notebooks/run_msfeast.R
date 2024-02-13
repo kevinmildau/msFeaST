@@ -295,17 +295,17 @@ run_msfeast <- function( quantification_table, metadata_table, feature_sets, fea
 
   # Attach easy of parsing variables
   
-  resultsListEnv$feature_ids <- feature_ids
+  resultsListEnv$feature_id_keys <- feature_ids
   tmp_contrasts <- names(contrasts)
   if (! is.list(tmp_contrasts)){
     tmp_contrasts <- list(tmp_contrasts)
   }
-  resultsListEnv$contrasts <- tmp_contrasts
-  resultsListEnv$set_ids <- names(feature_sets)
-  resultsListEnv$measures_feature_specific <- c(
+  resultsListEnv$contrast_keys <- tmp_contrasts
+  resultsListEnv$set_id_keys <- names(feature_sets)
+  resultsListEnv$feature_specific_measure_keys <- c(
     "globalTestFeaturePValue",  "globalTestFeatureStatistic", "globalTestFeatureEffectDirection", "log2FoldChange"
   )
-  resultsListEnv$measures_set_specific <- list("globalTestPValue")
+  resultsListEnv$set_specific_measure_keys <- list("globalTestPValue")
 
   
   # Avoids unexpected modify in place behavior for output of msfeast after return
