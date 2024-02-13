@@ -114,7 +114,7 @@ class Msfeast:
   4. Similarity measure computation
   5. k-medoid classification or class provision
   6. embedding or embedding provision (t-SNE and Umap implemented)
-  7. global test run or provide statistical results in some suitable format (not defined for now) # TODO: define stats provision format
+  7. global test run or provide statistical results in some suitable format (not defined for now)
   8. Export data tables & dashboard data structures
 
   The msFeaST pipeline requires an interaction with the R programming language to run globaltest. For this to work, 
