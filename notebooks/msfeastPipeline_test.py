@@ -125,4 +125,11 @@ if __name__ == "__main__":
   #msfeast._plot_kmedoid_grid(pipeline.kmedoid_grid)
   pipeline.select_kmedoid_settings(iloc = 0)
   assert isinstance(pipeline.assignment_table, pd.DataFrame)
+  pipeline.run_and_attach_tsne_grid()
+  msfeast._plot_tsne_grid(pipeline.tsne_grid)
+  pipeline.select_tsne_settings(iloc = 0)
+  pipeline.plot_selected_embedding()
+  assert isinstance(pipeline.embedding_coordinates_table, pd.DataFrame)
+  print(pipeline.embedding_coordinates_table.head())
   pipeline.run_r_testing_routine("tmp_output")
+  
