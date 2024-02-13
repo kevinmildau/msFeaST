@@ -26,6 +26,7 @@ import gensim
 # plotting functionalities
 import plotly
 import plotly.express
+import plotly.graph_objects as go
 
 # ms2deepscore currently not working with macos m1 processors. Only include if ready to test in windows / linux.
 # ms2deepscore dependencies (does not appear to work for Python 3.10 ; check compatible python version)
