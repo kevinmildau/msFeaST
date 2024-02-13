@@ -33,8 +33,6 @@ import plotly.graph_objects as go
 # from ms2deepscore import MS2DeepScore
 # from ms2deepscore.models import load_model
 
-
-
 @dataclass
 class GridEntryTsne:
   """ 
@@ -65,6 +63,7 @@ class GridEntryTsne:
       f"x coordinates = {', '.join(self.x_coordinates[0:4])}...",
       f"y coordinates = {', '.join(self.y_coordinates[0:4])}...")
     return custom_print
+
 @dataclass
 class GridEntryUmap:
   """ 
@@ -72,6 +71,7 @@ class GridEntryUmap:
   Results container for umap grid computation. A list of these containers can be converted to pandas for easy display.
   """
   ...
+
 @dataclass
 class GridEntryKmedoid:
     """ 
@@ -190,10 +190,10 @@ class Msfeast:
 
     Parameters
       spectra : Python object of type List[matchms.Spectrum] containing the spectral data. 
-      identifier_key : str defaults to feature_id. Must be a valid key in spectral metadata pointing to unique feature_id.
-      Note that identifiers should always be supplied in all lowercase letters; they will not be recognized if provided
-      in uppercase even if the original entry is uppercase. This is because the matchms.Spectrum internal representation 
-      makes use of lowercase only.
+      identifier_key : str defaults to feature_id. Must be a valid key in spectral metadata pointing to unique 
+      feature_id. Note that identifiers should always be supplied in all lowercase letters; they will not be recognized 
+      if provided in uppercase even if the original entry is uppercase. This is because the matchms.Spectrum internal 
+      representation makes use of lowercase only.
     Returns 
 
     """
@@ -853,7 +853,9 @@ def _compute_similarities_cosine(
         similarity_measure = matchms.similarity.CosineHungarian()
     elif cosine_type == "CosineGreedy":
         similarity_measure = matchms.similarity.CosineGreedy()
-    tmp = matchms.calculate_scores(spectrum_list, spectrum_list, similarity_measure, is_symmetric=True, array_type = "numpy")
+    tmp = matchms.calculate_scores(
+      spectrum_list, spectrum_list, similarity_measure, is_symmetric=True, array_type = "numpy"
+    )
     scores = _extract_similarity_scores_from_matchms_cosine_array(tmp.to_array())
     scores = np.clip(scores, a_min = 0, a_max = 1) 
     return scores
@@ -928,7 +930,6 @@ def _return_model_filepath(
         "filepath!")
     return filepath[0]
 
-
 def _run_kmedoid_grid(
     distance_matrix : np.ndarray, 
     k_values : List[int], 
@@ -999,8 +1000,6 @@ def _print_kmedoid_grid(grid : List[GridEntryKmedoid]) -> None:
   print(kmedoid_results)
   return None
 
-
-
 def _plot_kmedoid_grid(
   kmedoid_list : List[GridEntryKmedoid]
   ) -> None:
@@ -1014,8 +1013,6 @@ def _plot_kmedoid_grid(
   )
   fig.show()
   return None
-
-
 
 def _check_perplexities(perplexity_values : List[Union[float, int]], max_perplexity : Union[float, int]) -> None:
   """ Function checks whether perplexity values match expected configuration. Aborts if not. """
@@ -1031,8 +1028,6 @@ def _check_perplexities(perplexity_values : List[Union[float, int]], max_perplex
       "Error: perplexity values must be numeric (int, float) and smaller than number of features." 
     )
   return None
-
-
 
 def _run_tsne_grid(
   distance_matrix : np.ndarray,
@@ -1076,8 +1071,6 @@ def _run_tsne_grid(
     )
   return output_list
 
-
-
 def _plot_tsne_grid(tsne_list : List[GridEntryTsne]) -> None:
   """ Plots pearson and spearman scores vs perplexity for each entry in list of GridEntryTsne objects. """
   
@@ -1091,8 +1084,6 @@ def _plot_tsne_grid(tsne_list : List[GridEntryTsne]) -> None:
   fig.update_layout(xaxis_title="Perplexity / iloc", yaxis_title="Score")
   fig.show()
   return None
-
-
 
 def _print_tsne_grid(grid : List[GridEntryTsne]) -> None:   
   """ Prints all values in tsne grid in readable format via pandas conversion """
