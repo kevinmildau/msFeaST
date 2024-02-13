@@ -242,9 +242,10 @@ run_and_attach_global_test_on_feature_set <- function(
 #' \dontrun{
 #' ...
 #' }
-run_msfeast <- function( quantification_table, metadata_table, feature_sets, feature_ids, contrasts, 
-  measures = list("globalTest", "log2FoldChange")){
+run_msfeast <- function( quantification_table, metadata_table, feature_sets, feature_ids, contrasts){
   
+  measures = list("globalTest", "log2FoldChange")
+
   # Create configuration table used for looping over all measure configurations
   # configurations is a data_frame type of list (named columns, nrow and ncol attributes)
   configurations <- generate_configurations(measures, contrasts, feature_ids, feature_sets)
@@ -289,6 +290,24 @@ run_msfeast <- function( quantification_table, metadata_table, feature_sets, fea
       ),
     )
   }
+  # quantification_table, metadata_table, feature_sets, feature_ids, contrasts, 
+  # measures = list("globalTest", "log2FoldChange")
+
+  # Attach easy of parsing variables
+  
+  resultsListEnv$feature_ids <- feature_ids
+  tmp_contrasts <- names(contrasts)
+  if (! is.list(tmp_contrasts)){
+    tmp_contrasts <- list(tmp_contrasts)
+  }
+  resultsListEnv$contrasts <- tmp_contrasts
+  resultsListEnv$set_ids <- names(feature_sets)
+  resultsListEnv$measures_feature_specific <- c(
+    "globalTestFeaturePValue",  "globalTestFeatureStatistic", "globalTestFeatureEffectDirection", "log2FoldChange"
+  )
+  resultsListEnv$measures_set_specific <- list("globalTestPValue")
+
+  
   # Avoids unexpected modify in place behavior for output of msfeast after return
   resultsList <- as.list(resultsListEnv)
   return(resultsList)
