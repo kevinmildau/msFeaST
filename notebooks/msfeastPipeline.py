@@ -124,7 +124,7 @@ class Msfeast:
   treatment_table: pd.DataFrame | None = None
   spectra_matchms: list[matchms.Spectrum] | None = None
   similarity_array : Union[None, np.ndarray] = None
-
+  embedding_coordinates_table : Union[None, pd.DataFrame] = None
 
   kmedoid_grid : Union[List[GridEntryKmedoid], None] = None
 
