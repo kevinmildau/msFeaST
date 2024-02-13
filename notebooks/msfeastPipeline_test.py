@@ -105,7 +105,7 @@ def test_tsne():
 
 
 
-if __name__ == "__main__":
+if False: # __name__ == "__main__":
   print("Starting Main")
   import pandas as pd
   import numpy as np
@@ -126,10 +126,182 @@ if __name__ == "__main__":
   pipeline.select_kmedoid_settings(iloc = 0)
   assert isinstance(pipeline.assignment_table, pd.DataFrame)
   pipeline.run_and_attach_tsne_grid()
-  msfeast._plot_tsne_grid(pipeline.tsne_grid)
+  #msfeast._plot_tsne_grid(pipeline.tsne_grid)
   pipeline.select_tsne_settings(iloc = 0)
-  pipeline.plot_selected_embedding()
+  #pipeline.plot_selected_embedding()
   assert isinstance(pipeline.embedding_coordinates_table, pd.DataFrame)
   print(pipeline.embedding_coordinates_table.head())
   pipeline.run_r_testing_routine("tmp_output")
+
+if True:
+  import json
+  import pandas as pd
+
+  def load_and_validate_r_output(filepath : str) -> dict:
+    """ Function loads and validates r output file. INCOMPLETE 
+    Returns the r output json data as a python dictionary.
+    First level entries are:
+    feature_specific
+    --> feature id specific data, subdivided into contrast specific, measure specific, and finally value. I.e. for each
+    feature id, for each contrast key, for each measure key, there will be a corresponding value in a nested dict
+    of hierarchy [feature_identifier][contrast_key][measure_key] --> value. Feature_identifier, contrast_key, and
+    measure keys are data dependent strings. The hierarchy gives the type of entry.
+    set_specific
+    --> set id specific data, subdivided into contrast specific, measure specific, and finally value
+    feature_id_keys. Similar to feature_id.
+    set_id_keys
+    --> list of set identifiers
+    contrast_keys
+    --> list of contrast keys
+    feature_specific_measure_keys
+    --> list of measure keys for the feature specific entry
+    set_specific_measure_keys
+    --> list of measure keys for the set specific entries
+    """
+    json_data = json.load(open(filepath, mode = "r"))
+    # Assert that the top level keys are all populated (partial input assertion testing only!)
+    assert json_data["feature_specific"]is not None, "ERROR: Expected feature_specific  entry to not be empty."
+    assert json_data["feature_specific"].keys() is not None, "ERROR: Expected feature specific keys."
+    assert json_data["set_specific"] is not None, "ERROR: Expected set_specific  entry to not be empty."
+    assert json_data["set_specific"].keys() is not None, "ERROR: Expected set specific keys."
+    assert json_data["feature_id_keys"] is not None, "ERROR: Expected feature id keys entry to not be empty."
+    assert json_data["set_id_keys"] is not None, "ERROR: Expected feature id keys entry to not be empty."
+    assert json_data["contrast_keys"] is not None, "ERROR: Expected contrast_keys entry to not be empty."
+    assert json_data["feature_specific_measure_keys"] is not None, "ERROR: Expected feature_specific_measure_keys to not be empty."
+    assert json_data["set_specific_measure_keys"] is not None, "ERROR: Expected set_specific_measure_keys entry to not be empty."
+    # TODO: for robustness, Cross compare R entries against python data from pipeline (contrasts, setids, fids)
+    # TODO: for robustness, Validate each feature_id and set_id entry
+    # return the validated data
+    return json_data
+  
+  def convert_r_output_to_long_format(json_data : dict) -> pd.DataFrame:
+    """ Converts json format data to long format data frame. Focuses on feature_specific and set_specific statistical
+    data. The data frame will have columns type, id, contrast, measure, and value:
+    --> type (feature or set, string indicating the type of entry)
+    --> id (feature_id or set_id, string)
+    --> contrast (contrast key, string)
+    --> measure (measure key, from feature specific and set specific measures, string)
+    --> value (number or string with the appropriate data for the measure)
+    Function assumes all data to be available and correct. A validator should be run before, e.g 
+    load_and_validate_r_output()
+    """
+    entries = list()
+    for feature_key in json_data["feature_specific"].keys():
+      for contrast_key in json_data["feature_specific"][feature_key].keys():
+        for measure_key in json_data["feature_specific"][feature_key][contrast_key].keys():
+          entries.append(
+            {
+              "type" : "feature",
+              "id" : feature_key,
+              "contrast" : contrast_key,
+              "measure" : measure_key,
+              "value" : json_data["feature_specific"][feature_key][contrast_key][measure_key]
+            }
+          )
+    for feature_key in json_data["set_specific"].keys():
+      for contrast_key in json_data["set_specific"][feature_key].keys():
+        for measure_key in json_data["set_specific"][feature_key][contrast_key].keys():
+          entries.append(
+            {
+              "type" : "set",
+              "id" : feature_key,
+              "contrast" : contrast_key,
+              "measure" : measure_key,
+              "value" : json_data["set_specific"][feature_key][contrast_key][measure_key]
+            }
+          )
+    long_form_df = pd.DataFrame.from_records(entries)
+    return long_form_df
+
+
+  json_data = load_and_validate_r_output("tmp_output/test_r_output.json")
+  pandas_data = convert_r_output_to_long_format(json_data)
+
+
+  def linear_transform():
+    # cut raw value to supported range around min and max old_lb old_ub
+    # using the new value, transform to desired scale new_lb and new_ub
+    # the new value will be a linear transform from the old range to new range. Note that raw values outside of the
+    # old_lb and old_ub are considered saturated; getting lower or getting higher does not matter any longer and may
+    # only cause scaling issues in the subsequent visualization, e.g. log10pvalue of 10 vs 100, where most values are
+    # between 0 an 10
+
+  def construct_nodes():
+    # Constructs nodes using all relevant information for nodes
+    # get group id from assignment_table
+    # get feature_stats from R output <--> add conversions to node size (may require global bounds information)
+    # For log10 pvalues it may make sense to transform using a linear scale within range, collapsing anything above
+    # a certain level. For instance, max node size could be reached at p-value of 0.0001, and min size at 0.5 already
+    # this would allow tho focus the scale on the part of the measure that requires granularity:
+    # 0.5 -> 0.1 -> 0.01 -> 0.001 -> 0.0001
+    # get x and y coordinates from embedding_coordinates_table
+    
+    ...
+  import numpy as np
+  def construct_edges(similarity_array : np.ndarray, feature_ids : list[str], top_k : int = 30):
+    # Construct edges using all relevant information for edges
+    # use similarity array and corresponding feature_ids to determine top-K neighbours
+    # use standard linear scale projection for edge weights (assume between 0 and 1)
+    """ Constructs edge list for network visualization. """
+    edge_list = []
+    
+    
+    for feature_id in feature_ids:
+      # get top-k neighboring features (by index)
+      # get the scores for those
+      # translate those scores into widths (linear transform)
+      
+      neighbor_ids = list() # list of neighbors
+      pairs_covered = set() 
+      
+      for neighbor_id in neighbor_ids:
+        # if the following condition is true, then the undirected edge already exists
+        if frozenset(feature_id, neighbor_id) not in pairs_covered:
+          pairs_covered.add(frozenset(feature_id, neighbor_id)) # take note of the pair that was added
+          edge = {
+            "id": f"{feature_id}_{neighbor_id}",
+            "from": feature_id,
+            "to": neighbor_id,
+            "width": 8,
+            "data": {
+              "score": 0.005409664436045514
+            }
+          }
+          edge_list.append(edge)
+    return None
+
+  
+
+  def construct_sets():
+    # Construct set specific statisical data, basic fetch from R output
+    # for now includes only: group key --> contrast key --> measure key --> value
+    # Also detect the number of sets and apply Bonferroni adjustment to p-values based on number of sets.
+    # Using set identifier and assignment table also add the set corresponding feature_ids. This might be
+    # useful down the line when adding additonal visual components in js.
+    ...
+
+  def construct_set_keys():
+    # fetch set keys from assignment table or R output
+    ...
+  
+  def construct_contrast_keys():
+    # basic fetch of contrast keys from R output. Maybe include as a third entry: 
+    # feature_specific, set_specifc, contrast_keys 
+    # for easy fetch
+    ...
+  
+  def construct_tabular_output():
+    # construct long format data frame of entire output for excel export using columns:
+    # type (feature or set)
+    # id (feature_id or set_id)
+    # contrast (contrast key)
+    # measure (measure key, from feature specific and set specific measures)
+    # value (number or string with the appropriate data)
+    # size (the recast size used in visualization?)
+    ...
+  
+  def construct_feature_keys():
+    # probably not needed
+    ...
+  print ("Running code complete. ")
   
