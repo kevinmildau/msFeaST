@@ -1262,8 +1262,8 @@ def _construct_nodes(
       "id" : feature_key,
       "size": 10, # --> measure derived variable, set to 10 for now.
       "group": feature_group, # feature derived variable
-      "x": coordinates["x"].values[0],
-      "y": coordinates["y"].values[0],
+      "x": coordinates["x"].values[0] * 100, # default scaling for better visual representation
+      "y": coordinates["y"].values[0] * 100, # default scaling for better visual representation
       "data" : r_json_data["feature_specific"][feature_key]
     }
     # For specific expected measures, translate the measure into node size: supported: p-value & log2foldchange
