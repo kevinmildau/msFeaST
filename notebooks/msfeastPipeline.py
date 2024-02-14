@@ -9,6 +9,7 @@ import subprocess
 from typing import List, TypedDict, Tuple, Dict, NamedTuple, Union
 from warnings import warn
 import copy # for safer get methods  pipeline internal variables
+import json
 
 # kmedoid dependency
 from kmedoids import KMedoids
@@ -1158,3 +1159,40 @@ def _construct_edge_list(similarity_array : np.ndarray, feature_ids : list[str],
         }
         edge_list.append(edge)
   return edge_list
+
+def load_and_validate_r_output(filepath : str) -> dict:
+  """ Function loads and validates r output file. INCOMPLETE 
+  Returns the r output json data as a python dictionary.
+  First level entries are:
+  feature_specific
+  --> feature id specific data, subdivided into contrast specific, measure specific, and finally value. I.e. for each
+  feature id, for each contrast key, for each measure key, there will be a corresponding value in a nested dict
+  of hierarchy [feature_identifier][contrast_key][measure_key] --> value. Feature_identifier, contrast_key, and
+  measure keys are data dependent strings. The hierarchy gives the type of entry.
+  set_specific
+  --> set id specific data, subdivided into contrast specific, measure specific, and finally value
+  feature_id_keys. Similar to feature_id.
+  set_id_keys
+  --> list of set identifiers
+  contrast_keys
+  --> list of contrast keys
+  feature_specific_measure_keys
+  --> list of measure keys for the feature specific entry
+  set_specific_measure_keys
+  --> list of measure keys for the set specific entries
+  """
+  json_data = json.load(open(filepath, mode = "r"))
+  # Assert that the top level keys are all populated (partial input assertion testing only!)
+  assert json_data["feature_specific"]is not None, "ERROR: Expected feature_specific  entry to not be empty."
+  assert json_data["feature_specific"].keys() is not None, "ERROR: Expected feature specific keys."
+  assert json_data["set_specific"] is not None, "ERROR: Expected set_specific  entry to not be empty."
+  assert json_data["set_specific"].keys() is not None, "ERROR: Expected set specific keys."
+  assert json_data["feature_id_keys"] is not None, "ERROR: Expected feature id keys entry to not be empty."
+  assert json_data["set_id_keys"] is not None, "ERROR: Expected feature id keys entry to not be empty."
+  assert json_data["contrast_keys"] is not None, "ERROR: Expected contrast_keys entry to not be empty."
+  assert json_data["feature_specific_measure_keys"] is not None, "ERROR: Expected feature_specific_measure_keys to not be empty."
+  assert json_data["set_specific_measure_keys"] is not None, "ERROR: Expected set_specific_measure_keys entry to not be empty."
+  # TODO: for robustness, Cross compare R entries against python data from pipeline (contrasts, setids, fids)
+  # TODO: for robustness, Validate each feature_id and set_id entry
+  # return the validated data
+  return json_data
