@@ -201,17 +201,17 @@ function initializeInteractiveNetworkSession(nodes, edges, groups, groupStats) {
       getNodeStatsInfo = function (inputNodeData, selectedNodeId){
         // function expects selectedNode["data"] information
         let outputString = 'Univariate Data for clicked node with id = ' + String(selectedNodeId) + "\n";
-        console.log("Checking nodeData", inputNodeData)
+        //console.log("Checking nodeData", inputNodeData)
         for (const contrastKey in inputNodeData) {
           outputString += `[${contrastKey}:]\n`
           for (const measureKey in inputNodeData[contrastKey]){
-            if (measureKey in ["globalTestFeaturePValue", "log2FoldChange"]){
+            if (["globalTestFeaturePValue", "log2FoldChange"].includes(measureKey)){
               // only these two measures have a measure and nodeSize difference in their data.
-              rounded_value = inputNodeData[contrastKey][measureKey]["measure"].toFixed(4)
+              value = inputNodeData[contrastKey][measureKey]["measure"];
             } else {
-              rounded_value = inputNodeData[contrastKey][measureKey]
+              value = inputNodeData[contrastKey][measureKey];
             }
-            outputString += `  ${measureKey}: ${rounded_value}\n`
+            outputString += `  ${measureKey}: ${value}\n`
           }
         }
         return outputString
