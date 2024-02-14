@@ -421,10 +421,13 @@ class Msfeast:
     # make sure that the index is available in the visual overviews
     return None
   
-  def run_r_testing_routine(self, directory, overwrite = False, max_seconds : int = 4):
+  def run_r_testing_routine(self, directory : str, r_filename : str = "r_output.json", top_k = 20, overwrite = False):
     """
-    NOT IMPLEMENTED
+    INCOMPLETE
     Function writes r inputs to file, writes r script to file, tests r availabiltiy, runs test, and imports r results.
+    directory: folder name for r output
+    r_filename: filename for r output
+
     """
     # assess all data required available
     # construct python structures suitable for file writing
@@ -435,14 +438,11 @@ class Msfeast:
     
     # json filenames input for R; the one argument to pass to R so it can find all the rest
     # could also contain all info, but that makes r parsing more difficult than reading csvs...
-    
 
-
-    directory = "tmp_output"
     filepath_assignment_table = str(os.path.join(directory, "assignment_table.csv"))
     filepath_quantification_table = str(os.path.join(directory, "test_quant_table.csv"))
     filepath_treatment_table = str(os.path.join(directory, "test_treat_table.csv"))
-    filepath_r_output_json = str(os.path.join(directory,"test_r_output.json"))
+    filepath_r_output_json = str(os.path.join(directory, r_filename))
 
     # TODO check for directory exist, if not, create it
     # TODO check for existing r routine output, remove if force = true
@@ -484,33 +484,11 @@ class Msfeast:
       ), 
       shell=True
     )
-
-    # TODO import the r data that was created
+    # load r data
     r_json_data = _load_and_validate_r_output(filepath_r_output_json)
-    nodes_list = _construct_nodes(r_json_data, self.assignment_table, self.embedding_coordinates_table)
-    edge_list = _construct_edge_list(
-      self.similarity_array, _extract_feature_ids_from_spectra(self.spectra_matchms), top_k=20
-    )
-    r_json_data[""]
-    #if os.path.isfile(filepath):
-    #  print("there is a file")
-    #else:
-    #  raise ValueError(f"{filepath} is does not point to existing file.")
-
-    #self._generate_r_script()
-    #self._export_r_input_data()
-    #self._try_r_connection()
-    #self._run_r_routine()
-    #self._import_r_results()
-    # determine file_names; (date, time, run/file_prefix, default file suffix)
-    # write files to directory
-    # run R interface call & wait for run execution
-    # --> if just waiting for bash feedback works, great, otherwise
-    # --> wait until R output files appear in directory
-    # load r data and attach to msfeast session data
-    #
-
-    #self.importGlobaltest(filepath)
+    # construct derived variables and attach
+    self._generate_and_attach_long_format_r_data(r_json_data)
+    self._generate_and_attach_json_dict(r_json_data, top_k)
     return None
   
   def _generate_and_attach_json_dict(self, r_json_data, top_k) -> None: 
