@@ -134,16 +134,8 @@ if __name__ == "__main__":
   #pipeline.run_r_testing_routine("tmp_output")
   feature_ids = msfeast._extract_feature_ids_from_spectra(pipeline.spectra_matchms)
   edges = msfeast._construct_edge_list(pipeline.similarity_array, feature_ids, top_k = 5)
-  print(edges)
+  pipeline.run_r_testing_routine("tmp_output", "r_output.json", top_k = 10)
+  pipeline.export_to_json_file("tmp_output/test_dashboard.json")
 
 
-if True:
-  import pandas as pd
-  json_data = msfeast._load_and_validate_r_output("tmp_output/test_r_output.json")
-  pandas_data = msfeast._convert_r_output_to_long_format(json_data)
-  print(pipeline.assignment_table.head())
-  node_entries = msfeast._construct_nodes(json_data, pipeline.assignment_table, pipeline.embedding_coordinates_table)
-  print(json_data["set_specific"])
-  print(node_entries[0])
-  print ("Running code complete. ")
   
