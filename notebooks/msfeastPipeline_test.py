@@ -7,9 +7,11 @@ import msfeastPipeline as msfeast
 import pytest
 import os
 
-filepath_test_spectra = os.path.join("test_data", "test_spectra.mgf")
-filepath_test_quant_table = os.path.join("test_data", "test_quant_table.csv")
-filepath_test_treat_table = os.path.join("test_data", "test_treat_table.csv")
+test_data_directory = "test_data_large"
+
+filepath_test_spectra = os.path.join(test_data_directory, "test_spectra.mgf")
+filepath_test_quant_table = os.path.join(test_data_directory, "test_quant_table.csv")
+filepath_test_treat_table = os.path.join(test_data_directory, "test_treat_table.csv")
 
 def test_load_data():
   assert 1 == 1, ""
@@ -117,11 +119,13 @@ if __name__ == "__main__":
   pipeline.attach_treatment_table(treat_table)
   assert all(pipeline.treatment_table == treat_table)
   assert all(pipeline.quantification_table == quant_table)
+  print("Reached Spectral Similarity Computation Step...")
   pipeline.run_spectral_similarity_computations("ModifiedCosine")
+  print("Passed Spectral Similarity Computation Step...")
   assert isinstance(pipeline.similarity_array, np.ndarray)
   n_spec = len(pipeline.spectra_matchms)
   assert pipeline.similarity_array.shape == (n_spec, n_spec)
-  pipeline.run_and_attach_kmedoid_grid([10])
+  pipeline.run_and_attach_kmedoid_grid([100])
   #msfeast._plot_kmedoid_grid(pipeline.kmedoid_grid)
   pipeline.select_kmedoid_settings(iloc = 0)
   assert isinstance(pipeline.assignment_table, pd.DataFrame)
@@ -131,10 +135,10 @@ if __name__ == "__main__":
   #pipeline.plot_selected_embedding()
   assert isinstance(pipeline.embedding_coordinates_table, pd.DataFrame)
   print(pipeline.embedding_coordinates_table.head())
-  #pipeline.run_r_testing_routine("tmp_output")
+  pipeline.run_r_testing_routine("tmp_output")
   feature_ids = msfeast._extract_feature_ids_from_spectra(pipeline.spectra_matchms)
-  edges = msfeast._construct_edge_list(pipeline.similarity_array, feature_ids, top_k = 5)
-  pipeline.run_r_testing_routine("tmp_output", "r_output.json", top_k = 10)
+  edges = msfeast._construct_edge_list(pipeline.similarity_array, feature_ids, top_k = 30)
+  pipeline.run_r_testing_routine("tmp_output", "r_output.json", top_k = 30)
   pipeline.export_to_json_file("tmp_output/test_dashboard.json")
 
 
