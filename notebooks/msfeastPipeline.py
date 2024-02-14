@@ -1114,3 +1114,43 @@ def _linear_range_transform(
   output_scalar = new_lower_bound + normalized_scalar * (new_upper_bound - new_lower_bound)
   return output_scalar
 
+def _construct_edge_list(similarity_array : np.ndarray, feature_ids : list[str], top_k : int = 30) -> List:
+  # Construct edges using all relevant information for edges
+  # use similarity array and corresponding feature_ids to determine top-K neighbours
+  # use standard linear scale projection for edge weights (assume between 0 and 1)
+  """ Constructs edge list for network visualization. """
+
+  assert top_k + 1 <= similarity_array.shape[0], "Error: topK exceeds number of possible neighbors!"
+  top_k = top_k + 1 # to accommodate self being among top-k; removed downstream.
+  edge_list = []
+
+  # Get top-k neighbor index array; for each row, the top K neighbors are are extracted
+  top_k_indices_sorted = np.argsort(similarity_array, axis=1)[:, ::-1][:, :top_k]
+
+  # Using the top-k neighbours, construct the edge list (prevent duplicate edge entries using set comparison)
+  node_pairs_covered = set()
+  
+  # Create edge list
+  for row_index, column_indices in enumerate(top_k_indices_sorted):
+    # iloc reperesents the row, and hence the current feature
+    # column_index
+    print(similarity_array[row_index, column_indices[0]], similarity_array[row_index, column_indices[1]])
+    feature_id = feature_ids[row_index]
+    for column_index in column_indices:
+      neighbor_id = feature_ids[column_index]
+      if frozenset([feature_id, neighbor_id]) not in node_pairs_covered and feature_id is not neighbor_id:
+        print("Adding new pair:", frozenset([feature_id, neighbor_id]))
+        node_pairs_covered.add(frozenset([feature_id, neighbor_id]))
+        # Add the node
+        score = similarity_array[row_index, column_index]
+        edge = {
+          "id": f"{feature_id}_to_{neighbor_id}",
+          "from": feature_id,
+          "to": neighbor_id,
+          "width": _linear_range_transform(score, 0, 1, 1, 30), # 1 and 30 are the px widths for edges
+          "data": {
+            "score": score
+          }
+        }
+        edge_list.append(edge)
+  return edge_list
