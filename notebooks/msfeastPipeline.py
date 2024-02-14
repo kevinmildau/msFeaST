@@ -1094,3 +1094,23 @@ def _print_tsne_grid(grid : List[GridEntryTsne]) -> None:
   print("T-sne grid results. Use to inform t-sne embedding selection.")
   print(tsne_results)
   return None
+
+def _linear_range_transform(
+    input_scalar : float, 
+    original_lower_bound : float, 
+    original_upper_bound : float, 
+    new_lower_bound : float, 
+    new_upper_bound : float
+  ) -> float:
+  """ Returns a linear transformation of a value in one range to another. """
+  assert original_lower_bound < original_upper_bound, "Error: lower bound must be strictly smaller than upper bound."
+  assert new_lower_bound < new_upper_bound, "Error: lower bound must be strictly smaller than upper bound."
+  assert original_lower_bound <= input_scalar <= original_upper_bound, "Error: input must be within specified bounds"
+
+  # Normalize x to [0, 1]
+  normalized_scalar = (input_scalar - original_lower_bound) / (original_upper_bound - original_lower_bound)
+  
+  # Map the normalized value to the output range
+  output_scalar = new_lower_bound + normalized_scalar * (new_upper_bound - new_lower_bound)
+  return output_scalar
+
