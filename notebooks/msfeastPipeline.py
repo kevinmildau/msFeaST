@@ -1238,3 +1238,78 @@ def _convert_r_output_to_long_format(json_data : dict) -> pd.DataFrame:
   long_form_df = pd.DataFrame.from_records(entries)
   return long_form_df
 
+def _construct_nodes(
+    r_json_data : dict, 
+    assignment_table : pd.DataFrame, 
+    embedding_coordinates_table: pd.DataFrame
+  ) -> list:
+  # Constructs nodes using all relevant information for nodes
+  # get group id from assignment_table
+  # get feature_stats from R output <--> add conversions to node size (may require global bounds information)
+  # For log10 pvalues it may make sense to transform using a linear scale within range, collapsing anything above
+  # a certain level. For instance, max node size could be reached at p-value of 0.0001, and min size at 0.5 already
+  # this would allow tho focus the scale on the part of the measure that requires granularity:
+  # 0.5 -> 0.1 -> 0.01 -> 0.001 -> 0.0001
+  # get x and y coordinates from embedding_coordinates_table
+  ...
+  node_entries = list()
+  measure_keys = ["globalTestFeaturePValue", "log2FoldChange"]
+
+  for feature_key in r_json_data["feature_specific"].keys():
+    feature_group = assignment_table.loc[assignment_table['feature_id'] == feature_key, "set_id"].values[0]
+    coordinates = embedding_coordinates_table.loc[embedding_coordinates_table['feature_id'] == feature_key,]
+    node = {
+      "id" : feature_key,
+      "size": 10, # --> measure derived variable, set to 10 for now.
+      "group": feature_group, # feature derived variable
+      "x": coordinates["x"].values[0],
+      "y": coordinates["y"].values[0],
+      "data" : r_json_data["feature_specific"][feature_key]
+    }
+    # For specific expected measures, translate the measure into node size: supported: p-value & log2foldchange
+    # Currently no scale available
+    for contrast_key in node["data"].keys():
+      for measure_key in node["data"][contrast_key].keys():
+        if measure_key in measure_keys:
+          value = node["data"][contrast_key][measure_key]
+          if measure_key == "log2foldChange":
+            # transform to abs scale for positive and negative fold to be treated equally 
+            # limit to range 0 to 10 (upper bounding to limit avoid a huge upper bound masking smaller effects), 
+            # recast to size 10 to 50
+            lb_original = 0
+            ub_original = 10 # also max considered for visualization
+            lb_node_size = 10
+            ub_node_size = 50
+            round_decimals = 2              
+            size = round(
+              _linear_range_transform(
+                np.clip(np.abs(value), lb_original, ub_original),
+                lb_original, ub_original, lb_node_size, ub_node_size), 
+              2)
+          if measure_key == "globalTestFeaturePValue":
+            # transform p value to log10 scale to get order of magnitude scaling
+            # take absolute value to make increasing scale; the smaller p, the larger the value
+            # cutoff pvalue at size 10 to avoid masking smaller relevant effects, start sizing at 1, equivalent of
+            # pvalue = 0.1 (all above are simply min node size of 10)
+            # A abs(log10(p_value = 0.1)) = 1 ; this is size 10 for the nodes. Going below means getting size.
+            # max visual is log10(0.0000001) -> -6
+            lb_original = 1
+            ub_original = 6 # also max considered for visualization
+            lb_node_size = 10
+            ub_node_size = 50
+            round_decimals = 2
+            if value != 0:
+              size = round(
+                _linear_range_transform(
+                  np.clip(np.abs(np.log10(value)), lb_original, ub_original), 
+                  lb_original, ub_original, lb_node_size, ub_node_size), 
+                round_decimals
+              )
+            else:
+              size = ub_node_size # maximum size for p value of zero
+          node["data"][contrast_key][measure_key] = {
+            "measure": value,
+            "nodeSize": size,
+          }
+    node_entries.append(node)
+  return(node_entries)
