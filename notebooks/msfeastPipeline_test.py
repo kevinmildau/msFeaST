@@ -135,10 +135,9 @@ if __name__ == "__main__":
   #pipeline.plot_selected_embedding()
   assert isinstance(pipeline.embedding_coordinates_table, pd.DataFrame)
   print(pipeline.embedding_coordinates_table.head())
-  pipeline.run_r_testing_routine("tmp_output")
+  pipeline.run_r_testing_routine("tmp_output", "r_output.json", top_k = 30)
   feature_ids = msfeast._extract_feature_ids_from_spectra(pipeline.spectra_matchms)
   edges = msfeast._construct_edge_list(pipeline.similarity_array, feature_ids, top_k = 30)
-  pipeline.run_r_testing_routine("tmp_output", "r_output.json", top_k = 30)
   pipeline.export_to_json_file("tmp_output/test_dashboard.json")
 
 
