@@ -138,52 +138,12 @@ if __name__ == "__main__":
 
 
 if True:
-  import json
   import pandas as pd
-
-  
-  
-
-
-  
-  
   json_data = msfeast._load_and_validate_r_output("tmp_output/test_r_output.json")
   pandas_data = msfeast._convert_r_output_to_long_format(json_data)
   print(pipeline.assignment_table.head())
-  node_entries = construct_nodes(json_data, pipeline.assignment_table, pipeline.embedding_coordinates_table)
-  
+  node_entries = msfeast._construct_nodes(json_data, pipeline.assignment_table, pipeline.embedding_coordinates_table)
   print(json_data["set_specific"])
-  
-  def construct_sets():
-    # Construct set specific statisical data, basic fetch from R output
-    # for now includes only: group key --> contrast key --> measure key --> value
-    # Also detect the number of sets and apply Bonferroni adjustment to p-values based on number of sets.
-    # Using set identifier and assignment table also add the set corresponding feature_ids. This might be
-    # useful down the line when adding additonal visual components in js.
-    ...
-
-  def construct_set_keys():
-    # fetch set keys from assignment table or R output
-    ...
-  
-  def construct_contrast_keys():
-    # basic fetch of contrast keys from R output. Maybe include as a third entry: 
-    # feature_specific, set_specifc, contrast_keys 
-    # for easy fetch
-    ...
-  
-  def construct_tabular_output():
-    # construct long format data frame of entire output for excel export using columns:
-    # type (feature or set)
-    # id (feature_id or set_id)
-    # contrast (contrast key)
-    # measure (measure key, from feature specific and set specific measures)
-    # value (number or string with the appropriate data)
-    # size (the recast size used in visualization?)
-    ...
-  
-  def construct_feature_keys():
-    # probably not needed
-    ...
+  print(node_entries[0])
   print ("Running code complete. ")
   
