@@ -577,9 +577,9 @@ class Msfeast:
             self._settings_used[key] = value
     return None
   
-  def export_to_json_file(self, filepath = None, force = False):
+  def export_to_json_file(self, filepath : str, force = False):
     """ 
-    NOT IMPLEMENTED
+    INCOMPLETE
     Can be split into many small routines, one to make the node lists, one to make the group stats values etc.
     exportToJson 
     """
@@ -587,9 +587,11 @@ class Msfeast:
     self.validate_complete()
     # validate the filepath does not exist or force setting to ensure everything works 
     assert True
+    
     # construct json string for entire dataset
-    output_dict = self.generate_json_dict()
-    # write to file
+    json_string = json.dumps(self.output_dictionary, indent=2)
+    with open(filepath, 'w') as f:
+        f.write(json_string)
     return None
 
   def validate_complete(self):
