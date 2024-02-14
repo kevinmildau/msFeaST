@@ -127,8 +127,11 @@ class Msfeast:
   spectra_matchms: list[matchms.Spectrum] | None = None
   similarity_array : Union[None, np.ndarray] = None
   embedding_coordinates_table : Union[None, pd.DataFrame] = None
-
   kmedoid_grid : Union[List[GridEntryKmedoid], None] = None
+  assignment_table : Union[None, pd.DataFrame] = None
+  output_dictionary : Union[None, dict] = None
+  r_data_long_df : Union[None, dict] = None
+  
 
   # settings used dictionary, initialized as empty
   _settings_used : dict = field(default_factory= lambda: {})
