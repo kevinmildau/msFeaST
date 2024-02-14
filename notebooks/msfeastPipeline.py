@@ -513,7 +513,7 @@ class Msfeast:
     #self.importGlobaltest(filepath)
     return None
   
-  def generate_json_dict(self) -> Dict: 
+  def _generate_and_attach_json_dict(self, r_json_data, top_k) -> None: 
     """
     NOT IMPLEMENTED
     Function constructs the json representation required by the visualization app as a python dictionary,.
@@ -522,7 +522,21 @@ class Msfeast:
     # edge list (including ordering and zero removal), 
     # stats data incorporation
     # Multiple steps creation various lists and or dicts of dicts
-    return {}
+    nodes_list = _construct_nodes(r_json_data, self.assignment_table, self.embedding_coordinates_table)
+    edge_list = _construct_edge_list(
+      self.similarity_array, _extract_feature_ids_from_spectra(self.spectra_matchms), top_k
+    )
+    output_dictionary = {
+      "groupKeys": r_json_data["set_id_keys"],
+      "univMeasureKeys": ["log2FoldChange", "globalTestFeaturePValue"],
+      "groupMeasureKeys": ["globalTestPValue"],
+      "contrastKeys": r_json_data["contrast_keys"],
+      "groupStats": r_json_data["set_specific"],
+      "nodes": nodes_list,
+      "edges": edge_list,
+    }
+    self.output_dictionary = output_dictionary
+    return None
   
   def run_and_attach_kmedoid_grid(self, k_values : List[int] = [8, 10, 20, 30, 50]):
     """ 
