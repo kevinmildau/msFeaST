@@ -1160,7 +1160,7 @@ def _construct_edge_list(similarity_array : np.ndarray, feature_ids : list[str],
         edge_list.append(edge)
   return edge_list
 
-def load_and_validate_r_output(filepath : str) -> dict:
+def _load_and_validate_r_output(filepath : str) -> dict:
   """ Function loads and validates r output file. INCOMPLETE 
   Returns the r output json data as a python dictionary.
   First level entries are:
@@ -1196,3 +1196,45 @@ def load_and_validate_r_output(filepath : str) -> dict:
   # TODO: for robustness, Validate each feature_id and set_id entry
   # return the validated data
   return json_data
+
+
+
+def _convert_r_output_to_long_format(json_data : dict) -> pd.DataFrame:
+  """ Converts json format data to long format data frame. Focuses on feature_specific and set_specific statistical
+  data. The data frame will have columns type, id, contrast, measure, and value:
+  --> type (feature or set, string indicating the type of entry)
+  --> id (feature_id or set_id, string)
+  --> contrast (contrast key, string)
+  --> measure (measure key, from feature specific and set specific measures, string)
+  --> value (number or string with the appropriate data for the measure)
+  Function assumes all data to be available and correct. A validator should be run before, e.g 
+  load_and_validate_r_output()
+  """
+  entries = list()
+  for feature_key in json_data["feature_specific"].keys():
+    for contrast_key in json_data["feature_specific"][feature_key].keys():
+      for measure_key in json_data["feature_specific"][feature_key][contrast_key].keys():
+        entries.append(
+          {
+            "type" : "feature",
+            "id" : feature_key,
+            "contrast" : contrast_key,
+            "measure" : measure_key,
+            "value" : json_data["feature_specific"][feature_key][contrast_key][measure_key]
+          }
+        )
+  for feature_key in json_data["set_specific"].keys():
+    for contrast_key in json_data["set_specific"][feature_key].keys():
+      for measure_key in json_data["set_specific"][feature_key][contrast_key].keys():
+        entries.append(
+          {
+            "type" : "set",
+            "id" : feature_key,
+            "contrast" : contrast_key,
+            "measure" : measure_key,
+            "value" : json_data["set_specific"][feature_key][contrast_key][measure_key]
+          }
+        )
+  long_form_df = pd.DataFrame.from_records(entries)
+  return long_form_df
+
