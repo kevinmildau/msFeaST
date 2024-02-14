@@ -205,8 +205,12 @@ function initializeInteractiveNetworkSession(nodes, edges, groups, groupStats) {
         for (const contrastKey in inputNodeData) {
           outputString += `[${contrastKey}:]\n`
           for (const measureKey in inputNodeData[contrastKey]){
-
+            if (measureKey in ["globalTestFeaturePValue", "log2FoldChange"]){
+              // only these two measures have a measure and nodeSize difference in their data.
             rounded_value = inputNodeData[contrastKey][measureKey]["measure"].toFixed(4)
+            } else {
+              rounded_value = inputNodeData[contrastKey][measureKey]
+            }
             outputString += `  ${measureKey}: ${rounded_value}\n`
           }
         }
