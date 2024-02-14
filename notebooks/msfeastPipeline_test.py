@@ -105,7 +105,7 @@ def test_tsne():
 
 
 
-if False: # __name__ == "__main__":
+if __name__ == "__main__":
   print("Starting Main")
   import pandas as pd
   import numpy as np
@@ -131,7 +131,11 @@ if False: # __name__ == "__main__":
   #pipeline.plot_selected_embedding()
   assert isinstance(pipeline.embedding_coordinates_table, pd.DataFrame)
   print(pipeline.embedding_coordinates_table.head())
-  pipeline.run_r_testing_routine("tmp_output")
+  #pipeline.run_r_testing_routine("tmp_output")
+  feature_ids = msfeast._extract_feature_ids_from_spectra(pipeline.spectra_matchms)
+  edges = msfeast._construct_edge_list(pipeline.similarity_array, feature_ids, top_k = 5)
+  print(edges)
+
 
 if True:
   import json
@@ -218,14 +222,6 @@ if True:
   pandas_data = convert_r_output_to_long_format(json_data)
 
 
-  def linear_transform():
-    # cut raw value to supported range around min and max old_lb old_ub
-    # using the new value, transform to desired scale new_lb and new_ub
-    # the new value will be a linear transform from the old range to new range. Note that raw values outside of the
-    # old_lb and old_ub are considered saturated; getting lower or getting higher does not matter any longer and may
-    # only cause scaling issues in the subsequent visualization, e.g. log10pvalue of 10 vs 100, where most values are
-    # between 0 an 10
-
   def construct_nodes():
     # Constructs nodes using all relevant information for nodes
     # get group id from assignment_table
@@ -235,42 +231,8 @@ if True:
     # this would allow tho focus the scale on the part of the measure that requires granularity:
     # 0.5 -> 0.1 -> 0.01 -> 0.001 -> 0.0001
     # get x and y coordinates from embedding_coordinates_table
-    
     ...
   import numpy as np
-  def construct_edges(similarity_array : np.ndarray, feature_ids : list[str], top_k : int = 30):
-    # Construct edges using all relevant information for edges
-    # use similarity array and corresponding feature_ids to determine top-K neighbours
-    # use standard linear scale projection for edge weights (assume between 0 and 1)
-    """ Constructs edge list for network visualization. """
-    edge_list = []
-    
-    
-    for feature_id in feature_ids:
-      # get top-k neighboring features (by index)
-      # get the scores for those
-      # translate those scores into widths (linear transform)
-      
-      neighbor_ids = list() # list of neighbors
-      pairs_covered = set() 
-      
-      for neighbor_id in neighbor_ids:
-        # if the following condition is true, then the undirected edge already exists
-        if frozenset(feature_id, neighbor_id) not in pairs_covered:
-          pairs_covered.add(frozenset(feature_id, neighbor_id)) # take note of the pair that was added
-          edge = {
-            "id": f"{feature_id}_{neighbor_id}",
-            "from": feature_id,
-            "to": neighbor_id,
-            "width": 8,
-            "data": {
-              "score": 0.005409664436045514
-            }
-          }
-          edge_list.append(edge)
-    return None
-
-  
 
   def construct_sets():
     # Construct set specific statisical data, basic fetch from R output
