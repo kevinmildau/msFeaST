@@ -141,99 +141,19 @@ if True:
   import json
   import pandas as pd
 
-  def load_and_validate_r_output(filepath : str) -> dict:
-    """ Function loads and validates r output file. INCOMPLETE 
-    Returns the r output json data as a python dictionary.
-    First level entries are:
-    feature_specific
-    --> feature id specific data, subdivided into contrast specific, measure specific, and finally value. I.e. for each
-    feature id, for each contrast key, for each measure key, there will be a corresponding value in a nested dict
-    of hierarchy [feature_identifier][contrast_key][measure_key] --> value. Feature_identifier, contrast_key, and
-    measure keys are data dependent strings. The hierarchy gives the type of entry.
-    set_specific
-    --> set id specific data, subdivided into contrast specific, measure specific, and finally value
-    feature_id_keys. Similar to feature_id.
-    set_id_keys
-    --> list of set identifiers
-    contrast_keys
-    --> list of contrast keys
-    feature_specific_measure_keys
-    --> list of measure keys for the feature specific entry
-    set_specific_measure_keys
-    --> list of measure keys for the set specific entries
-    """
-    json_data = json.load(open(filepath, mode = "r"))
-    # Assert that the top level keys are all populated (partial input assertion testing only!)
-    assert json_data["feature_specific"]is not None, "ERROR: Expected feature_specific  entry to not be empty."
-    assert json_data["feature_specific"].keys() is not None, "ERROR: Expected feature specific keys."
-    assert json_data["set_specific"] is not None, "ERROR: Expected set_specific  entry to not be empty."
-    assert json_data["set_specific"].keys() is not None, "ERROR: Expected set specific keys."
-    assert json_data["feature_id_keys"] is not None, "ERROR: Expected feature id keys entry to not be empty."
-    assert json_data["set_id_keys"] is not None, "ERROR: Expected feature id keys entry to not be empty."
-    assert json_data["contrast_keys"] is not None, "ERROR: Expected contrast_keys entry to not be empty."
-    assert json_data["feature_specific_measure_keys"] is not None, "ERROR: Expected feature_specific_measure_keys to not be empty."
-    assert json_data["set_specific_measure_keys"] is not None, "ERROR: Expected set_specific_measure_keys entry to not be empty."
-    # TODO: for robustness, Cross compare R entries against python data from pipeline (contrasts, setids, fids)
-    # TODO: for robustness, Validate each feature_id and set_id entry
-    # return the validated data
-    return json_data
   
-  def convert_r_output_to_long_format(json_data : dict) -> pd.DataFrame:
-    """ Converts json format data to long format data frame. Focuses on feature_specific and set_specific statistical
-    data. The data frame will have columns type, id, contrast, measure, and value:
-    --> type (feature or set, string indicating the type of entry)
-    --> id (feature_id or set_id, string)
-    --> contrast (contrast key, string)
-    --> measure (measure key, from feature specific and set specific measures, string)
-    --> value (number or string with the appropriate data for the measure)
-    Function assumes all data to be available and correct. A validator should be run before, e.g 
-    load_and_validate_r_output()
-    """
-    entries = list()
-    for feature_key in json_data["feature_specific"].keys():
-      for contrast_key in json_data["feature_specific"][feature_key].keys():
-        for measure_key in json_data["feature_specific"][feature_key][contrast_key].keys():
-          entries.append(
-            {
-              "type" : "feature",
-              "id" : feature_key,
-              "contrast" : contrast_key,
-              "measure" : measure_key,
-              "value" : json_data["feature_specific"][feature_key][contrast_key][measure_key]
-            }
-          )
-    for feature_key in json_data["set_specific"].keys():
-      for contrast_key in json_data["set_specific"][feature_key].keys():
-        for measure_key in json_data["set_specific"][feature_key][contrast_key].keys():
-          entries.append(
-            {
-              "type" : "set",
-              "id" : feature_key,
-              "contrast" : contrast_key,
-              "measure" : measure_key,
-              "value" : json_data["set_specific"][feature_key][contrast_key][measure_key]
-            }
-          )
-    long_form_df = pd.DataFrame.from_records(entries)
-    return long_form_df
+  
 
 
-  json_data = load_and_validate_r_output("tmp_output/test_r_output.json")
-  pandas_data = convert_r_output_to_long_format(json_data)
-
-
-  def construct_nodes():
-    # Constructs nodes using all relevant information for nodes
-    # get group id from assignment_table
-    # get feature_stats from R output <--> add conversions to node size (may require global bounds information)
-    # For log10 pvalues it may make sense to transform using a linear scale within range, collapsing anything above
-    # a certain level. For instance, max node size could be reached at p-value of 0.0001, and min size at 0.5 already
-    # this would allow tho focus the scale on the part of the measure that requires granularity:
-    # 0.5 -> 0.1 -> 0.01 -> 0.001 -> 0.0001
-    # get x and y coordinates from embedding_coordinates_table
-    ...
-  import numpy as np
-
+  
+  
+  json_data = msfeast._load_and_validate_r_output("tmp_output/test_r_output.json")
+  pandas_data = msfeast._convert_r_output_to_long_format(json_data)
+  print(pipeline.assignment_table.head())
+  node_entries = construct_nodes(json_data, pipeline.assignment_table, pipeline.embedding_coordinates_table)
+  
+  print(json_data["set_specific"])
+  
   def construct_sets():
     # Construct set specific statisical data, basic fetch from R output
     # for now includes only: group key --> contrast key --> measure key --> value
