@@ -506,6 +506,7 @@ class Msfeast:
     The r-script will generate a json-file output at filepath. This function only returns when the r routine is complete
     or a time limit is exceeded. The default time limit is 60 seconds.
     """
+
     return None
   
   def _export_r_input_data(self, file_directory):
@@ -624,10 +625,7 @@ class Msfeast:
     export is available.
     """
     isValid = True
-    isValid = False
     return isValid
-
-
 
   def run_and_attach_tsne_grid(self, perplexity_values : List[int] = [10, 20, 30, 40, 50]) -> None:
     """ Run the t-SNE grid & attach the results to pipeline instance.
@@ -644,8 +642,6 @@ class Msfeast:
     self.tsne_grid = _run_tsne_grid(distance_matrix, perplexity_values)
     _print_tsne_grid(self.tsne_grid)
     return None
-
-
 
   def select_tsne_settings(self, iloc : int) -> None:
     """ Select particular t-SNE coordinate setting using entry iloc. 
@@ -668,8 +664,6 @@ class Msfeast:
     self.embedding_coordinates_table = embedding_coordinates_table
     self._attach_settings_used(tsne_perplexity = self.tsne_grid[iloc].perplexity)
     return None
-
-
 
   def plot_selected_embedding(self) -> None:
     """ Plots the selected t-sne embedding. """
@@ -1196,8 +1190,6 @@ def _load_and_validate_r_output(filepath : str) -> dict:
   # TODO: for robustness, Validate each feature_id and set_id entry
   # return the validated data
   return json_data
-
-
 
 def _convert_r_output_to_long_format(json_data : dict) -> pd.DataFrame:
   """ Converts json format data to long format data frame. Focuses on feature_specific and set_specific statistical
