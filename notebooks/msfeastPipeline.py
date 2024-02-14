@@ -1105,7 +1105,7 @@ def _linear_range_transform(
   """ Returns a linear transformation of a value in one range to another. 
   
   Use to scale statistical values into appropriate size ranges for visualization.
-   
+
   """
   assert original_lower_bound < original_upper_bound, "Error: lower bound must be strictly smaller than upper bound."
   assert new_lower_bound < new_upper_bound, "Error: lower bound must be strictly smaller than upper bound."
@@ -1151,7 +1151,7 @@ def _construct_edge_list(similarity_array : np.ndarray, feature_ids : list[str],
           "id": f"{feature_id}_to_{neighbor_id}",
           "from": feature_id,
           "to": neighbor_id,
-          "width": _linear_range_transform(score, 0, 1, 1, 30), # 1 and 30 are the px widths for edges
+          "width": round(_linear_range_transform(score, 0, 1, 1, 30), 2), # 1 and 30 are the px widths for edges
           "data": {
             "score": score
           }
