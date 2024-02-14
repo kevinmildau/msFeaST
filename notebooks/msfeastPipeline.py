@@ -1141,12 +1141,10 @@ def _construct_edge_list(similarity_array : np.ndarray, feature_ids : list[str],
   for row_index, column_indices in enumerate(top_k_indices_sorted):
     # iloc reperesents the row, and hence the current feature
     # column_index
-    print(similarity_array[row_index, column_indices[0]], similarity_array[row_index, column_indices[1]])
     feature_id = feature_ids[row_index]
     for column_index in column_indices:
       neighbor_id = feature_ids[column_index]
       if frozenset([feature_id, neighbor_id]) not in node_pairs_covered and feature_id is not neighbor_id:
-        print("Adding new pair:", frozenset([feature_id, neighbor_id]))
         node_pairs_covered.add(frozenset([feature_id, neighbor_id]))
         # Add the node
         score = similarity_array[row_index, column_index]
