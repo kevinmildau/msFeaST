@@ -1102,7 +1102,11 @@ def _linear_range_transform(
     new_lower_bound : float, 
     new_upper_bound : float
   ) -> float:
-  """ Returns a linear transformation of a value in one range to another. """
+  """ Returns a linear transformation of a value in one range to another. 
+  
+  Use to scale statistical values into appropriate size ranges for visualization.
+   
+  """
   assert original_lower_bound < original_upper_bound, "Error: lower bound must be strictly smaller than upper bound."
   assert new_lower_bound < new_upper_bound, "Error: lower bound must be strictly smaller than upper bound."
   assert original_lower_bound <= input_scalar <= original_upper_bound, "Error: input must be within specified bounds"
