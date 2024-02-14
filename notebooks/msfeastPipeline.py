@@ -418,7 +418,7 @@ class Msfeast:
     # make sure that the index is available in the visual overviews
     return None
   
-  def run_r_testing_routine (self, directory, overwrite = False, max_seconds : int = 4):
+  def run_r_testing_routine(self, directory, overwrite = False, max_seconds : int = 4):
     """
     NOT IMPLEMENTED
     Function writes r inputs to file, writes r script to file, tests r availabiltiy, runs test, and imports r results.
@@ -433,18 +433,23 @@ class Msfeast:
     # json filenames input for R; the one argument to pass to R so it can find all the rest
     # could also contain all info, but that makes r parsing more difficult than reading csvs...
     
+
+
     directory = "tmp_output"
     filepath_assignment_table = str(os.path.join(directory, "assignment_table.csv"))
     filepath_quantification_table = str(os.path.join(directory, "test_quant_table.csv"))
     filepath_treatment_table = str(os.path.join(directory, "test_treat_table.csv"))
     filepath_r_output_json = str(os.path.join(directory,"test_r_output.json"))
 
+    # TODO check for directory exist, if not, create it
+    # TODO check for existing r routine output, remove if force = true
+
     # Write R input data to file
     self.quantification_table = self.quantification_table.reset_index(drop=True)
     self.treatment_table = self.treatment_table.reset_index(drop=True)
     self.assignment_table = self.assignment_table.reset_index(drop=True)
     
-    # Required to remove the unnamed = 0 index column that is created somewhere... --> Add 
+    # Required to remove the unnamed = 0 index column that is created somewhere
     self.quantification_table.drop(
       self.quantification_table.columns[
           self.quantification_table.columns.str.contains('Unnamed', case=False)], 
@@ -477,7 +482,13 @@ class Msfeast:
       shell=True
     )
 
-    
+    # TODO import the r data that was created
+    r_json_data = _load_and_validate_r_output(filepath_r_output_json)
+    nodes_list = _construct_nodes(r_json_data, self.assignment_table, self.embedding_coordinates_table)
+    edge_list = _construct_edge_list(
+      self.similarity_array, _extract_feature_ids_from_spectra(self.spectra_matchms), top_k=20
+    )
+    r_json_data[""]
     #if os.path.isfile(filepath):
     #  print("there is a file")
     #else:
@@ -499,46 +510,6 @@ class Msfeast:
     #self.importGlobaltest(filepath)
     return None
   
-  def _run_r_routine(self, file_directory, filepath, time_limit : int = 60):
-    """
-    NOT IMPLEMENTED
-    Function calls the r script encoding the testing routine.
-    The r-script will generate a json-file output at filepath. This function only returns when the r routine is complete
-    or a time limit is exceeded. The default time limit is 60 seconds.
-    """
-
-    return None
-  
-  def _export_r_input_data(self, file_directory):
-    """
-    NOT IMPLEMENTED
-    """
-    return None
-  
-  def _try_r_connection(self, file_directory):
-    """
-    NOT IMPLEMENTED
-    """
-    return None
-  
-  def _generate_r_script(self, directory_path, filename):
-    """
-    NOT IMPLEMENTED
-    Funciton creates the r script file required to run R from within python. 
-    R code is a constant from the python module and standalone code.
-    """
-    return None
-  
-  def _import_r_results(self, directory_path : str):
-    """
-    NOT IMPLEMENTED
-    Funciton imports the results of the R-based testing.
-    """
-    # read the r data
-    # add default nodeSize conversions to the expected R outputs, deal with NA values by giving sensible defaults
-    # if any NAs detected, print corresponding warning that this is unexpected
-    return None
-  
   def generate_json_dict(self) -> Dict: 
     """
     NOT IMPLEMENTED
@@ -549,21 +520,6 @@ class Msfeast:
     # stats data incorporation
     # Multiple steps creation various lists and or dicts of dicts
     return {}
-  
-  def export_to_json_file(self, filepath = None, force = False):
-    """ 
-    NOT IMPLEMENTED
-    Can be split into many small routines, one to make the node lists, one to make the group stats values etc.
-    exportToJson 
-    """
-    # validate the that all self object data available
-    self.validate_complete()
-    # validate the filepath does not exist or force setting to ensure everything works 
-    assert True
-    # construct json string for entire dataset
-    output_dict = self.generate_json_dict()
-    # write to file
-    return None
   
   def run_and_attach_kmedoid_grid(self, k_values : List[int] = [8, 10, 20, 30, 50]):
     """ 
@@ -618,6 +574,21 @@ class Msfeast:
             self._settings_used[key] = value
     return None
   
+  def export_to_json_file(self, filepath = None, force = False):
+    """ 
+    NOT IMPLEMENTED
+    Can be split into many small routines, one to make the node lists, one to make the group stats values etc.
+    exportToJson 
+    """
+    # validate the that all self object data available
+    self.validate_complete()
+    # validate the filepath does not exist or force setting to ensure everything works 
+    assert True
+    # construct json string for entire dataset
+    output_dict = self.generate_json_dict()
+    # write to file
+    return None
+
   def validate_complete(self):
     """
     NOT IMPLEMENTED
@@ -1310,7 +1281,6 @@ def _construct_nodes(
           }
     node_entries.append(node)
   return(node_entries)
-
 
 def create_directory_if_not_exists(directory : str) -> None:
   """
