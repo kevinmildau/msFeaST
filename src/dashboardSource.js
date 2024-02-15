@@ -8,6 +8,9 @@ let fromTopkSelector = document.getElementById("id-topk-range-input")
 let formSelectContrast = document.getElementById("id-contrast-selector" );
 let formSelectUnivMeasure = document.getElementById("id-univ-measure-selector");
 let topkLivePrintContainer = document.getElementById("id-topk-live-print");
+let heatmapContainer = document.getElementById("id_heatmap");
+let runNetworkPhysicsInput = document.getElementById("id-network-physics")
+
 let linearInterpolationToPixels = function(value, inputRangeLowerBound, inputRangeUpperBound, outputRangeLowerBound, outputRangeUpperBound){
   // Take value existing in range of [inputRangeLowerBound, inputRangeUpperBound] and casts it into range of
   // [outputRangeLowerBound, outputRangeUpperBound]. This assumes the upper and lower bounds are different in both cases.
@@ -37,6 +40,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
   const chosenHighlightNode = function(values){
     values.borderWidth = values.borderWidth * 2;
   }
+
   /**
    * Updates borderWidth of selected node to double size. For use inside vis.js network object.
    *
@@ -46,6 +50,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
     values.color = colorHighlight;
     values.opacity = 0.9;
   }
+
   /**
    * Initializes groupStyles object with default color setting each group in the network visualization.
    *
@@ -60,6 +65,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
     }
     return groupStyles
   }
+  
   let groupList = generateDefaultGroupList(groups, defaultNodeColor)
   
   // This structure contains any styling used for the network.
@@ -90,8 +96,6 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
     groups: groupList,
   }
 
-
-  
   let resizeLayout = function (scalingValue){
     // nodeData: array of objects with x and y numeric data
     // function modified nodes object directly
@@ -118,11 +122,11 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
       }
     }
   }
+
   let fullEdgeData = new vis.DataSet(edges);
   let networkNodeData = new vis.DataSet();
   let networkEdgeData = new vis.DataSet();
   networkNodeData.add(nodes)
-  
   networkEdgeData.add([])
   let networkData = {nodes: networkNodeData, edges: networkEdgeData}
   console.log(networkNodeData)
@@ -147,7 +151,22 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
     var nodeObj= network.body.data.nodes._data[nodeId];
     return nodeObj.group;
   }
-
+  let resetGroupDrawingOptions = function (drawingOptions, color) {
+    /*
+    Overwrites every group style entry to make use of color.
+    */
+    for (let [key, value] of Object.entries(drawingOptions["groups"])) {
+      drawingOptions["groups"][key]["color"]["background"] = color;
+    }
+    return undefined // ... drawingOptions modified in place, no return value.
+  }
+  let highlightTargetGroup = function (drawingOptions, group, color){
+    /*
+    Overwrites target group style entry to make use of color.
+    */
+    drawingOptions["groups"][group]["color"]["background"] = color;
+    return undefined // ... drawingOptions modified in place, no return value.
+  }
   // construct network variable and attach to div
   network = new vis.Network(networkContainer, networkData, networkDrawingOptions);
 
@@ -157,22 +176,6 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
     return undefined
   })
   network.on("click", function (params) {
-    let resetGroupDrawingOptions = function (drawingOptions, color) {
-      /*
-      Overwrites every group style entry to make use of color.
-      */
-      for (let [key, value] of Object.entries(drawingOptions["groups"])) {
-        drawingOptions["groups"][key]["color"]["background"] = color;
-      }
-      return undefined // ... drawingOptions modified in place, no return value.
-    }
-    let highlightTargetGroup = function (drawingOptions, group, color){
-      /*
-      Overwrites target group style entry to make use of color.
-      */
-      drawingOptions["groups"][group]["color"]["background"] = color;
-      return undefined // ... drawingOptions modified in place, no return value.
-    }
     let filterEdges = function(edgeList, nodeId){
       let filteredEdgeSet = new Set([])
       if (edgeList.length > 0){
@@ -245,9 +248,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
       network.redraw();
     }
   });
-
-
-  let runNetworkPhysicsInput = document.getElementById("id-network-physics")
+  
   runNetworkPhysicsInput.addEventListener('keydown', function (e) {
     if (e.key === 'Enter') {
       // code for enter
@@ -294,6 +295,94 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
     }
   });
   
+  let constructHeatmapPanel = function(groupStats){
+    // Constructs heatmap with global test set specific results
+    // Dev Note: Assumes n_measures at set level is equal to 1!
+    console.log(groupStats)
+    var z = [];
+    var ticks = [];
+
+    let nRows = Array.from(domElementContrast.options).map(option => option.value).length; // number of contrasts
+    let nCols = Object.keys(groupStats).length; // number of groups
+    let yTicks = Array.from(domElementContrast.options).map(option => option.value);
+    let xTicks = Object.keys(groupStats);
+    console.log(yTicks)
+    console.log(xTicks)
+    let values_array = [];
+    for (let current_contrast of yTicks) {
+      tmp_array = []
+      for (let current_group of xTicks) {
+        
+        tmp_array.push(groupStats[current_group][current_contrast]["globalTestPValue"])
+      }
+      values_array.push(tmp_array)
+    }
+    
+    var data = [{
+      z: values_array,
+      x: xTicks,
+      y: yTicks,
+      zmin: 0,  // Minimum color value
+      zmax: 1,   // Maximum color value
+      colorscale: 'YlGnBu', // [[0, 'white'], [1, 'blue']], // for custom color scale
+      //reversescale : true,
+      type: 'heatmap',
+      hovertemplate: 'x: %{x}<br>y: %{y}<br>z: %{z:.2e}<extra></extra>'
+    }];
+
+    var layout = {
+      //margin: {l: margin,r: margin,b: margin,t: margin,}, 
+      margin: {t:5},
+      xaxis: {automargin : true, tickmode: "linear", dtick:1},
+      yaxis: {automargin : true},
+      //xaxis : {tickmode:'array', tickvals:ticks, ticktext:ticks},
+      //yaxis : {fixedrange : true, tickmode: 'array', tickvals: ticks, ticktext: ticks},
+      
+      title: '',
+      autosize: true, // Automatically adjust size to container
+    };
+    Plotly.newPlot(heatmapContainer, data, layout, {responsive : true});
+    var hoverTimer;  // Define a timer variable
+    /*
+    Delayed Plotly hover response code.
+    */
+    var delay_hover = 200; // Delay in milliseconds
+    heatmapContainer.on('plotly_hover', function(data){
+      // Clear the timer if it's already set
+      if(hoverTimer) {
+        clearTimeout(hoverTimer);
+      }
+      // Set a new timer
+      hoverTimer = setTimeout(function() {
+        var xValue = data.points[0].x;
+        //document.getElementById("textout").innerText = "Last hovered over y value: " + yValue;
+        console.log('Hovering over x value: ' + xValue);
+        resetGroupDrawingOptions(networkDrawingOptions, defaultNodeColor) // autoreset at every hover
+        highlightTargetGroup(networkDrawingOptions, xValue, colorHighlight)
+        network.setOptions(networkDrawingOptions);
+        network.redraw();
+      }, delay_hover);
+    });
+    /*
+    var delay_click = 10; // Delay in milliseconds
+    heatmapContainer.on('plotly_click', function(data){
+      // Clear the timer on unhover
+      if(hoverTimer) {
+        clearTimeout(hoverTimer);
+      }
+      hoverTimer = setTimeout(function() {
+        //document.getElementById("textout").innerText = "Hover cleared.";
+        resetGroupDrawingOptions(networkDrawingOptions, defaultNodeColor)
+        network.setOptions(networkDrawingOptions);
+        network.redraw();
+      }, delay_click);
+    });
+    */
+    
+  }
+ 
+  constructHeatmapPanel(groupStats)
+
   window.onresize = function() {network.fit();}
 }
 
