@@ -20,11 +20,11 @@ let linearInterpolationToPixels = function(value, inputRangeLowerBound, inputRan
   return 
 }
 
-function initializeInteractiveNetworkSession(nodes, edges, groups, groupStats) {
+function initializeInteractiveNetworkSession(nodes, edges, groups, groupStats, domElementContrast, domElementMeasure) {
   // Constants
-  const colorHighlight = "rgb(235,16,162, 0.8)"// "#EB10A2"
-  const colorUpRegulated = "#EBB34B"
-  const colorDownRegulated = "#6EA5EB"
+  const colorHighlight = "rgb(235,16,162, 0.9)"// "#EB10A2"
+  //const colorUpRegulated = "#EBB34B"
+  //const colorDownRegulated = "#6EA5EB"
   const defaultEdgeColor = "#A65A8D"
   const defaultNodeColor = "rgb(166, 90, 141, 0.5)" // "#A65A8D"
   const defaultNodeBorderColor = "rgb(0, 0, 0, 0.7)"
@@ -89,6 +89,8 @@ function initializeInteractiveNetworkSession(nodes, edges, groups, groupStats) {
     // color here. Any other solution would involve direct node modification (change color of each specific node).
     groups: groupList,
   }
+
+
   
   let resizeLayout = function (scalingValue){
     // nodeData: array of objects with x and y numeric data
@@ -120,9 +122,10 @@ function initializeInteractiveNetworkSession(nodes, edges, groups, groupStats) {
   let networkNodeData = new vis.DataSet();
   let networkEdgeData = new vis.DataSet();
   networkNodeData.add(nodes)
+  
   networkEdgeData.add([])
   let networkData = {nodes: networkNodeData, edges: networkEdgeData}
-  
+  console.log(networkNodeData)
 
   // Network data extraction functions
 
@@ -170,76 +173,67 @@ function initializeInteractiveNetworkSession(nodes, edges, groups, groupStats) {
       drawingOptions["groups"][group]["color"]["background"] = color;
       return undefined // ... drawingOptions modified in place, no return value.
     }
-    
+    let filterEdges = function(edgeList, nodeId){
+      let filteredEdgeSet = new Set([])
+      if (edgeList.length > 0){
+        for (let i = 0; i < edgeList.length; i++) {
+          if (edgeList[i].from == nodeId || edgeList[i].to == nodeId ){
+            filteredEdgeSet.add(edgeList[i])
+          }
+        }
+        let allEdgesForNode = Array.from(filteredEdgeSet)
+        allEdgesForNode.sort((a,b) => a.data.score - b.data.score).reverse();
+        let topK = fromTopkSelector.value;
+        let nElemetsToSelect = Math.min(allEdgesForNode.length, topK);
+        topKEdgesForNode = allEdgesForNode.slice(0, nElemetsToSelect)
+        return topKEdgesForNode
+      }
+      return Array.from(filteredEdgeSet)
+    }
+    let getNodeStatsInfo = function (inputNodeData, selectedNodeId){
+      // function expects selectedNode["data"] information
+      let outputString = 'Univariate Data for clicked node with id = ' + String(selectedNodeId) + "\n";
+      //console.log("Checking nodeData", inputNodeData)
+      for (const contrastKey in inputNodeData) {
+        outputString += `[${contrastKey}:]\n`
+        for (const measureKey in inputNodeData[contrastKey]){
+          if (["globalTestFeaturePValue", "log2FoldChange"].includes(measureKey)){
+            // only these two measures have a measure and nodeSize difference in their data.
+            value = inputNodeData[contrastKey][measureKey]["measure"];
+          } else {
+            value = inputNodeData[contrastKey][measureKey];
+          }
+          outputString += `  ${measureKey}: ${value}\n`
+        }
+      }
+      return outputString
+    }
+    let getNodeGroupInfo = function (inputGroupData, groupId){
+      // function expected selectedGroup["data"] information
+      let outputString = 'Group-based data for feature-set with id =  ' + String(groupId) + "\n";
+      console.log("Checking groupData", inputGroupData)
+      for (const contrastKey in inputGroupData) {
+        outputString += `[${contrastKey}:]\n`
+        for (const measureKey in inputGroupData[contrastKey]){
+          rounded_value = inputGroupData[contrastKey][measureKey].toFixed(4)
+          outputString += `  ${measureKey}: ${rounded_value}\n`
+        }
+      }
+      return outputString
+    }
     if (params.nodes.length > 0){
       //params.event = "[original event]";
       let selectedNode = params.nodes[0] // assumes only single selections possible!
-      
-      let filterEdges = function(edgeList, nodeId){
-        let filteredEdgeSet = new Set([])
-        if (edgeList.length > 0){
-          for (let i = 0; i < edgeList.length; i++) {
-            if (edgeList[i].from == nodeId || edgeList[i].to == nodeId ){
-              filteredEdgeSet.add(edgeList[i])
-            }
-          }
-          let allEdgesForNode = Array.from(filteredEdgeSet)
-          allEdgesForNode.sort((a,b) => a.data.score - b.data.score).reverse();
-          let topK = fromTopkSelector.value; // <- fix with global setting
-          let nElemetsToSelect = Math.min(allEdgesForNode.length, topK);
-          topKEdgesForNode = allEdgesForNode.slice(0, nElemetsToSelect)
-          return topKEdgesForNode
-        }
 
-        return Array.from(filteredEdgeSet)
-      }
       let edgeSubset = filterEdges(edges, selectedNode)
       networkEdgeData.update(edgeSubset)
       let nodeGroup = getNodeGroup(network, selectedNode)
       let infoString;
-      
-      getNodeStatsInfo = function (inputNodeData, selectedNodeId){
-        // function expects selectedNode["data"] information
-        let outputString = 'Univariate Data for clicked node with id = ' + String(selectedNodeId) + "\n";
-        //console.log("Checking nodeData", inputNodeData)
-        for (const contrastKey in inputNodeData) {
-          outputString += `[${contrastKey}:]\n`
-          for (const measureKey in inputNodeData[contrastKey]){
-            if (["globalTestFeaturePValue", "log2FoldChange"].includes(measureKey)){
-              // only these two measures have a measure and nodeSize difference in their data.
-              value = inputNodeData[contrastKey][measureKey]["measure"];
-            } else {
-              value = inputNodeData[contrastKey][measureKey];
-            }
-            outputString += `  ${measureKey}: ${value}\n`
-          }
-        }
-        return outputString
-      }
-
-      getNodeGroupInfo = function (inputGroupData, groupId){
-        // function expected selectedGroup["data"] information
-        let outputString = 'Group-based data for feature-set with id =  ' + String(groupId) + "\n";
-        console.log("Checking groupData", inputGroupData)
-        for (const contrastKey in inputGroupData) {
-          outputString += `[${contrastKey}:]\n`
-          for (const measureKey in inputGroupData[contrastKey]){
-            rounded_value = inputGroupData[contrastKey][measureKey].toFixed(4)
-            outputString += `  ${measureKey}: ${rounded_value}\n`
-          }
-        }
-        return outputString
-      }
       infoGroupLevel = getNodeGroupInfo(groupStats[nodeGroup], nodeGroup)
-
       resetGroupDrawingOptions(networkDrawingOptions, defaultNodeColor);
       highlightTargetGroup(networkDrawingOptions, nodeGroup, colorHighlight)
-
-
-
       network.storePositions();
       var clickedNode = networkNodeData.get(selectedNode);
-      // infoString = JSON.stringify(clickedNode["data"], undefined, 2)
       infoString = getNodeStatsInfo(clickedNode["data"], selectedNode)
       nodeInfoContainer.innerText = infoString + infoGroupLevel;
       network.setOptions(networkDrawingOptions);
@@ -252,19 +246,6 @@ function initializeInteractiveNetworkSession(nodes, edges, groups, groupStats) {
     }
   });
 
-
-
-  let scalingInput = document.getElementById("id-graph-scaler")
-  scalingInput.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') {
-      // code for enter
-      resizeLayout(scalingInput.value) // updates the node data
-      networkNodeData.clear()
-      networkNodeData.update(nodes)
-      network.redraw()
-      network.fit();
-    }
-  });
 
   let runNetworkPhysicsInput = document.getElementById("id-network-physics")
   runNetworkPhysicsInput.addEventListener('keydown', function (e) {
@@ -280,17 +261,41 @@ function initializeInteractiveNetworkSession(nodes, edges, groups, groupStats) {
     }
   });
 
+  let adjustNodeDataToSelection = function (){
+    console.log("Reached Adjusting Node Size")
+    console.log(networkNodeData)
+    let selectedContrast = domElementContrast.value;
+    let selectedMeasure = domElementMeasure.value;
+    // Get all node ids
+    var allNodeIds = networkNodeData.getIds();
+    var updatedNodes = []
+    for (var i = 0; i < allNodeIds.length; i++){
+      // For each node, replace the size with the size from the contrast measure selection
+      var nodeToUpdate = networkNodeData.get(allNodeIds[i]);
+      nodeToUpdate["size"] = nodeToUpdate["data"][selectedContrast][selectedMeasure]["nodeSize"]
+      updatedNodes.push(nodeToUpdate)
+    }
+    networkNodeData.update(updatedNodes)
+    network.redraw()
+  }
+  formSelectContrast.addEventListener("change", adjustNodeDataToSelection);
+  formSelectUnivMeasure.addEventListener("change", adjustNodeDataToSelection);
+  adjustNodeDataToSelection(); // run on init to make sure size properties of nodes align with form element.
+  
+  let scalingInput = document.getElementById("id-graph-scaler")
+  scalingInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      // code for enter
+      resizeLayout(scalingInput.value) // updates the node data
+      networkNodeData.clear()
+      networkNodeData.update(nodes)
+      adjustNodeDataToSelection()
+      network.fit();
+    }
+  });
+  
   window.onresize = function() {network.fit();}
 }
-
-//initializeInteractiveNetworkSession();
-
-
-// ---------------------------------------------------------------------------------------------------------------------
-// Loading new json data and attaching to dom element
-
-//let globalJsonFilePathNodes = "./mockNodes.json"
-//let globalJsonFilePathEdges = "./mockEdges.json"
 
 function loadDataAndConstructNetworkVisualization() {
   let input, file, fr;
@@ -303,6 +308,7 @@ function loadDataAndConstructNetworkVisualization() {
       alert(`Input data does not appear to conform with JSON file standard. Aborting data loading. Following error was generated: ${error}`)
       return undefined
     }
+
     let validateInputSchema = function (inputData){
       // basic function to check whether the expected entries are available, to be replaced with object schema and type validation
       // inputData is expected to be type object after a successful json parse. JSON parsing errors are handled separately.
@@ -323,12 +329,6 @@ function loadDataAndConstructNetworkVisualization() {
       return undefined
     }
 
-    // TODO
-    // Define json input schema in a programmatically recognizeable format
-    // assert here that the input data conforms with said schema
-    // abort data loading if not conform with dashboard expectations. 
-    // once implemented, remove the console.assert components below.
-
     let nodes = inputData["nodes"];
     let edges = inputData["edges"];
     let groupKeys = inputData["groupKeys"];
@@ -337,7 +337,7 @@ function loadDataAndConstructNetworkVisualization() {
     let contrastKeys = inputData["contrastKeys"];
     let groupStats = inputData["groupStats"]
 
-    // Processing Edges
+    // Processing Edges; rounding labels to make sure they are printable on edges
     for (let edge of edges){
       edge["label"] = `${edge["data"]["score"].toFixed(2)}`
     } 
@@ -357,21 +357,7 @@ function loadDataAndConstructNetworkVisualization() {
         option.text = optionKey;
         domElementMeasure.appendChild(option);
       });
-      let adjustNodeDataToSelection = function (){
-        let selectedContrast = domElementContrast.value;
-        let selectedMeasure = domElementMeasure.value;
-        for (let node of nodes){
-          // Replaces the starting node size with the node size of the selected Contrast and Measure. 
-          // There is always at least one contrast and one measure to select.
-          // For each measure and contrast combination, an appropriate nodeSize value is assumed available
-          node["size"] = node["data"][selectedContrast][selectedMeasure]["nodeSize"]
-        }
-        initializeInteractiveNetworkSession(nodes, edges, groupKeys, groupStats)
-      }
-      adjustNodeDataToSelection(); // run on init to make sure size properties of nodes align with form element.
-      formSelectContrast.addEventListener("change",adjustNodeDataToSelection);
-      formSelectUnivMeasure.addEventListener("change",adjustNodeDataToSelection);
-      
+      initializeInteractiveNetworkSession(nodes, edges, groupKeys, groupStats, domElementContrast, domElementMeasure)
     }
     
     initializeContrastMeasureSelectors(formSelectContrast, formSelectUnivMeasure, contrastKeys, univMeasureKeys, nodes, groupKeys, groupStats)
