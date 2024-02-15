@@ -12,6 +12,14 @@
   overflow: auto; /*must have for plotly resizing to work in bootstrap tabs!*/
 }
 
+.heatmapPanel {
+  width: 95%;
+  height: 40vh;
+  border: 5px black;
+  align-content: center;
+  overflow: auto; /*must have for plotly resizing to work in bootstrap tabs!*/
+}
+
 .customWarningStyle {
   color: red;
 }
