@@ -4,6 +4,7 @@ trialCode
 mockData
 notebooks/.Rhistory
 
+notebooks/tmp_output/test_dashboard.json
 
 .Rhistory
 .Rapp.history
