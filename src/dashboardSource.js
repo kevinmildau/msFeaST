@@ -20,7 +20,7 @@ let linearInterpolationToPixels = function(value, inputRangeLowerBound, inputRan
   return 
 }
 
-function initializeInteractiveNetworkSession(nodes, edges, groups, groupStats, domElementContrast, domElementMeasure) {
+function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats, domElementContrast, domElementMeasure) {
   // Constants
   const colorHighlight = "rgb(235,16,162, 0.9)"// "#EB10A2"
   //const colorUpRegulated = "#EBB34B"
@@ -357,7 +357,7 @@ function loadDataAndConstructNetworkVisualization() {
         option.text = optionKey;
         domElementMeasure.appendChild(option);
       });
-      initializeInteractiveNetworkSession(nodes, edges, groupKeys, groupStats, domElementContrast, domElementMeasure)
+      initializeInteractiveVisualComponents(nodes, edges, groupKeys, groupStats, domElementContrast, domElementMeasure)
     }
     
     initializeContrastMeasureSelectors(formSelectContrast, formSelectUnivMeasure, contrastKeys, univMeasureKeys, nodes, groupKeys, groupStats)
@@ -386,81 +386,6 @@ function loadDataAndConstructNetworkVisualization() {
 }
 buttonLoadJsonData.addEventListener("click", loadDataAndConstructNetworkVisualization)
 
-C2S.prototype.circle = CanvasRenderingContext2D.prototype.circle;
-C2S.prototype.square = CanvasRenderingContext2D.prototype.square;
-C2S.prototype.triangle = CanvasRenderingContext2D.prototype.triangle;
-C2S.prototype.triangleDown = CanvasRenderingContext2D.prototype.triangleDown;
-C2S.prototype.star = CanvasRenderingContext2D.prototype.star;
-C2S.prototype.diamond = CanvasRenderingContext2D.prototype.diamond;
-C2S.prototype.roundRect = CanvasRenderingContext2D.prototype.roundRect;
-C2S.prototype.ellipse_vis = CanvasRenderingContext2D.prototype.ellipse_vis;
-C2S.prototype.database = CanvasRenderingContext2D.prototype.database;
-C2S.prototype.arrowEndpoint = CanvasRenderingContext2D.prototype.arrowEndpoint;
-C2S.prototype.circleEndpoint = CanvasRenderingContext2D.prototype.circleEndpoint;
-C2S.prototype.dashedLine = CanvasRenderingContext2D.prototype.dashedLine;
-
-function exportSvg(){
-  // function adapted from https://github.com/justinharrell/vis-svg/tree/master
-  // var networkContainer = network.body.container; // this is a global variable in my implementation
-  var ctx = new C2S({width: networkContainer.clientWidth * 4, height: networkContainer.clientWidth * 4, embedImages: true});
-  var canvasProto = network.canvas.__proto__;
-  var currentGetContext = canvasProto.getContext;
-  canvasProto.getContext = function(){
-    return ctx;
-  }
-  console.log("Checkpoint")
-  var svgOptions = {
-    nodes: {
-      shapeProperties: {interpolation: false},//so images are not scaled svg will get full image
-      scaling: { label: { drawThreshold : 0} },
-      font:{color:'#000000'}
-    },
-    edges: {scaling: { label: { drawThreshold : 0} }}
-  };
-  console.log("Checkpoint")
-  //network.setOptions(svgOptions);
-  console.log("Checkpoint")
-  network.redraw();
-  console.log("Checkpoint")
-  //network.setOptions(options);
-  canvasProto.getContext = currentGetContext;
-  ctx.waitForComplete(function()
-      {
-          var svg = ctx.getSerializedSvg();
-          showSvg(svg);
-      });
-}
-
-function showSvg(svg){
-  // function adapted from https://github.com/justinharrell/vis-svg/tree/master
-  var svgBlob = new Blob([svg], {type: 'image/svg+xml'});
-  openBlob(svgBlob, "network.svg");
-}
-
-function openBlob(blob, fileName){
-  // function adapted from https://github.com/justinharrell/vis-svg/tree/master
-  if(window.navigator && window.navigator.msSaveOrOpenBlob){
-    //blobToDataURL(blob, function(dataurl){window.open(dataurl);});
-    window.navigator.msSaveOrOpenBlob(blob,fileName);
-  }
-  else {
-    var a = document.getElementById("blobLink");
-    if(!a){
-      a = document.createElement("a");
-      document.body.appendChild(a);
-      a.setAttribute("id", "blobLink");
-      a.style = "display: none";
-    }
-    var data = window.URL.createObjectURL(blob);
-    a.href = data;
-    a.download = fileName;
-    a.click();
-    // For Firefox it is necessary to delay revoking the ObjectURL
-    setTimeout(function(){window.URL.revokeObjectURL(data)}, 100);
-  }
-}
-
-svgExportButton.addEventListener(type = "click", exportSvg)
 
 // Bootstrap component nav tab change listener to force window-resize event upon chaning tabs
 // this is needed for plotly.js and vis.js to properly size the visuals inside the tabs.
