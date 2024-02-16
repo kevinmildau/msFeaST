@@ -1,16 +1,16 @@
 // DOM References
-let networkContainer = document.getElementById("id-visjs-network-example")
-let nodeInfoContainer = document.getElementById("id-node-information")
-let svgExportButton = document.getElementById("id-save-to-svg")
-let jsonPrintContainer = document.getElementById("id-json-print-container")
-let buttonLoadJsonData = document.getElementById("id-button-load-json")
-let fromTopkSelector = document.getElementById("id-topk-range-input")
+let networkContainer = document.getElementById("id-visjs-network-example");
+let nodeInfoContainer = document.getElementById("id-node-information");
+let svgExportButton = document.getElementById("id-save-to-svg");
+let jsonPrintContainer = document.getElementById("id-json-print-container");
+let buttonLoadJsonData = document.getElementById("id-button-load-json");
+let fromTopkSelector = document.getElementById("id-topk-range-input");
 let formSelectContrast = document.getElementById("id-contrast-selector" );
 let formSelectUnivMeasure = document.getElementById("id-univ-measure-selector");
 let topkLivePrintContainer = document.getElementById("id-topk-live-print");
 let heatmapContainer = document.getElementById("id_heatmap");
-let runNetworkPhysicsInput = document.getElementById("id-network-physics")
-
+let runNetworkPhysicsInput = document.getElementById("id-network-physics");
+let colorBarContainer = document.getElementById('id_color_bar');
 let linearInterpolationToPixels = function(value, inputRangeLowerBound, inputRangeUpperBound, outputRangeLowerBound, outputRangeUpperBound){
   // Take value existing in range of [inputRangeLowerBound, inputRangeUpperBound] and casts it into range of
   // [outputRangeLowerBound, outputRangeUpperBound]. This assumes the upper and lower bounds are different in both cases.
@@ -30,7 +30,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
   //const colorDownRegulated = "#6EA5EB"
   const defaultEdgeColor = "#A65A8D"
   const defaultNodeColor = "rgb(166, 90, 141, 0.5)" // "#A65A8D"
-  const defaultNodeBorderColor = "rgb(0, 0, 0, 0.7)"
+  const defaultNodeBorderColor = "rgb(0, 0, 0, 0.5)"
 
   /**
    * Updates borderWidth of selected node to double size. For use inside vis.js network object.
@@ -122,6 +122,10 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
       }
     }
   }
+  // Add node title information based on node id and node group:
+  nodes.forEach(function(node) {
+    node.title = 'ID: ' + node.id + '<br>Group: ' + node.group;
+  });
 
   let fullEdgeData = new vis.DataSet(edges);
   let networkNodeData = new vis.DataSet();
@@ -318,27 +322,61 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
       }
       values_array.push(tmp_array)
     }
-    
+    let colorscale = 'YlGnBu'
     var data = [{
       z: values_array,
       x: xTicks,
       y: yTicks,
       zmin: 0,  // Minimum color value
       zmax: 1,   // Maximum color value
-      colorscale: 'YlGnBu', // [[0, 'white'], [1, 'blue']], // for custom color scale
+      colorscale: colorscale, // [[0, 'white'], [1, 'blue']], // for custom color scale
+      showscale : false,
       //reversescale : true,
       type: 'heatmap',
       hovertemplate: 'x: %{x}<br>y: %{y}<br>z: %{z:.2e}<extra></extra>'
     }];
 
+    let scale_values = Array.from({length: 101}, (_, i) => i * 0.01);
+    console.log(scale_values)
+    var colorBarHeatmap = [{
+      z: [scale_values], // This should match the color levels of your original heatmap
+      x: scale_values,
+      y: ["Color Legend"],
+      type: 'heatmap',
+      colorscale: colorscale,
+      showscale : false,
+      xaxis: 'p-value',
+      yaxis: ['color'],
+      hovertemplate: 'p-value: %{x}<br><extra></extra>',
+    }];
+    let margin = 10;
+    var layout_colorbar = {
+      title : "",
+      margin: {l: margin,r: margin,b: margin, t: 30,}, 
+      xaxis: {
+        automargin : true,
+        domain: [0, 1],
+        anchor: 'y',
+      },
+      yaxis: {
+        anchor: 'x',
+        automargin : true,
+        showticklabels: true,
+        side: "right",
+        tickmode: "linear", 
+        dtick:1
+      },
+      autosize: true, // Automatically adjust size to container
+    };
+    Plotly.newPlot(colorBarContainer, colorBarHeatmap, layout_colorbar, {responsive : true});
+
     var layout = {
       //margin: {l: margin,r: margin,b: margin,t: margin,}, 
-      margin: {t:5, l:5},
+      margin: {t:margin, l:margin},
       xaxis: {automargin : true, tickmode: "linear", dtick:1},
       yaxis: {automargin : true, side: "right"},
       //xaxis : {tickmode:'array', tickvals:ticks, ticktext:ticks},
       //yaxis : {fixedrange : true, tickmode: 'array', tickvals: ticks, ticktext: ticks},
-      
       title: '',
       autosize: true, // Automatically adjust size to container
     };
