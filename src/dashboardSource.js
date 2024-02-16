@@ -352,10 +352,11 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
     let margin = 10;
     var layout_colorbar = {
       title : "",
-      margin: {l: margin,r: margin,b: margin, t: 30,}, 
+      margin: {l: margin,r: margin,b: margin, t: margin,}, 
       xaxis: {
         automargin : true,
         domain: [0, 1],
+        tickfont : {size : 8},
         anchor: 'y',
       },
       yaxis: {
@@ -373,7 +374,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
     var layout = {
       //margin: {l: margin,r: margin,b: margin,t: margin,}, 
       margin: {t:margin, l:margin},
-      xaxis: {automargin : true, tickmode: "linear", dtick:1},
+      xaxis: {automargin : true, tickmode: "linear", dtick:1, tickfont : {size : 8}},
       yaxis: {automargin : true, side: "right"},
       //xaxis : {tickmode:'array', tickvals:ticks, ticktext:ticks},
       //yaxis : {fixedrange : true, tickmode: 'array', tickvals: ticks, ticktext: ticks},
