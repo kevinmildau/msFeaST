@@ -110,10 +110,6 @@ run_and_attach_log2foldchange_on_feature <- function(
   
   ratio <- mean(treatmentIntensities) / mean(referenceIntensities)
   log2ratio <- log2(ratio)
-
-  tmpFeatureData <- tmpAllData %>% 
-    select(-c("sample_id", "treatment")) %>%
-    as.matrix(.)
   
   # Attach to output
   resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["log2FoldChange"] <- list(log2ratio)
