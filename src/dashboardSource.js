@@ -347,7 +347,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
     /*
     Delayed Plotly hover response code.
     */
-    var delay_hover = 200; // Delay in milliseconds
+    var delay_hover = 500; // Delay in milliseconds
     heatmapContainer.on('plotly_hover', function(data){
       // Clear the timer if it's already set
       if(hoverTimer) {
