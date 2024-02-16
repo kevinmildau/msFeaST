@@ -42,7 +42,7 @@
           <a 
             class="nav-link" id="pills-settings-tab" data-toggle="tab" href="#settings-tab" data-bs-toggle="pill" 
             data-bs-target="#settings-tab" type="button" role="tab" aria-controls="pills-home" aria-selected="true">
-            Settings View
+            Data Loading
           </a>
         </li>
       </ul>
@@ -57,16 +57,15 @@
           <div id="id-visjs-network-example" class = "visjsNetworkContainer" overflow="hidden"> 
             <div class="vis-tooltip" style="left: 0px; top: 0px; visibility: hidden;"><br></div>
           </div>
+          <div id="id_heatmap" class = "heatmapPanel"></div>
+          <div id="id_color_bar" class = "colorBarPanel"></div>
         </div>
         <div class="col-4">
           <div class="row">
-            Interactive node information display:  
+            Interactive node information display (click on node):  
           </div>
           <div class="row">
-            Below some node specific information (click on node):
-          </div>
-          <div class="row">
-            <pre id="id-node-information"></pre>
+            <pre id="id-node-information" class="nodeInfoText""></pre>
           </div>
           <br/>
           <div class="row"> Select Contrast:
@@ -87,10 +86,14 @@
             This pushes overlapping nodes away from each other. Use a value between 1 and 10 and press enter repeatedly.
           </div>
           <input id="id-network-physics" class="form-control" type="number" placeholder=1>
+          <div class="row">
+            Set maximum number of edges to be visualized when clicking a node. <br/>
+            <div id="id-topk-live-print">Selected top-K value: 10</div>
+          </div>
+          <input id="id-topk-range-input" type="range" class="form-control-range" id="formControlRange" min="1" max="50" step="1" value="10">
+
         </div>
       </div>
-      <div id="id_heatmap" class = "heatmapPanel"></div>
-      <div id="id_color_bar" class = "colorBarPanel"></div>
     </div>
     <div id="settings-tab" class="tab-pane">
       <br/>
@@ -104,24 +107,8 @@
           </form>
           <br/>
           <input type='button' id='id-button-load-json' value='Load Selected Data'>
-          <br/>
-          <br/>
-          <p>Plotly Graph Example</p>
-          <p> This is an example plotly graph. The graph is specified in a separate .js file and will be put into the 
-            DIV below. Interactivity in this graph does not connect to any other graph elements yet. This might be used
-            later on to incorporate some summary statistics for the data.
-          </p>
-          <div id="id_plotly_example" class = "plotlyGraphContainer"></div>
         </div>
         <div class="col-6">
-          <h1>Select top-K edge limits:</h1>
-          <form>
-            <div class="form-group">
-              <label for="formControlRange"> Set maximum number of nodes per edge. Can be set to range 1 to 100. This setting only does sub-setting; if only 20 edges are provided per node, this will be the effective maximum. </label>
-              <div id="id-topk-live-print">Selected top-K value: 25</div>
-              <input id="id-topk-range-input" type="range" class="form-control-range" id="formControlRange" min="1" max="50" step="1" value="25">
-            </div>
-          </form>
         </div>
       </div>
     </div>
