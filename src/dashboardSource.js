@@ -242,6 +242,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
       network.setOptions(networkDrawingOptions);
       network.redraw();
     } else {
+      network.storePositions();
       networkEdgeData.clear();
       resetGroupDrawingOptions(networkDrawingOptions, defaultNodeColor);
       network.setOptions(networkDrawingOptions);
