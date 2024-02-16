@@ -1,6 +1,6 @@
 .visjsNetworkContainer {
   width: 100%;
-  height: 80vh;
+  height: 70vh;
   border: 1px solid lightgray;
 }
 
@@ -14,7 +14,7 @@
 
 .heatmapPanel {
   width: 95%;
-  height: 40vh;
+  height: 25vh;
   border: 5px black;
   align-content: center;
   overflow: auto; /*must have for plotly resizing to work in bootstrap tabs!*/
