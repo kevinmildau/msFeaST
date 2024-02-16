@@ -77,7 +77,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
       shape: "dot", // use dot, circle scales to the label size as the label is inside the shape! 
       chosen: {node: chosenHighlightNode}, // this passes the function to style the respective selected node
       color: {background: defaultNodeColor, border: defaultNodeBorderColor},
-      size: 25, font: {size: 14, face: "Helvetica"}, borderWidth: 2, 
+      size: 25, font: {size: 14, face: "Helvetica"}, borderWidth: 1, 
     },
     edges: {
       chosen: {edge:chosenHighlightEdge}, // this passes the function to style the respective selected edge
