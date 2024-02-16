@@ -246,6 +246,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
       network.setOptions(networkDrawingOptions);
       network.redraw();
     } else {
+      nodeInfoContainer.innerText = "";
       network.storePositions();
       networkEdgeData.clear();
       resetGroupDrawingOptions(networkDrawingOptions, defaultNodeColor);
