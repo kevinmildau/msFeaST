@@ -333,9 +333,9 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
 
     var layout = {
       //margin: {l: margin,r: margin,b: margin,t: margin,}, 
-      margin: {t:5},
+      margin: {t:5, l:5},
       xaxis: {automargin : true, tickmode: "linear", dtick:1},
-      yaxis: {automargin : true},
+      yaxis: {automargin : true, side: "right"},
       //xaxis : {tickmode:'array', tickvals:ticks, ticktext:ticks},
       //yaxis : {fixedrange : true, tickmode: 'array', tickvals: ticks, ticktext: ticks},
       
