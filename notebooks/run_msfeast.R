@@ -412,7 +412,7 @@ generateFeatureSetList <- function(feature_groupings_df){
 
 
 stringify_value <- function(x){
-  """ Converts any non-standard numeric values to an appropriate string that the python parser can catch. """
+  # Converts any non-standard numeric values to an appropriate string that the python parser can catch.
   if (is.na(x) | is.null(x) ){
     x <- "NaN"
   }
