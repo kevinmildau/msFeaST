@@ -504,18 +504,19 @@ class Msfeast:
     edge_list = _construct_edge_list(
       self.similarity_array, _extract_feature_ids_from_spectra(self.spectra_matchms), top_k
     )
+    group_stats_list = _apply_bonferroni_correction_to_group_stats(r_json_data["set_specific"], alpha)
     output_dictionary = {
       "groupKeys": r_json_data["set_id_keys"],
       "univMeasureKeys": ["log2FoldChange", "globalTestFeaturePValue"],
       "groupMeasureKeys": ["globalTestPValue"],
       "contrastKeys": r_json_data["contrast_keys"],
-      "groupStats": r_json_data["set_specific"],
+      "groupStats": group_stats_list,
       "nodes": nodes_list,
       "edges": edge_list,
     }
     self.output_dictionary = output_dictionary
     return None
-  
+
   def run_and_attach_kmedoid_grid(self, k_values : List[int] = [8, 10, 20, 30, 50]):
     """ 
     Run the k-medoid grid & attach the results to pipeline instance.
@@ -1277,6 +1278,22 @@ def _construct_nodes(
           }
     node_entries.append(node)
   return(node_entries)
+
+def _apply_bonferroni_correction_to_group_stats(groupStats, alpha = 0.01):
+  """ Applies Bonferroni adjustment to p-values in groupStats
+  The number of groups times the number of contrasts gives the number of tests performed in total. Individual
+  feature pvalues are not considered here and treated as descriptives instead. 
+  """
+  groups =  list(groupStats.keys())
+  contrasts = list(groupStats[groups[0]].keys())
+  assert isinstance(groups, list) and isinstance(contrasts, list), "Error: expected list types."
+  n_tests = len(groups) * len(contrasts)
+  adjusted_group_stats = copy.deepcopy(groupStats)
+  for group in adjusted_group_stats:
+    for contrast in contrasts:
+      adjusted_pvalue = min(1, adjusted_group_stats[group][contrast]["globalTestPValue"] * n_tests)
+      adjusted_group_stats[group][contrast]["globalTestPValue"] = adjusted_pvalue
+  return adjusted_group_stats
 
 def create_directory_if_not_exists(directory : str) -> None:
   """
