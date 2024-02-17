@@ -491,7 +491,7 @@ class Msfeast:
     self._generate_and_attach_json_dict(r_json_data, top_k)
     return None
   
-  def _generate_and_attach_json_dict(self, r_json_data, top_k) -> None: 
+  def _generate_and_attach_json_dict(self, r_json_data, top_k, alpha = 0.01) -> None: 
     """
     NOT IMPLEMENTED
     Function constructs the json representation required by the visualization app as a python dictionary,.
@@ -1113,7 +1113,9 @@ def _linear_range_transform(
   """
   assert original_lower_bound < original_upper_bound, "Error: lower bound must be strictly smaller than upper bound."
   assert new_lower_bound < new_upper_bound, "Error: lower bound must be strictly smaller than upper bound."
-  assert original_lower_bound <= input_scalar <= original_upper_bound, "Error: input must be within specified bounds"
+  assert original_lower_bound <= input_scalar <= original_upper_bound, (
+    f"Error: input must be within specified bounds but received {input_scalar}"
+  )
 
   # Normalize x to [0, 1]
   normalized_scalar = (input_scalar - original_lower_bound) / (original_upper_bound - original_lower_bound)
@@ -1232,25 +1234,33 @@ def _construct_nodes(
       "data" : r_json_data["feature_specific"][feature_key]
     }
     # For specific expected measures, translate the measure into node size: supported: p-value & log2foldchange
-    # Currently no scale available
-    for contrast_key in node["data"].keys():
+    # Currently no scale available.
+    lb_node_size = 10
+    ub_node_size = 50
+    for contrast_key in node["data"].keys(): 
       for measure_key in node["data"][contrast_key].keys():
+        # Only add nodeSize conversion if among the supported keys for conversion
         if measure_key in measure_keys:
-          value = node["data"][contrast_key][measure_key]
-          if measure_key == "log2foldChange":
+          value = node["data"][contrast_key][measure_key] # convert +inf or -inf to float for numpy
+          # Handle values that are type string (R outputs: -inf, +inf, NaN)
+          size = None
+          if value == "NaN":
+            size = lb_node_size # the the measure cannot be used to highlight, minimal size
+          else:
+            value = float(value) # convert inf string to inf float compatible with np.clip
+          if measure_key == "log2FoldChange":
             # transform to abs scale for positive and negative fold to be treated equally 
             # limit to range 0 to 10 (upper bounding to limit avoid a huge upper bound masking smaller effects), 
             # recast to size 10 to 50
             lb_original = 0
-            ub_original = 10 # also max considered for visualization
-            lb_node_size = 10
-            ub_node_size = 50
-            round_decimals = 2              
+            ub_original = 13 # also max considered for visualization, equivalent of a 8192 fold increase or decrease
+            round_decimals = 4        
             size = round(
               _linear_range_transform(
                 np.clip(np.abs(value), lb_original, ub_original),
                 lb_original, ub_original, lb_node_size, ub_node_size), 
-              2)
+              round_decimals
+            )
           if measure_key == "globalTestFeaturePValue":
             # transform p value to log10 scale to get order of magnitude scaling
             # take absolute value to make increasing scale; the smaller p, the larger the value
@@ -1258,11 +1268,9 @@ def _construct_nodes(
             # pvalue = 0.1 (all above are simply min node size of 10)
             # A abs(log10(p_value = 0.1)) = 1 ; this is size 10 for the nodes. Going below means getting size.
             # max visual is log10(0.0000001) -> -6
-            lb_original = 1
-            ub_original = 6 # also max considered for visualization
-            lb_node_size = 10
-            ub_node_size = 50
-            round_decimals = 2
+            lb_original = 0
+            ub_original = 6 # also max considered for visualization, equivalent to 1 in a million probability
+            round_decimals = 4
             if value != 0:
               size = round(
                 _linear_range_transform(
@@ -1272,10 +1280,12 @@ def _construct_nodes(
               )
             else:
               size = ub_node_size # maximum size for p value of zero
+          #assert size is not None, "Error: size computation failed."
           node["data"][contrast_key][measure_key] = {
             "measure": value,
             "nodeSize": size,
           }
+    # Attach the processed node to the node_entries list
     node_entries.append(node)
   return(node_entries)
 
