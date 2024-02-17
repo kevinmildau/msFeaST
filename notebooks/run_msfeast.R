@@ -110,7 +110,7 @@ run_and_attach_log2foldchange_on_feature <- function(
   
   ratio <- mean(treatmentIntensities) / mean(referenceIntensities)
   log2ratio <- log2(ratio)
-  
+  log2ratio <- stringify_value(log2ratio)
   # Attach to output
   resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["log2FoldChange"] <- list(log2ratio)
 }
@@ -408,6 +408,18 @@ generateFeatureSetList <- function(feature_groupings_df){
     stop("Expected that length(feature_sets) == length(set_ids).")
   }
   return(feature_sets)
+}
+
+
+stringify_value <- function(x){
+  """ Converts any non-standard numeric values to an appropriate string that the python parser can catch. """
+  if (is.na(x) | is.null(x) ){
+    x <- "NaN"
+  }
+  if (is.infinite(x)){
+    x <- as.character(x) # required for proper json parsing
+  }
+  return(x)
 }
 
 
