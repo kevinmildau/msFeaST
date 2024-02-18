@@ -1282,7 +1282,7 @@ def _construct_nodes(
               size = ub_node_size # maximum size for p value of zero
           #assert size is not None, "Error: size computation failed."
           node["data"][contrast_key][measure_key] = {
-            "measure": value,
+            "measure": str(value),
             "nodeSize": size,
           }
     # Attach the processed node to the node_entries list
