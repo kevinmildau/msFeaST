@@ -509,7 +509,7 @@ if (sys.nframe() == 0){
   print(c("Starting Routine log at ", as.character(Sys.time())))
   measures <- c( "log2FoldChange", "globalTest") # constant
 
-  print("R Routin: run integration test...")
+  print("R Routine: run integration test...")
   run_integration_test() # <-- currently empty
 
   print("R Routine: Validating input file paths...")
