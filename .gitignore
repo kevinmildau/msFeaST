@@ -10,3 +10,4 @@ notebooks/tmp_output/test_dashboard.json
 .Rapp.history
 
 notebooks/__pycache__
+notebooks/tmp_output/test_dashboard.json
