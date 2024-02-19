@@ -342,7 +342,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
     var colorBarHeatmap = [{
       z: [scale_values], // This should match the color levels of your original heatmap
       x: scale_values,
-      y: ["Color Legend"],
+      y: ["P-value color gradient"],
       type: 'heatmap',
       colorscale: colorscale,
       showscale : false,
