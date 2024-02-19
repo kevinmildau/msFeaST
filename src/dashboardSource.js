@@ -126,6 +126,9 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
   nodes.forEach(function(node) {
     node.title = 'ID: ' + node.id + '<br>Group: ' + node.group;
   });
+  edges.forEach(function(edge) {
+    edge.title = 'ID: ' + edge.id + '<br>Score: ' + edge.data.score;
+  });
 
   let fullEdgeData = new vis.DataSet(edges);
   let networkNodeData = new vis.DataSet();
