@@ -1,73 +1,296 @@
 // DOM References
-let networkContainer = document.getElementById("id-visjs-network-example");
-let nodeInfoContainer = document.getElementById("id-node-information");
-let svgExportButton = document.getElementById("id-save-to-svg");
-let jsonPrintContainer = document.getElementById("id-json-print-container");
-let buttonLoadJsonData = document.getElementById("id-button-load-json");
-let fromTopkSelector = document.getElementById("id-topk-range-input");
-let formSelectContrast = document.getElementById("id-contrast-selector" );
-let formSelectUnivMeasure = document.getElementById("id-univ-measure-selector");
-let topkLivePrintContainer = document.getElementById("id-topk-live-print");
-let heatmapContainer = document.getElementById("id_heatmap");
-let runNetworkPhysicsInput = document.getElementById("id-network-physics");
-let colorBarContainer = document.getElementById('id_color_bar');
+const networkContainer = document.getElementById("id-visjs-network-example");
+const nodeInfoContainer = document.getElementById("id-node-information");
+const jsonPrintContainer = document.getElementById("id-json-print-container");
+const buttonLoadJsonData = document.getElementById("id-button-load-json");
+const fromTopkSelector = document.getElementById("id-topk-range-input");
+const formSelectContrast = document.getElementById("id-contrast-selector" );
+const formSelectUnivMeasure = document.getElementById("id-univ-measure-selector");
+const topkLivePrintContainer = document.getElementById("id-topk-live-print");
+const heatmapContainer = document.getElementById("id_heatmap");
+const runNetworkPhysicsInput = document.getElementById("id-network-physics");
+const colorBarContainer = document.getElementById('id_color_bar');
+
+// Styling Variables
+const colorHighlight = "rgb(235,16,162, 0.9)";
+const defaultEdgeColor = "#A65A8D";
+const defaultNodeColor = "rgb(166, 90, 141, 0.5)" ;
+const defaultNodeBorderColor = "rgb(0, 0, 0, 0.5)";
+
+/**
+  * Updates borderWidth of selected node to double size. For use inside vis.js network object.
+  *
+  * @param {values} object - visjs network selected return with styling elements accessible.
+  */
+const stylizeHighlightNode = function(values){
+  values.borderWidth = values.borderWidth * 2;
+};
+
+/**
+  * Updates borderWidth of selected node to double size. For use inside vis.js network object.
+  *
+  * @param {values} object - visjs network selected return with styling elements accessible.
+  */
+const stylizeHighlightEdge = function(values){
+  values.color = colorHighlight;
+  values.opacity = 0.9;
+};
+
+/**
+  * Initializes groupStyles object with default color setting each group in the network visualization.
+  *
+  * @param {groupsArray} array - Array of structure [{"group": "group_id1"}, {"group": "group_id2"}, ...]
+  * @returns {groupStyles} object - Object with entries for each group_id containing defaultNodeColor styling.
+  */
+let generateDefaultGroupList = function (groupsArray, defaultColor){
+  // turns groups input from Python into a list of default group stylings
+  let groupStyles = {};
+  for (groupEntry of groupsArray) {
+    groupStyles[groupEntry] = {color: {background: defaultColor}}
+  }
+  return groupStyles;
+}
+
+/**
+ * 
+ * @param {*} scalingValue A float
+ * @param {*} nodes A list of node entries for vis network
+ * @returns 
+ */
+let resizeLayout = function (scalingValue, nodes){
+  // nodeData: array of objects with x and y numeric data
+  // function modified nodes object directly
+  if (scalingValue > 0){
+    const xValues = nodes.map(obj => obj.x);
+    const yValues = nodes.map(obj => obj.y);
+    const xMinValue = Math.min(...xValues);
+    const xMaxValue = Math.max(...xValues);
+    const yMinValue = Math.min(...yValues);
+    const yMaxValue = Math.max(...yValues);
+
+    if (xMinValue === xMaxValue){console.error("Error: xmin and xmax coordinates are identical!")};
+    if (yMinValue === yMaxValue){console.error("Error: ymin and ymax coordinates are identical!")};
+
+    const newMax = 1 * scalingValue;
+    const newMin = -1 * scalingValue;
+    const xScaleFactor = (newMax - newMin) / (xMaxValue - xMinValue);
+    const ySaleFactor = (newMax - newMin) / (yMaxValue - yMinValue);
+    // Assess current scale of x and y values
+    // Set scale to unit scale and multiply with scalingValue
+    for (let node of nodes){
+      node.x = (node.x - xMinValue) * xScaleFactor + newMin; 
+      node.y = (node.y - yMinValue) * ySaleFactor + newMin;
+    }
+  }
+  return nodes;
+}
+
+/** Gets label data for node with specified id.
+ * 
+ * @param {vis.network} network 
+ * @param {string} nodeId 
+ * @returns 
+ */
+function getNodeLabel(network, nodeId){
+  // custom function to access network data
+  var nodeObj= network.body.data.nodes._data[nodeId];
+  let output = nodeObj.label;
+  return output;
+};
+
+/**
+ * 
+ * @param {*} edgeList 
+ * @param {*} nodeId 
+ * @returns 
+ */
+let filterEdges = function(edgeList, nodeId){
+  let filteredEdgeSet = new Set([]);
+  if (edgeList.length > 0){
+    for (let i = 0; i < edgeList.length; i++) {
+      if (edgeList[i].from == nodeId || edgeList[i].to == nodeId ){
+        filteredEdgeSet.add(edgeList[i])
+      };
+    };
+    let allEdgesForNode = Array.from(filteredEdgeSet);
+    allEdgesForNode.sort((a,b) => a.data.score - b.data.score).reverse();
+    let topK = fromTopkSelector.value;
+    let nElemetsToSelect = Math.min(allEdgesForNode.length, topK);
+    topKEdgesForNode = allEdgesForNode.slice(0, nElemetsToSelect);
+    return topKEdgesForNode;
+  };
+  return Array.from(filteredEdgeSet)
+};
+
+/**
+ * 
+ * @param {*} inputNodeData 
+ * @param {*} selectedNodeId 
+ * @returns 
+ */
+let getNodeStatsInfo = function (inputNodeData, selectedNodeId){
+  // function expects selectedNode["data"] information
+  let outputString = 'Univariate Data for clicked node with id = ' + String(selectedNodeId) + "\n";
+  //console.log("Checking nodeData", inputNodeData)
+  for (const contrastKey in inputNodeData) {
+    outputString += `[${contrastKey}:]\n`
+    for (const measureKey in inputNodeData[contrastKey]){
+      if (["globalTestFeaturePValue", "log2FoldChange"].includes(measureKey)){
+        // only these two measures have a measure and nodeSize difference in their data.
+        value = inputNodeData[contrastKey][measureKey]["measure"];
+      } else {
+        value = inputNodeData[contrastKey][measureKey];
+      }
+      outputString += `  ${measureKey}: ${value}\n`
+    }
+  }
+  return outputString
+};
+
+/**
+ * Extracts node label for specific node from network.
+ *
+ * @param {network} array - Array of structure [{"group": "group_id1"}, {"group": "group_id2"}, ...]
+ * @param {network} array - Array of structure [{"group": "group_id1"}, {"group": "group_id2"}, ...]
+ * @returns {string} output - Object with entries for each group_id containing defaultNodeColor styling.
+**/
+function getNodeGroup(network, nodeId){
+  // custom function to access network data
+  var nodeObj= network.body.data.nodes._data[nodeId];
+  return nodeObj.group;
+}
+
+/**
+ * 
+ * @param {*} drawingOptions 
+ * @param {*} color 
+ * @returns 
+ */
+let resetGroupDrawingOptions = function (drawingOptions, color) {
+  /*
+  Overwrites every group style entry to make use of color.
+  */
+  for (let [key, value] of Object.entries(drawingOptions["groups"])) {
+    drawingOptions["groups"][key]["color"]["background"] = color;
+  }
+  return undefined // ... drawingOptions modified in place, no return value.
+}
+
+/**
+ * 
+ * @param {*} drawingOptions 
+ * @param {*} group 
+ * @param {*} color 
+ * @returns 
+ */
+let highlightTargetGroup = function (drawingOptions, group, color){
+  /*
+  Overwrites target group style entry to make use of color.
+  */
+  drawingOptions["groups"][group]["color"]["background"] = color;
+  return undefined // ... drawingOptions modified in place, no return value.
+}
+
+/**
+ * 
+ * @param {*} inputGroupData 
+ * @param {*} groupId 
+ * @returns 
+ */
+let getNodeGroupInfo = function (inputGroupData, groupId){
+  // function expected selectedGroup["data"] information
+  let outputString = 'Group-based data for feature-set with id =  ' + String(groupId) + "\n";
+  console.log("Checking groupData", inputGroupData)
+  for (const contrastKey in inputGroupData) {
+    outputString += `[${contrastKey}:]\n`
+    for (const measureKey in inputGroupData[contrastKey]){
+      rounded_value = inputGroupData[contrastKey][measureKey].toFixed(4)
+      outputString += `  ${measureKey}: ${rounded_value}\n`
+    }
+  }
+  return outputString
+}
+
+/**
+ * 
+ * @param {*} input 
+ * @param {*} network 
+ * @param {*} networkNodeData 
+ * @param {*} networkEdgeData 
+ * @param {*} edges 
+ * @param {*} groupStats
+ * @param {*} networkDrawingOptions
+ */
+let handleNetworkClickResponse = function(input, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions) {
+  if (input.nodes.length > 0){
+    let selectedNode = input.nodes[0] // assumes only single selections possible!
+    let edgeSubset = filterEdges(edges, selectedNode)
+    networkEdgeData.update(edgeSubset)
+    let nodeGroup = getNodeGroup(network, selectedNode)
+    let infoString;
+    infoGroupLevel = getNodeGroupInfo(groupStats[nodeGroup], nodeGroup)
+    resetGroupDrawingOptions(networkDrawingOptions, defaultNodeColor);
+    highlightTargetGroup(networkDrawingOptions, nodeGroup, colorHighlight)
+    network.storePositions();
+    var clickedNode = networkNodeData.get(selectedNode);
+    infoString = getNodeStatsInfo(clickedNode["data"], selectedNode)
+    nodeInfoContainer.innerText = infoString + infoGroupLevel;
+    network.setOptions(networkDrawingOptions);
+    network.redraw();
+  } else {
+    nodeInfoContainer.innerText = "";
+    network.storePositions();
+    networkEdgeData.clear();
+    resetGroupDrawingOptions(networkDrawingOptions, defaultNodeColor);
+    network.setOptions(networkDrawingOptions);
+    network.redraw();
+  }
+};
+
+/** In place coordinate modification of network upond enter keydown in run stabilize widget.
+ * 
+ * @param {*} keyInput 
+ * @param {*} network 
+ * @param {*} networkEdgeData 
+ * @param {*} fullEdgeData 
+ */
+let handleRunForceDirectedEvent = function(keyInput, network, networkEdgeData, fullEdgeData){
+  if (keyInput.key === 'Enter') {
+    // code for enter
+    networkEdgeData.update(fullEdgeData);
+    let n_iterations = Number(runNetworkPhysicsInput.value)
+    network.stabilize(n_iterations)
+    networkEdgeData.clear()
+    network.storePositions();
+    network.redraw()
+    network.fit();
+  }
+}
 
 function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats, domElementContrast, domElementMeasure) {
-  // Constants
-  const colorHighlight = "rgb(235,16,162, 0.9)"// "#EB10A2"
-  const defaultEdgeColor = "#A65A8D"
-  const defaultNodeColor = "rgb(166, 90, 141, 0.5)" // "#A65A8D"
-  const defaultNodeBorderColor = "rgb(0, 0, 0, 0.5)"
-
-  /**
-   * Updates borderWidth of selected node to double size. For use inside vis.js network object.
-   *
-   * @param {values} object - visjs network selected return with styling elements accessible.
-  **/
-  const chosenHighlightNode = function(values){
-    values.borderWidth = values.borderWidth * 2;
-  }
-
-  /**
-   * Updates borderWidth of selected node to double size. For use inside vis.js network object.
-   *
-   * @param {values} object - visjs network selected return with styling elements accessible.
-  **/
-  const chosenHighlightEdge = function(values){
-    values.color = colorHighlight;
-    values.opacity = 0.9;
-  }
-
-  /**
-   * Initializes groupStyles object with default color setting each group in the network visualization.
-   *
-   * @param {groupsArray} array - Array of structure [{"group": "group_id1"}, {"group": "group_id2"}, ...]
-   * @returns {groupStyles} object - Object with entries for each group_id containing defaultNodeColor styling.
-  **/
-  let generateDefaultGroupList = function (groupsArray, defaultColor){
-    // turns groups input from Python into a list of default group stylings
-    let groupStyles = {};
-    for (groupEntry of groupsArray) {
-      groupStyles[groupEntry] = {color: {background: defaultColor}}
-    }
-    return groupStyles
-  }
+  let networkDrawingOptions;
+  let groupList;
+  let fullEdgeData; // used for force directed layout only
+  let networkNodeData;
+  let networkEdgeData;
+  let networkData; 
+  let network;
   
-  let groupList = generateDefaultGroupList(groups, defaultNodeColor)
+  groupList = generateDefaultGroupList(groups, defaultNodeColor);
   
   // This structure contains any styling used for the network.
   // This structure is modified to recolor groups if a node belonging to the group is selected.
   // Here, the groups color attribute is changed. 
-  const networkDrawingOptions = {
+  networkDrawingOptions = {
     physics: false,
     nodes: {
       shape: "dot", // use dot, circle scales to the label size as the label is inside the shape! 
-      chosen: {node: chosenHighlightNode}, // this passes the function to style the respective selected node
+      chosen: {node: stylizeHighlightNode}, // this passes the function to style the respective selected node
       color: {background: defaultNodeColor, border: defaultNodeBorderColor},
       size: 25, font: {size: 14, face: "Helvetica"}, borderWidth: 1, 
     },
     edges: {
-      chosen: {edge:chosenHighlightEdge}, // this passes the function to style the respective selected edge
+      chosen: {edge:stylizeHighlightEdge}, // this passes the function to style the respective selected edge
       font:  {size: 14, face: "Helvetica"},
       color: { opacity: 0.6, color: defaultEdgeColor, inherit: false},
       smooth: {type: "straightCross", forceDirection: "none", roundness: 0.25},
@@ -83,32 +306,6 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
     groups: groupList,
   }
 
-  let resizeLayout = function (scalingValue){
-    // nodeData: array of objects with x and y numeric data
-    // function modified nodes object directly
-    if (scalingValue > 0){
-      const xValues = nodes.map(obj => obj.x);
-      const yValues = nodes.map(obj => obj.y);
-      const xMinValue = Math.min(...xValues);
-      const xMaxValue = Math.max(...xValues);
-      const yMinValue = Math.min(...yValues);
-      const yMaxValue = Math.max(...yValues);
-
-      if (xMinValue === xMaxValue){console.error("Error: xmin and xmax coordinates are identical!")}
-      if (yMinValue === yMaxValue){console.error("Error: ymin and ymax coordinates are identical!")}
-
-      const newMax = 1 * scalingValue;
-      const newMin = -1 * scalingValue;
-      const xScaleFactor = (newMax - newMin) / (xMaxValue - xMinValue);
-      const ySaleFactor = (newMax - newMin) / (yMaxValue - yMinValue);
-      // Assess current scale of x and y values
-      // Set scale to unit scale and multiply with scalingValue
-      for (let node of nodes){
-        node.x = (node.x - xMinValue) * xScaleFactor + newMin; 
-        node.y = (node.y - yMinValue) * ySaleFactor + newMin;
-      }
-    }
-  }
   // Add node title information based on node id and node group:
   nodes.forEach(function(node) {
     node.title = 'ID: ' + node.id + '<br>Group: ' + node.group;
@@ -117,146 +314,28 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
     edge.title = 'ID: ' + edge.id + '<br>Score: ' + edge.data.score;
   });
 
-  let fullEdgeData = new vis.DataSet(edges);
-  let networkNodeData = new vis.DataSet();
-  let networkEdgeData = new vis.DataSet();
-  networkNodeData.add(nodes)
-  networkEdgeData.add([])
-  let networkData = {nodes: networkNodeData, edges: networkEdgeData}
-  console.log(networkNodeData)
+  fullEdgeData = new vis.DataSet(edges);
+  networkNodeData = new vis.DataSet(nodes);
+  networkEdgeData = new vis.DataSet([]);
 
-  // Network data extraction functions
-
-    /**
-   * Extracts node label for specific node from network.
-   *
-   * @param {network} array - Array of structure [{"group": "group_id1"}, {"group": "group_id2"}, ...]
-   * @param {network} array - Array of structure [{"group": "group_id1"}, {"group": "group_id2"}, ...]
-   * @returns {string} output - Object with entries for each group_id containing defaultNodeColor styling.
-  **/
-  function getNodeLabel(network, nodeId){
-    // custom function to access network data
-    var nodeObj= network.body.data.nodes._data[nodeId];
-    let output = nodeObj.label;
-    return output;
-  }
-  function getNodeGroup(network, nodeId){
-    // custom function to access network data
-    var nodeObj= network.body.data.nodes._data[nodeId];
-    return nodeObj.group;
-  }
-  let resetGroupDrawingOptions = function (drawingOptions, color) {
-    /*
-    Overwrites every group style entry to make use of color.
-    */
-    for (let [key, value] of Object.entries(drawingOptions["groups"])) {
-      drawingOptions["groups"][key]["color"]["background"] = color;
-    }
-    return undefined // ... drawingOptions modified in place, no return value.
-  }
-  let highlightTargetGroup = function (drawingOptions, group, color){
-    /*
-    Overwrites target group style entry to make use of color.
-    */
-    drawingOptions["groups"][group]["color"]["background"] = color;
-    return undefined // ... drawingOptions modified in place, no return value.
-  }
   // construct network variable and attach to div
+  networkData = {nodes: networkNodeData, edges: networkEdgeData};
   network = new vis.Network(networkContainer, networkData, networkDrawingOptions);
 
-  // Define network Event Targets, Event Listeners, and Event Handlers:
+  // Define Network Callback Events & Responses
   network.on("dragging", function (params){
     network.storePositions();
     return undefined
   })
-  network.on("click", function (params) {
-    let filterEdges = function(edgeList, nodeId){
-      let filteredEdgeSet = new Set([])
-      if (edgeList.length > 0){
-        for (let i = 0; i < edgeList.length; i++) {
-          if (edgeList[i].from == nodeId || edgeList[i].to == nodeId ){
-            filteredEdgeSet.add(edgeList[i])
-          }
-        }
-        let allEdgesForNode = Array.from(filteredEdgeSet)
-        allEdgesForNode.sort((a,b) => a.data.score - b.data.score).reverse();
-        let topK = fromTopkSelector.value;
-        let nElemetsToSelect = Math.min(allEdgesForNode.length, topK);
-        topKEdgesForNode = allEdgesForNode.slice(0, nElemetsToSelect)
-        return topKEdgesForNode
-      }
-      return Array.from(filteredEdgeSet)
-    }
-    let getNodeStatsInfo = function (inputNodeData, selectedNodeId){
-      // function expects selectedNode["data"] information
-      let outputString = 'Univariate Data for clicked node with id = ' + String(selectedNodeId) + "\n";
-      //console.log("Checking nodeData", inputNodeData)
-      for (const contrastKey in inputNodeData) {
-        outputString += `[${contrastKey}:]\n`
-        for (const measureKey in inputNodeData[contrastKey]){
-          if (["globalTestFeaturePValue", "log2FoldChange"].includes(measureKey)){
-            // only these two measures have a measure and nodeSize difference in their data.
-            value = inputNodeData[contrastKey][measureKey]["measure"];
-          } else {
-            value = inputNodeData[contrastKey][measureKey];
-          }
-          outputString += `  ${measureKey}: ${value}\n`
-        }
-      }
-      return outputString
-    }
-    let getNodeGroupInfo = function (inputGroupData, groupId){
-      // function expected selectedGroup["data"] information
-      let outputString = 'Group-based data for feature-set with id =  ' + String(groupId) + "\n";
-      console.log("Checking groupData", inputGroupData)
-      for (const contrastKey in inputGroupData) {
-        outputString += `[${contrastKey}:]\n`
-        for (const measureKey in inputGroupData[contrastKey]){
-          rounded_value = inputGroupData[contrastKey][measureKey].toFixed(4)
-          outputString += `  ${measureKey}: ${rounded_value}\n`
-        }
-      }
-      return outputString
-    }
-    if (params.nodes.length > 0){
-      //params.event = "[original event]";
-      let selectedNode = params.nodes[0] // assumes only single selections possible!
 
-      let edgeSubset = filterEdges(edges, selectedNode)
-      networkEdgeData.update(edgeSubset)
-      let nodeGroup = getNodeGroup(network, selectedNode)
-      let infoString;
-      infoGroupLevel = getNodeGroupInfo(groupStats[nodeGroup], nodeGroup)
-      resetGroupDrawingOptions(networkDrawingOptions, defaultNodeColor);
-      highlightTargetGroup(networkDrawingOptions, nodeGroup, colorHighlight)
-      network.storePositions();
-      var clickedNode = networkNodeData.get(selectedNode);
-      infoString = getNodeStatsInfo(clickedNode["data"], selectedNode)
-      nodeInfoContainer.innerText = infoString + infoGroupLevel;
-      network.setOptions(networkDrawingOptions);
-      network.redraw();
-    } else {
-      nodeInfoContainer.innerText = "";
-      network.storePositions();
-      networkEdgeData.clear();
-      resetGroupDrawingOptions(networkDrawingOptions, defaultNodeColor);
-      network.setOptions(networkDrawingOptions);
-      network.redraw();
-    }
-  });
-  
-  runNetworkPhysicsInput.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') {
-      // code for enter
-      networkEdgeData.update(fullEdgeData);
-      let n_iterations = Number(runNetworkPhysicsInput.value)
-      network.stabilize(n_iterations)
-      networkEdgeData.clear()
-      network.storePositions();
-      network.redraw()
-      network.fit();
-    }
-  });
+  network.on("click", input => handleNetworkClickResponse(
+    input, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions)
+  );
+
+  runNetworkPhysicsInput.addEventListener(
+    'keydown', keyInput => handleRunForceDirectedEvent(keyInput, network, networkEdgeData, fullEdgeData)
+  );
+
 
   let adjustNodeDataToSelection = function (){
     console.log("Reached Adjusting Node Size")
@@ -283,7 +362,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
   scalingInput.addEventListener('keydown', function (e) {
     if (e.key === 'Enter') {
       // code for enter
-      resizeLayout(scalingInput.value) // updates the node data
+      nodes = resizeLayout(scalingInput.value, nodes) // updates the node data
       networkNodeData.clear()
       networkNodeData.update(nodes)
       adjustNodeDataToSelection()
@@ -394,22 +473,6 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
         network.redraw();
       }, delay_hover);
     });
-    /*
-    var delay_click = 10; // Delay in milliseconds
-    heatmapContainer.on('plotly_click', function(data){
-      // Clear the timer on unhover
-      if(hoverTimer) {
-        clearTimeout(hoverTimer);
-      }
-      hoverTimer = setTimeout(function() {
-        //document.getElementById("textout").innerText = "Hover cleared.";
-        resetGroupDrawingOptions(networkDrawingOptions, defaultNodeColor)
-        network.setOptions(networkDrawingOptions);
-        network.redraw();
-      }, delay_click);
-    });
-    */
-    
   }
  
   constructHeatmapPanel(groupStats)
