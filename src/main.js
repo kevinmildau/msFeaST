@@ -4,18 +4,22 @@ const nodeInfoContainer = document.getElementById("id-node-information");
 const jsonPrintContainer = document.getElementById("id-json-print-container");
 const buttonLoadJsonData = document.getElementById("id-button-load-json");
 const fromTopkSelector = document.getElementById("id-topk-range-input");
+const topkLivePrintContainer = document.getElementById("id-topk-live-print");
 const formSelectContrast = document.getElementById("id-contrast-selector" );
 const formSelectUnivMeasure = document.getElementById("id-univ-measure-selector");
-const topkLivePrintContainer = document.getElementById("id-topk-live-print");
+
 const heatmapContainer = document.getElementById("id_heatmap");
 const runNetworkPhysicsInput = document.getElementById("id-network-physics");
 const colorBarContainer = document.getElementById('id_color_bar');
+const scalingInput = document.getElementById("id-graph-scaler")
 
 // Styling Variables
-const colorHighlight = "rgb(235,16,162, 0.9)";
-const defaultEdgeColor = "#A65A8D";
-const defaultNodeColor = "rgb(166, 90, 141, 0.5)" ;
-const defaultNodeBorderColor = "rgb(0, 0, 0, 0.5)";
+const stylingVariables = {
+  colorHighlight: "rgb(235,16,162, 0.9)",
+  defaultEdgeColor: "#A65A8D",
+  defaultNodeColor: "rgb(166, 90, 141, 0.5)", 
+  defaultNodeBorderColor: "rgb(0, 0, 0, 0.5)"
+};
 
 /**
   * Updates borderWidth of selected node to double size. For use inside vis.js network object.
@@ -32,7 +36,7 @@ const stylizeHighlightNode = function(values){
   * @param {values} object - visjs network selected return with styling elements accessible.
   */
 const stylizeHighlightEdge = function(values){
-  values.color = colorHighlight;
+  values.color = stylingVariables.colorHighlight;
   values.opacity = 0.9;
 };
 
@@ -114,7 +118,7 @@ let filterEdges = function(edgeList, nodeId){
     };
     let allEdgesForNode = Array.from(filteredEdgeSet);
     allEdgesForNode.sort((a,b) => a.data.score - b.data.score).reverse();
-    let topK = fromTopkSelector.value;
+    let topK = topKSelectionController.getTopKValue();
     let nElemetsToSelect = Math.min(allEdgesForNode.length, topK);
     topKEdgesForNode = allEdgesForNode.slice(0, nElemetsToSelect);
     return topKEdgesForNode;
@@ -211,7 +215,7 @@ let getNodeGroupInfo = function (inputGroupData, groupId){
   return outputString
 }
 
-/**
+/** Function handles network click response
  * 
  * @param {*} input 
  * @param {*} network 
@@ -229,8 +233,8 @@ let handleNetworkClickResponse = function(input, network, networkNodeData, netwo
     let nodeGroup = getNodeGroup(network, selectedNode)
     let infoString;
     infoGroupLevel = getNodeGroupInfo(groupStats[nodeGroup], nodeGroup)
-    resetGroupDrawingOptions(networkDrawingOptions, defaultNodeColor);
-    highlightTargetGroup(networkDrawingOptions, nodeGroup, colorHighlight)
+    resetGroupDrawingOptions(networkDrawingOptions, stylingVariables.defaultNodeColor);
+    highlightTargetGroup(networkDrawingOptions, nodeGroup, stylingVariables.colorHighlight)
     network.storePositions();
     var clickedNode = networkNodeData.get(selectedNode);
     infoString = getNodeStatsInfo(clickedNode["data"], selectedNode)
@@ -241,7 +245,7 @@ let handleNetworkClickResponse = function(input, network, networkNodeData, netwo
     nodeInfoContainer.innerText = "";
     network.storePositions();
     networkEdgeData.clear();
-    resetGroupDrawingOptions(networkDrawingOptions, defaultNodeColor);
+    resetGroupDrawingOptions(networkDrawingOptions, stylingVariables.defaultNodeColor);
     network.setOptions(networkDrawingOptions);
     network.redraw();
   }
@@ -254,7 +258,7 @@ let handleNetworkClickResponse = function(input, network, networkNodeData, netwo
  * @param {*} networkEdgeData 
  * @param {*} fullEdgeData 
  */
-let handleRunForceDirectedEvent = function(keyInput, network, networkEdgeData, fullEdgeData){
+let eventHandlerNetworkStabilizer = function(keyInput, network, networkEdgeData, fullEdgeData){
   if (keyInput.key === 'Enter') {
     // code for enter
     networkEdgeData.update(fullEdgeData);
@@ -267,7 +271,72 @@ let handleRunForceDirectedEvent = function(keyInput, network, networkEdgeData, f
   }
 }
 
-function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats, domElementContrast, domElementMeasure) {
+/** Function handles change in measure or contrast selections
+ * 
+ * @param {*} networkNodeData 
+ * @param {*} network 
+ * @returns 
+ */
+let eventHandlerNodeDataChange = function(networkNodeData, network){
+  let selectedContrast = formSelectContrast.value;
+  let selectedMeasure = formSelectUnivMeasure.value;
+  /** Function updates the network data for visualization
+   * 
+   * @param {*} networkNodeData 
+   * @param {*} selectedContrast 
+   * @param {*} selectedMeasure 
+   * @returns 
+   */
+  function updateNetworkNodeData(networkNodeData, selectedContrast, selectedMeasure) {
+    let updatedNodes = [];
+    let allNodeIds = networkNodeData.getIds();
+    for (var i = 0; i < allNodeIds.length; i++) {
+      // For each node, replace the size with the size from the contrast measure selection
+      var nodeToUpdate = networkNodeData.get(allNodeIds[i]);
+      nodeToUpdate["size"] = nodeToUpdate["data"][selectedContrast][selectedMeasure]["nodeSize"];
+      updatedNodes.push(nodeToUpdate);
+    };
+    networkNodeData.update(updatedNodes);
+    return networkNodeData;
+  };
+  /** Function updates the network view to reflect network data changes
+   * 
+   * @param {*} network 
+   */
+  let updateView = function(network){
+    network.redraw();
+  };
+  updateNetworkNodeData(networkNodeData, selectedContrast, selectedMeasure); // in place modification
+  updateView(network); // in place modification
+  return undefined
+}
+
+/** Function resizes network upon window resizing (updates both model and view)
+*/
+eventHandlerWindowResize = function(network){
+  network.fit();
+};
+
+
+/** Function controls response to keydown event on coordinate scaling input. 
+ * 
+ * @param {*} keydown 
+ * @param {*} nodes 
+ * @param {*} networkNodeData 
+ * @param {*} network 
+ */
+let eventHandlerCoordinateScaling = function (keydown, nodes, networkNodeData, network, scalingInput){
+  // Function only rescales upon enter click
+  if (keydown.key === 'Enter') {
+    nodes = resizeLayout(scalingInput.value, nodes); // updates the node data
+    networkNodeData.clear();
+    networkNodeData.update(nodes);
+    eventHandlerNodeDataChange(networkNodeData, network);
+    network.fit();
+  };
+};
+
+function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats){
   let networkDrawingOptions;
   let groupList;
   let fullEdgeData; // used for force directed layout only
@@ -276,23 +345,24 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
   let networkData; 
   let network;
   
-  groupList = generateDefaultGroupList(groups, defaultNodeColor);
-  
-  // This structure contains any styling used for the network.
-  // This structure is modified to recolor groups if a node belonging to the group is selected.
-  // Here, the groups color attribute is changed. 
+  groupList = generateDefaultGroupList(groups, stylingVariables.defaultNodeColor);
+  heatmapPanelController(groupStats, formSelectContrast);
+
   networkDrawingOptions = {
+    // This structure contains any styling used for the network.
+    // This structure is modified to recolor groups if a node belonging to the group is selected.
+    // Here, the groups color attribute is changed. 
     physics: false,
     nodes: {
       shape: "dot", // use dot, circle scales to the label size as the label is inside the shape! 
       chosen: {node: stylizeHighlightNode}, // this passes the function to style the respective selected node
-      color: {background: defaultNodeColor, border: defaultNodeBorderColor},
+      color: {background: stylingVariables.defaultNodeColor, border: stylingVariables.defaultNodeBorderColor},
       size: 25, font: {size: 14, face: "Helvetica"}, borderWidth: 1, 
     },
     edges: {
       chosen: {edge:stylizeHighlightEdge}, // this passes the function to style the respective selected edge
       font:  {size: 14, face: "Helvetica"},
-      color: { opacity: 0.6, color: defaultEdgeColor, inherit: false},
+      color: { opacity: 0.6, color: stylingVariables.defaultEdgeColor, inherit: false},
       smooth: {type: "straightCross", forceDirection: "none", roundness: 0.25},
     },
     interaction: {
@@ -328,157 +398,42 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
     return undefined
   })
 
-  network.on("click", input => handleNetworkClickResponse(
-    input, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions)
+  network.on(
+    "click", 
+    input => handleNetworkClickResponse(
+      input, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions
+    )
   );
 
   runNetworkPhysicsInput.addEventListener(
-    'keydown', keyInput => handleRunForceDirectedEvent(keyInput, network, networkEdgeData, fullEdgeData)
+    'keydown', 
+    input => eventHandlerNetworkStabilizer(
+      input, network, networkEdgeData, fullEdgeData
+    )
   );
 
-
-  let adjustNodeDataToSelection = function (){
-    console.log("Reached Adjusting Node Size")
-    console.log(networkNodeData)
-    let selectedContrast = domElementContrast.value;
-    let selectedMeasure = domElementMeasure.value;
-    // Get all node ids
-    var allNodeIds = networkNodeData.getIds();
-    var updatedNodes = []
-    for (var i = 0; i < allNodeIds.length; i++){
-      // For each node, replace the size with the size from the contrast measure selection
-      var nodeToUpdate = networkNodeData.get(allNodeIds[i]);
-      nodeToUpdate["size"] = nodeToUpdate["data"][selectedContrast][selectedMeasure]["nodeSize"]
-      updatedNodes.push(nodeToUpdate)
-    }
-    networkNodeData.update(updatedNodes)
-    network.redraw()
-  }
-  formSelectContrast.addEventListener("change", adjustNodeDataToSelection);
-  formSelectUnivMeasure.addEventListener("change", adjustNodeDataToSelection);
-  adjustNodeDataToSelection(); // run on init to make sure size properties of nodes align with form element.
+  // Init Run NodeChangeData handler to ensure match between selected options and display data
+  eventHandlerNodeDataChange(networkNodeData, network);
   
-  let scalingInput = document.getElementById("id-graph-scaler")
-  scalingInput.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') {
-      // code for enter
-      nodes = resizeLayout(scalingInput.value, nodes) // updates the node data
-      networkNodeData.clear()
-      networkNodeData.update(nodes)
-      adjustNodeDataToSelection()
-      network.fit();
-    }
-  });
-  
-  let constructHeatmapPanel = function(groupStats){
-    // Constructs heatmap with global test set specific results
-    // Dev Note: Assumes n_measures at set level is equal to 1!
-    console.log(groupStats)
-    var z = [];
-    var ticks = [];
+  formSelectContrast.addEventListener(
+    "change",
+    () => eventHandlerNodeDataChange(networkNodeData, network)
+  );
 
-    let nRows = Array.from(domElementContrast.options).map(option => option.value).length; // number of contrasts
-    let nCols = Object.keys(groupStats).length; // number of groups
-    let yTicks = Array.from(domElementContrast.options).map(option => option.value);
-    let xTicks = Object.keys(groupStats);
-    console.log(yTicks)
-    console.log(xTicks)
-    let values_array = [];
-    for (let current_contrast of yTicks) {
-      tmp_array = []
-      for (let current_group of xTicks) {
-        
-        tmp_array.push(groupStats[current_group][current_contrast]["globalTestPValue"])
-      }
-      values_array.push(tmp_array)
-    }
-    let colorscale = 'YlGnBu'
-    var data = [{
-      z: values_array,
-      x: xTicks,
-      y: yTicks,
-      zmin: 0,  // Minimum color value
-      zmax: 1,   // Maximum color value
-      colorscale: colorscale, // [[0, 'white'], [1, 'blue']], // for custom color scale
-      showscale : false,
-      //reversescale : true,
-      type: 'heatmap',
-      hovertemplate: 'x: %{x}<br>y: %{y}<br>z: %{z:.2e}<extra></extra>'
-    }];
+  formSelectUnivMeasure.addEventListener(
+    "change", 
+    () => eventHandlerNodeDataChange(networkNodeData, network)
+  );
 
-    let scale_values = Array.from({length: 101}, (_, i) => i * 0.01);
-    console.log(scale_values)
-    var colorBarHeatmap = [{
-      z: [scale_values], // This should match the color levels of your original heatmap
-      x: scale_values,
-      y: ["P-value color gradient"],
-      type: 'heatmap',
-      colorscale: colorscale,
-      showscale : false,
-      xaxis: 'p-value',
-      yaxis: ['color'],
-      hovertemplate: 'p-value: %{x}<br><extra></extra>',
-    }];
-    let margin = 10;
-    var layout_colorbar = {
-      title : "",
-      margin: {l: margin,r: margin,b: margin, t: margin,}, 
-      xaxis: {
-        automargin : true,
-        domain: [0, 1],
-        tickfont : {size : 8},
-        anchor: 'y',
-      },
-      yaxis: {
-        anchor: 'x',
-        automargin : true,
-        showticklabels: true,
-        side: "right",
-        tickmode: "linear", 
-        dtick:1
-      },
-      autosize: true, // Automatically adjust size to container
-    };
-    Plotly.newPlot(colorBarContainer, colorBarHeatmap, layout_colorbar, {responsive : true});
-
-    var layout = {
-      //margin: {l: margin,r: margin,b: margin,t: margin,}, 
-      margin: {t:margin, l:margin},
-      xaxis: {automargin : true, tickmode: "linear", dtick:1, tickfont : {size : 8}},
-      yaxis: {automargin : true, side: "right"},
-      //xaxis : {tickmode:'array', tickvals:ticks, ticktext:ticks},
-      //yaxis : {fixedrange : true, tickmode: 'array', tickvals: ticks, ticktext: ticks},
-      title: '',
-      autosize: true, // Automatically adjust size to container
-    };
-    Plotly.newPlot(heatmapContainer, data, layout, {responsive : true});
-    var hoverTimer;  // Define a timer variable
-    /*
-    Delayed Plotly hover response code.
-    */
-    var delay_hover = 500; // Delay in milliseconds
-    heatmapContainer.on('plotly_hover', function(data){
-      // Clear the timer if it's already set
-      if(hoverTimer) {
-        clearTimeout(hoverTimer);
-      }
-      // Set a new timer
-      hoverTimer = setTimeout(function() {
-        var xValue = data.points[0].x;
-        //document.getElementById("textout").innerText = "Last hovered over y value: " + yValue;
-        console.log('Hovering over x value: ' + xValue);
-        resetGroupDrawingOptions(networkDrawingOptions, defaultNodeColor) // autoreset at every hover
-        highlightTargetGroup(networkDrawingOptions, xValue, colorHighlight)
-        network.setOptions(networkDrawingOptions);
-        network.redraw();
-      }, delay_hover);
-    });
-  }
+  scalingInput.addEventListener(
+    'keydown', 
+    (keydown) => eventHandlerCoordinateScaling(keydown, nodes, networkNodeData, network, scalingInput)
+  );
  
-  constructHeatmapPanel(groupStats)
+  
 
-  window.onresize = function() {network.fit();}
-}
+  window.onresize = eventHandlerWindowResize(network)
+};
 
 function loadDataAndConstructNetworkVisualization() {
   let input, file, fr;
@@ -525,25 +480,25 @@ function loadDataAndConstructNetworkVisualization() {
       edge["label"] = `${edge["data"]["score"].toFixed(2)}`
     } 
 
-    let initializeContrastMeasureSelectors = function(domElementContrast, domElementMeasure, optionsArrayContrastKeys, optionsArrayMeasureKeys, nodes, groupKeys, groupStats) {
-      domElementContrast.innerHTML = "";
-      domElementMeasure.innerHTML = "";
+    let initializeContrastMeasureSelectors = function(optionsArrayContrastKeys, optionsArrayMeasureKeys, nodes, groupKeys, groupStats) {
+      formSelectContrast.innerHTML = "";
+      formSelectUnivMeasure.innerHTML = "";
       optionsArrayContrastKeys.forEach(function(optionKey) {
         var option = document.createElement("option");
         option.value = optionKey;
         option.text = optionKey;
-        domElementContrast.appendChild(option);
+        formSelectContrast.appendChild(option);
       });
       optionsArrayMeasureKeys.forEach(function(optionKey) {
         var option = document.createElement("option");
         option.value = optionKey;
         option.text = optionKey;
-        domElementMeasure.appendChild(option);
+        formSelectUnivMeasure.appendChild(option);
       });
-      initializeInteractiveVisualComponents(nodes, edges, groupKeys, groupStats, domElementContrast, domElementMeasure)
+      initializeInteractiveVisualComponents(nodes, edges, groupKeys, groupStats)
     }
     
-    initializeContrastMeasureSelectors(formSelectContrast, formSelectUnivMeasure, contrastKeys, univMeasureKeys, nodes, groupKeys, groupStats)
+    initializeContrastMeasureSelectors(contrastKeys, univMeasureKeys, nodes, groupKeys, groupStats)
   }
   if (typeof window.FileReader !== 'function') {
     alert("The file API isn't supported on this browser yet.");
