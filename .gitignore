@@ -1,11 +1,15 @@
 .DS_Store
 archive
+archive2
 trialCode
 mockData
 notebooks/.Rhistory
 
+notebooks/tmp_output/test_dashboard.json
 
 .Rhistory
 .Rapp.history
 
 notebooks/__pycache__
+notebooks/tmp_output/test_dashboard.json
+notebooks/tmp_outputs

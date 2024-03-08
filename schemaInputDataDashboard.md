@@ -61,14 +61,12 @@ JSON input data structure for dashboard:
 		// from and to are generic endpoints since we don't make use directed edges. 
 		// note that, if a node is pointed to by many other nodes, its number of edges may exceed the set 
 		// number. This is a consequence of top-K edges being selected for each node separately.
-		// When clicking on a node, all edges connecting to a node will be shown, regardless of their top-K state for the node clicked itself. 
-		// This can lead to well connected nodes having far more connectivity than poorly connected nodes!
 		"from": "uniqueNodeIdentifier1", // a unique node identifier from which the edge originates 
 		"to": "uniqueNodeIdentifier2", // a unique node identifier to which the edge points
 		"width": value, // the similarity score projected to the range between 1px and 30px
 		"data": {
 			"score": value // the actual value of the score to be displayed as an edge label (up to some rounding)
-			... // Possible additional data keys for edges currently not supported but could be added in future updates.
+			... // Possible additional data keys for edges currently not read but could be added in future updates.
 		} 
 	]
 }

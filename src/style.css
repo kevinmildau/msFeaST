@@ -1,12 +1,34 @@
 .visjsNetworkContainer {
   width: 100%;
-  height: 80vh;
+  height: 70vh;
   border: 1px solid lightgray;
 }
 
 .plotlyGraphContainer {
-  width: 95%;
+  width: 100%;
   height: 60vh;
+  border: 5px black;
+  align-content: center;
+  overflow: auto; /*must have for plotly resizing to work in bootstrap tabs!*/
+}
+
+.nodeInfoText {
+  font-family: Helvetica;
+  font-size: 1rem;
+  color: rgb(166, 90, 141, 0.95);
+}
+
+.heatmapPanel {
+  width: 100%;
+  height: 15vh;
+  border: 5px black;
+  align-content: center;
+  overflow: auto; /*must have for plotly resizing to work in bootstrap tabs!*/
+}
+
+.colorBarPanel {
+  width: 80%;
+  height: 10vh;
   border: 5px black;
   align-content: center;
   overflow: auto; /*must have for plotly resizing to work in bootstrap tabs!*/
@@ -30,12 +52,6 @@ body {
   font-family: 'Helvetica';
 }
 
-.vis-tooltip {
-  position: absolute;
-}
-
-
-
 html {
   font-size: 70%;
 }
@@ -44,4 +60,13 @@ body {
 }
 header {
   font-size: 2rem;
+}
+
+.vis-tooltip {
+  font-family: 'Helvetica' !important;
+  color: #000000  !important; /* Change the font color */
+  background-color: darkgray !important; /* Change the background color */
+  border: 1px solid #808074  !important; /* Change the border */
+  border-radius: 3px  !important; /* Add rounded corners */
+  padding: 5px  !important; /* Add some padding */
 }

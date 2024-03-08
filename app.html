@@ -13,7 +13,6 @@
   <script defer src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
   <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
-  <script type="text/javascript" src="./src/canvas2svg.js"></script>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis-network.min.css" integrity="sha512-NJXM8vzWgDcBy9SCUTJXYnNO43sZV3pfLWWZMFTuCtEUIOcznk+AMpH6N3XruxavYfMeMmjrzDMEQ6psRh/6Hw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis-network.min.js" integrity="sha512-GE9mKnPrTn2DY5AZuIC9yE6K4FF8T+9lsO7jwHn+RW9rEjnHzF/in0oGwlPzRwjhQ+oJiawmtfvleX+l6h5/cA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -42,7 +41,7 @@
           <a 
             class="nav-link" id="pills-settings-tab" data-toggle="tab" href="#settings-tab" data-bs-toggle="pill" 
             data-bs-target="#settings-tab" type="button" role="tab" aria-controls="pills-home" aria-selected="true">
-            Settings View
+            Data Loading
           </a>
         </li>
       </ul>
@@ -52,47 +51,47 @@
   <div class="container-fluid tab-content">
     <div id="visualization-tab" class="tab-pane active">
       <br/>
-      <div class="row"">
+      <div class="row">
         <div class="col-8">
           <div id="id-visjs-network-example" class = "visjsNetworkContainer" overflow="hidden"> 
             <div class="vis-tooltip" style="left: 0px; top: 0px; visibility: hidden;"><br></div>
           </div>
+          <div id="id_heatmap" class = "heatmapPanel"></div>
+          <div id="id_color_bar" class = "colorBarPanel"></div>
         </div>
         <div class="col-4">
           <div class="row">
-            Interactive node information display:  
+            Interactive node information display (click on node):  
           </div>
           <div class="row">
-            Below some node specific information (click on node):
-          </div>
-          <div class="row">
-            <pre id="id-node-information"></pre>
+            <pre id="id-node-information" class="nodeInfoText""></pre>
           </div>
           <br/>
-          <div>
-            Select Contrast:
-            <select  id="id-contrast-selector" class="form-select" size="1" aria-label="Contrast Selector"> </select>
+          <div class="row"> Select Contrast:
           </div>
-          <div>
-            Select univ. statistical measure:
-            <select  id="id-univ-measure-selector" class="form-select" size="1" aria-label="Measure Selector"> </select>
-          </div>
+          <select id="id-contrast-selector" class="form-select" size="1" aria-label="Contrast Selector"> </select>
           <div class="row">
-            Adjust Coordinate System Scale: Set value between 1 and 9999.
+            Select univ. statistical measure: 
+          </div>
+          <select  id="id-univ-measure-selector" class="form-select" size="1" aria-label="Measure Selector"> </select>
+          <br/>
+          <div class="row">
+            Apply Min-Max Scaling to Original Coordinate System: <br/> 
+            Set scaling factor between 1 and 9999 (range = [factor * -1, factor * 1]).
           </div>
           <input id="id-graph-scaler" class="form-control" type="number" placeholder=200>
           <div class="row">
-            Prototype: Run network stabilization physics n iterations:
+            Run network stabilization physics n iterations: <br/>
+            This pushes overlapping nodes away from each other. Use a value between 1 and 10 and press enter repeatedly.
           </div>
           <input id="id-network-physics" class="form-control" type="number" placeholder=1>
           <div class="row">
-            Export the network as in SVG format:
+            Set maximum number of edges to be visualized when clicking a node. <br/>
+            <div id="id-topk-live-print">Selected top-K value: 10</div>
           </div>
-          <button id="id-save-to-svg" type="button" class="btn btn-primary">Save to SVG</button>
+          <input id="id-topk-range-input" type="range" class="form-control-range" id="formControlRange" min="1" max="50" step="1" value="10">
+
         </div>
-      </div>
-      <div class="row"">
-        <p id="id-warning-paragraph" class="customWarningStyle"> Example Warning. </p>
       </div>
     </div>
     <div id="settings-tab" class="tab-pane">
@@ -107,29 +106,16 @@
           </form>
           <br/>
           <input type='button' id='id-button-load-json' value='Load Selected Data'>
-          <br/>
-          <br/>
-          <p>Plotly Graph Example</p>
-          <p> This is an example plotly graph. The graph is specified in a separate .js file and will be put into the 
-            DIV below. Interactivity in this graph does not connect to any other graph elements yet. This might be used
-            later on to incorporate some summary statistics for the data.
-          </p>
-          <div id="id_plotly_example" class = "plotlyGraphContainer"></div>
         </div>
         <div class="col-6">
-          <h1>Select top-K edge limits:</h1>
-          <form>
-            <div class="form-group">
-              <label for="formControlRange"> Set maximum number of nodes per edge. Can be set to range 1 to 100. This setting only does sub-setting; if only 20 edges are provided per node, this will be the effective maximum. </label>
-              <div id="id-topk-live-print">Selected top-K value: 20</div>
-              <input id="id-topk-range-input" type="range" class="form-control-range" id="formControlRange" min="1" max="100" step="1" value="5">
-            </div>
-          </form>
         </div>
       </div>
     </div>
   </div>
-  <script src="./src/plotly-example.js"></script>
-  <script src="./src/dashboardSource.js"></script>
+  <script src="./src/utility-functions.js"> </script>
+  <script src="./src/heatmap.js"> </script>
+  <script src="./src/navtab-control.js"> </script>
+  <script src="./src/topk-selection.js"> </script>
+  <script src="./src/main.js"></script>
  </body>
 </html>
