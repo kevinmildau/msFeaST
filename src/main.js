@@ -311,11 +311,14 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats)
   // construct network variable and attach to div
   networkData = {nodes: networkNodeData, edges: networkEdgeData};
   network = new vis.Network(networkContainer, networkData, networkDrawingOptions);
+  
+  // Init Run NodeChangeData handler to ensure match between selected options and display data
+  eventHandlerNodeDataChange(networkNodeData, network);
 
   // Define Network Callback Events & Responses
   network.on("dragging", function (params){
     network.storePositions();
-    return undefined
+    return undefined;
   })
 
   network.on(
@@ -346,9 +349,6 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats)
     'keydown', 
     (keydown) => eventHandlerCoordinateScaling(keydown, nodes, networkNodeData, network, scalingInput)
   );
- 
-  
-
   window.onresize = eventHandlerWindowResize(network)
 };
 
