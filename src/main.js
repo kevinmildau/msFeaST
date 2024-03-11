@@ -211,46 +211,37 @@ let networkClickController = function(clickInput, network, networkNodeData, netw
   }
 };
 
-
+/** Function updates the network data for visualization
+ * 
+ * @param {*} networkNodeData 
+ * @param {*} selectedContrast 
+ * @param {*} selectedMeasure 
+ * @returns 
+ */
+let updateNetworkNodeData = function(networkNodeData, selectedContrast, selectedMeasure) {
+  let updatedNodes = [];
+  let allNodeIds = networkNodeData.getIds();
+  for (var i = 0; i < allNodeIds.length; i++) {
+    // For each node, replace the size with the size from the contrast measure selection
+    var nodeToUpdate = networkNodeData.get(allNodeIds[i]);
+    nodeToUpdate["size"] = nodeToUpdate["data"][selectedContrast][selectedMeasure]["nodeSize"];
+    updatedNodes.push(nodeToUpdate);
+  };
+  networkNodeData.update(updatedNodes);
+  return networkNodeData;
+};
 
 /** Function handles change in measure or contrast selections
  * 
  * @param {*} networkNodeData 
- * @param {*} network 
+ * @param {*} network
  * @returns
  */
-let eventHandlerNodeDataChange = function(networkNodeData, network){
+let updateNodeDataToContrastAndMeasure = function(networkNodeData, network){
   let selectedContrast = formSelectContrast.value;
   let selectedMeasure = formSelectUnivMeasure.value;
-  /** Function updates the network data for visualization
-   * 
-   * @param {*} networkNodeData 
-   * @param {*} selectedContrast 
-   * @param {*} selectedMeasure 
-   * @returns 
-   */
-  let updateNetworkNodeData = function(networkNodeData, selectedContrast, selectedMeasure) {
-    let updatedNodes = [];
-    let allNodeIds = networkNodeData.getIds();
-    for (var i = 0; i < allNodeIds.length; i++) {
-      // For each node, replace the size with the size from the contrast measure selection
-      var nodeToUpdate = networkNodeData.get(allNodeIds[i]);
-      nodeToUpdate["size"] = nodeToUpdate["data"][selectedContrast][selectedMeasure]["nodeSize"];
-      updatedNodes.push(nodeToUpdate);
-    };
-    networkNodeData.update(updatedNodes);
-    return networkNodeData;
-  };
-
-  /** Function updates the network view to reflect network data changes
-   * 
-   * @param {*} network 
-   */
-  let updateView = function(network){
-    network.redraw();
-  };
   updateNetworkNodeData(networkNodeData, selectedContrast, selectedMeasure); // in place modification
-  updateView(network); // in place modification
+  network.redraw();
   return undefined
 }
 
