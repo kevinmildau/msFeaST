@@ -133,6 +133,46 @@ let getNodeGroupInfo = function (inputGroupData, groupId){
   return outputString
 }
 
+/** Generates default network drawing options.
+ * 
+ * @param {*} groupList 
+ * @returns 
+ */
+const generateNetworkDrawingOptions = function(groupList){
+  // This structure contains any styling used for the network.
+  // This structure is modified to recolor groups if a node belonging to the group is selected.
+  // Here, the groups color attribute is changed. 
+  // On data load, add this group-information such that all groups are set to default node color.
+  // When a node is clicked, node group can be accessed to change color and redraw.
+  // It is not possible to override the default coloring of groups any other way than specifying a replacement 
+  // color here. Any other solution would involve direct node modification (change color of each specific node).
+  let networkDrawingOptions;
+  networkDrawingOptions = {
+    groups: groupList,
+    physics: false,
+    nodes: {
+      shape: "dot", // use dot, circle scales to the label size as the label is inside the shape! 
+      chosen: {node: stylizeHighlightNode}, // this passes the function to style the respective selected node
+      color: {background: stylingVariables.defaultNodeColor, border: stylingVariables.defaultNodeBorderColor},
+      size: 25, font: {size: 14, face: "Helvetica"}, borderWidth: 1, 
+    },
+    edges: {
+      chosen: {edge:stylizeHighlightEdge}, // this passes the function to style the respective selected edge
+      font:  {size: 14, face: "Helvetica"},
+      color: { opacity: 0.6, color: stylingVariables.defaultEdgeColor, inherit: false},
+      smooth: {type: "straightCross", forceDirection: "none", roundness: 0.25},
+    },
+    interaction: {
+      selectConnectedEdges: true, // prevent edge highlighting upon node selection
+      hover:true, hideEdgesOnDrag: false, tooltipDelay: 100
+    },
+
+  };
+  return networkDrawingOptions;
+};
+
+
+
 /** Function handles network click response
  * 
  * @param {*} clickInput 
@@ -250,34 +290,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats)
   
   groupList = generateDefaultGroupList(groups, stylingVariables.defaultNodeColor);
   heatmapPanelController(groupStats, formSelectContrast);
-
-  networkDrawingOptions = {
-    // This structure contains any styling used for the network.
-    // This structure is modified to recolor groups if a node belonging to the group is selected.
-    // Here, the groups color attribute is changed. 
-    physics: false,
-    nodes: {
-      shape: "dot", // use dot, circle scales to the label size as the label is inside the shape! 
-      chosen: {node: stylizeHighlightNode}, // this passes the function to style the respective selected node
-      color: {background: stylingVariables.defaultNodeColor, border: stylingVariables.defaultNodeBorderColor},
-      size: 25, font: {size: 14, face: "Helvetica"}, borderWidth: 1, 
-    },
-    edges: {
-      chosen: {edge:stylizeHighlightEdge}, // this passes the function to style the respective selected edge
-      font:  {size: 14, face: "Helvetica"},
-      color: { opacity: 0.6, color: stylingVariables.defaultEdgeColor, inherit: false},
-      smooth: {type: "straightCross", forceDirection: "none", roundness: 0.25},
-    },
-    interaction: {
-      selectConnectedEdges: true, // prevent edge highlighting upon node selection
-      hover:true, hideEdgesOnDrag: false, tooltipDelay: 100
-    },
-    // On data load, add this group-information such that all groups are set to default node color
-    // when a node is clicked, node group can be accessed to change color and redraw.
-    // It is not possible to override the default coloring of groups any other way than specifying a replacement default 
-    // color here. Any other solution would involve direct node modification (change color of each specific node).
-    groups: groupList,
-  }
+  networkDrawingOptions = generateNetworkDrawingOptions(groupList);
 
   // Add node title information based on node id and node group:
   nodes.forEach(function(node) {
