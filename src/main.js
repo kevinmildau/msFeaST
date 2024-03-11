@@ -170,7 +170,10 @@ const generateNetworkDrawingOptions = function(groupList){
   return networkDrawingOptions;
 };
 
-
+  // Define Network Callback Events & Responses
+  let nodeDragController = function(dragNodeData, network){
+    network.storePositions(); 
+  }
 
 /** Function handles network click response
  * 
@@ -261,10 +264,10 @@ eventHandlerWindowResize = function(network){
 let eventHandlerCoordinateScaling = function (keydown, nodes, networkNodeData, network, scalingInput){
   // Function only rescales upon enter click
   if (keydown.key === 'Enter') {
-    nodes = resizeLayout(scalingInput.value, nodes); // updates the node data
+    updatedNodes = resizeLayout(scalingInput.value, networkNodeData); // updates the node data
     networkNodeData.clear();
-    networkNodeData.update(nodes);
-    updateNodeDataToContrastAndMeasure(networkNodeData, network);
+    networkNodeData.update(updatedNodes);
+    //updateNodeDataToContrastAndMeasure(networkNodeData, network);
     network.fit();
   };
 };
@@ -302,19 +305,12 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats)
   // construct network variable and attach to div
   networkData = {nodes: networkNodeData, edges: networkEdgeData};
   network = new vis.Network(networkContainer, networkData, networkDrawingOptions);
+
   heatmapPanelController(groupStats, formSelectContrast, networkDrawingOptions, network);
   // Init Run NodeChangeData handler to ensure match between selected options and display data
   updateNodeDataToContrastAndMeasure(networkNodeData, network);
 
-  // Define Network Callback Events & Responses
-  network.on("dragging", () => function(network){network.storePositions();});
-  
-  /*
-  network.on("dragging", function (params){
-    network.storePositions();
-    return undefined;
-  })
-  */
+  network.on("dragging", (dragNodeData) => nodeDragController(dragNodeData, network));
 
   network.on(
     "click", 

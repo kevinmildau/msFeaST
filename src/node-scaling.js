@@ -4,12 +4,21 @@
  * @param {*} nodes A list of node entries for vis network
  * @returns 
  */
-let resizeLayout = function (scalingValue, nodes){
+let resizeLayout = function (scalingValue, networkNodeData){
   // nodeData: array of objects with x and y numeric data
   // function modified nodes object directly
+
+  let updatedNodes = [];
+  let allNodeIds = networkNodeData.getIds();
+  
+  // extract node information from networkNodeData (included up to date x and y coordinates)
+  for (var i = 0; i < allNodeIds.length; i++) {
+    updatedNodes.push(networkNodeData.get(allNodeIds[i]));
+  };
   if (scalingValue > 0){
-    const xValues = nodes.map(obj => obj.x);
-    const yValues = nodes.map(obj => obj.y);
+    const xValues = updatedNodes.map(obj => obj.x);
+    const yValues = updatedNodes.map(obj => obj.y);
+
     const xMinValue = Math.min(...xValues);
     const xMaxValue = Math.max(...xValues);
     const yMinValue = Math.min(...yValues);
@@ -24,10 +33,10 @@ let resizeLayout = function (scalingValue, nodes){
     const ySaleFactor = (newMax - newMin) / (yMaxValue - yMinValue);
     // Assess current scale of x and y values
     // Set scale to unit scale and multiply with scalingValue
-    for (let node of nodes){
+    for (let node of updatedNodes){
       node.x = (node.x - xMinValue) * xScaleFactor + newMin; 
       node.y = (node.y - yMinValue) * ySaleFactor + newMin;
     }
   }
-  return nodes;
+  return updatedNodes;
 }
