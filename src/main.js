@@ -107,23 +107,20 @@ function getNodeGroup(network, nodeId){
   return nodeObj.group;
 }
 
-/**
+/** Overwrites every group style entry to make use of color.
  * 
  * @param {*} drawingOptions 
  * @param {*} color 
  * @returns 
  */
 let resetGroupDrawingOptions = function (drawingOptions, color) {
-  /*
-  Overwrites every group style entry to make use of color.
-  */
   for (let [key, value] of Object.entries(drawingOptions["groups"])) {
     drawingOptions["groups"][key]["color"]["background"] = color;
   }
   return undefined // ... drawingOptions modified in place, no return value.
 }
 
-/**
+/** Overwrites target group style entry to make use of color.
  * 
  * @param {*} drawingOptions 
  * @param {*} group 
@@ -131,9 +128,6 @@ let resetGroupDrawingOptions = function (drawingOptions, color) {
  * @returns 
  */
 let highlightTargetGroup = function (drawingOptions, group, color){
-  /*
-  Overwrites target group style entry to make use of color.
-  */
   drawingOptions["groups"][group]["color"]["background"] = color;
   return undefined // ... drawingOptions modified in place, no return value.
 }
@@ -160,7 +154,7 @@ let getNodeGroupInfo = function (inputGroupData, groupId){
 
 /** Function handles network click response
  * 
- * @param {*} input 
+ * @param {*} clickInput 
  * @param {*} network 
  * @param {*} networkNodeData 
  * @param {*} networkEdgeData 
@@ -168,9 +162,9 @@ let getNodeGroupInfo = function (inputGroupData, groupId){
  * @param {*} groupStats
  * @param {*} networkDrawingOptions
  */
-let handleNetworkClickResponse = function(input, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions) {
-  if (input.nodes.length > 0){
-    let selectedNode = input.nodes[0] // assumes only single selections possible!
+let networkClickController = function(clickInput, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions) {
+  if (clickInput.nodes.length > 0){
+    let selectedNode = clickInput.nodes[0] // assumes only single selections possible!
     let edgeSubset = filterEdges(edges, selectedNode)
     networkEdgeData.update(edgeSubset)
     let nodeGroup = getNodeGroup(network, selectedNode)
@@ -218,7 +212,7 @@ let eventHandlerNetworkStabilizer = function(keyInput, network, networkEdgeData,
  * 
  * @param {*} networkNodeData 
  * @param {*} network 
- * @returns 
+ * @returns
  */
 let eventHandlerNodeDataChange = function(networkNodeData, network){
   let selectedContrast = formSelectContrast.value;
@@ -230,6 +224,7 @@ let eventHandlerNodeDataChange = function(networkNodeData, network){
    * @param {*} selectedMeasure 
    * @returns 
    */
+
   function updateNetworkNodeData(networkNodeData, selectedContrast, selectedMeasure) {
     let updatedNodes = [];
     let allNodeIds = networkNodeData.getIds();
@@ -242,6 +237,7 @@ let eventHandlerNodeDataChange = function(networkNodeData, network){
     networkNodeData.update(updatedNodes);
     return networkNodeData;
   };
+
   /** Function updates the network view to reflect network data changes
    * 
    * @param {*} network 
@@ -347,7 +343,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats)
 
   network.on(
     "click", 
-    input => handleNetworkClickResponse(
+    input => networkClickController(
       input, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions
     )
   );
