@@ -289,9 +289,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats)
   let network;
   
   groupList = generateDefaultGroupList(groups, stylingVariables.defaultNodeColor);
-  heatmapPanelController(groupStats, formSelectContrast);
   networkDrawingOptions = generateNetworkDrawingOptions(groupList);
-
   // Add node title information based on node id and node group:
   nodes.forEach(function(node) {
     node.title = 'ID: ' + node.id + '<br>Group: ' + node.group;
@@ -311,15 +309,19 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats)
   // construct network variable and attach to div
   networkData = {nodes: networkNodeData, edges: networkEdgeData};
   network = new vis.Network(networkContainer, networkData, networkDrawingOptions);
-  
+  heatmapPanelController(groupStats, formSelectContrast, networkDrawingOptions, network);
   // Init Run NodeChangeData handler to ensure match between selected options and display data
   eventHandlerNodeDataChange(networkNodeData, network);
 
   // Define Network Callback Events & Responses
+  network.on("dragging", () => function(network){network.storePositions();});
+  
+  /*
   network.on("dragging", function (params){
     network.storePositions();
     return undefined;
   })
+  */
 
   network.on(
     "click", 
