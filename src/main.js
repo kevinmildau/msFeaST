@@ -144,18 +144,20 @@ let getNodeGroupInfo = function (inputGroupData, groupId){
  * @param {*} networkDrawingOptions
  */
 let networkClickController = function(clickInput, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions) {
+  // If a node is clicked, addon visualization is added,
+  // If an empty area is clicked, edge and styling data is reset
   if (clickInput.nodes.length > 0){
-    let selectedNode = clickInput.nodes[0] // assumes only single selections possible!
-    let edgeSubset = filterEdges(edges, selectedNode)
-    networkEdgeData.update(edgeSubset)
-    let nodeGroup = getNodeGroup(network, selectedNode)
+    let selectedNode = clickInput.nodes[0]; // assumes only single selections possible!
+    let edgeSubset = filterEdges(edges, selectedNode);
+    let nodeGroup = getNodeGroup(network, selectedNode);
     let infoString;
-    infoGroupLevel = getNodeGroupInfo(groupStats[nodeGroup], nodeGroup)
+    networkEdgeData.update(edgeSubset);
+    infoGroupLevel = getNodeGroupInfo(groupStats[nodeGroup], nodeGroup);
     resetGroupDrawingOptions(networkDrawingOptions, stylingVariables.defaultNodeColor);
-    highlightTargetGroup(networkDrawingOptions, nodeGroup, stylingVariables.colorHighlight)
+    highlightTargetGroup(networkDrawingOptions, nodeGroup, stylingVariables.colorHighlight);
     network.storePositions();
     var clickedNode = networkNodeData.get(selectedNode);
-    infoString = getNodeStatsInfo(clickedNode["data"], selectedNode)
+    infoString = getNodeStatsInfo(clickedNode["data"], selectedNode);
     nodeInfoContainer.innerText = infoString + infoGroupLevel;
     network.setOptions(networkDrawingOptions);
     network.redraw();
