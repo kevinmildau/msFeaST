@@ -1,23 +1,4 @@
 /**
-  * Updates borderWidth of selected node to double size. For use inside vis.js network object.
-  *
-  * @param {values} object - visjs network selected return with styling elements accessible.
-  */
-const stylizeHighlightNode = function(values){
-  values.borderWidth = values.borderWidth * 2;
-};
-
-/**
-  * Updates borderWidth of selected node to double size. For use inside vis.js network object.
-  *
-  * @param {values} object - visjs network selected return with styling elements accessible.
-  */
-const stylizeHighlightEdge = function(values){
-  values.color = stylingVariables.colorHighlight;
-  values.opacity = 0.9;
-};
-
-/**
   * Initializes groupStyles object with default color setting each group in the network visualization.
   *
   * @param {groupsArray} array - Array of structure [{"group": "group_id1"}, {"group": "group_id2"}, ...]
