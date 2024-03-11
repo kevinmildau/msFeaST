@@ -189,8 +189,7 @@ let eventHandlerNodeDataChange = function(networkNodeData, network){
    * @param {*} selectedMeasure 
    * @returns 
    */
-
-  function updateNetworkNodeData(networkNodeData, selectedContrast, selectedMeasure) {
+  let updateNetworkNodeData = function(networkNodeData, selectedContrast, selectedMeasure) {
     let updatedNodes = [];
     let allNodeIds = networkNodeData.getIds();
     for (var i = 0; i < allNodeIds.length; i++) {
