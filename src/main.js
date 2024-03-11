@@ -32,9 +32,9 @@ let generateDefaultGroupList = function (groupsArray, defaultColor){
   return groupStyles;
 }
 
-/**
+/** Function rescales x y coordinates to fit between [-1, +1] times scalingValue. Linear scaling.
  * 
- * @param {*} scalingValue A float
+ * @param {*} scalingValue A non-zero float
  * @param {*} nodes A list of node entries for vis network
  * @returns 
  */
