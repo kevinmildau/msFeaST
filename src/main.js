@@ -380,6 +380,10 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats)
   nodes.forEach(function(node) {
     node.title = 'ID: ' + node.id + '<br>Group: ' + node.group;
   });
+  // Processing Edges; rounding labels to make sure they are printable on edges
+  for (let edge of edges){
+    edge["label"] = `${edge["data"]["score"].toFixed(2)}`;
+  };
   edges.forEach(function(edge) {
     edge.title = 'ID: ' + edge.id + '<br>Score: ' + edge.data.score;
   });
@@ -435,93 +439,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats)
   window.onresize = eventHandlerWindowResize(network)
 };
 
-function loadDataAndConstructNetworkVisualization() {
-  let input, file, fr;
-  let receivedText = function (e) {
-    let lines = e.target.result;
-    let inputData;
-    try {
-      inputData = JSON.parse(lines);
-    } catch (error) {
-      alert(`Input data does not appear to conform with JSON file standard. Aborting data loading. Following error was generated: ${error}`)
-      return undefined
-    }
+buttonLoadJsonData.addEventListener("click", dataLoadingController);
 
-    let validateInputSchema = function (inputData){
-      // basic function to check whether the expected entries are available, to be replaced with object schema and type validation
-      // inputData is expected to be type object after a successful json parse. JSON parsing errors are handled separately.
-      let problemDetected = false; 
-      let expectedKeys = ["groupKeys", "univMeasureKeys", "groupMeasureKeys", "contrastKeys", "groupStats", "nodes", "edges"]
-      for (key of expectedKeys){
-        if (typeof(inputData[key]) === "undefined"){
-          problemDetected = true; 
-          // The console log below is part of the desired console output
-          console.log(`Key entry "${key}" not found in input data.`);
-        }
-      }
-      return problemDetected
-    }
-
-    if (validateInputSchema(inputData)){
-      alert("Provided file does not contain expected input structues. See console log for missing entry. Aborting file loading and interactive session initialization.");
-      return undefined
-    }
-
-    let nodes = inputData["nodes"];
-    let edges = inputData["edges"];
-    let groupKeys = inputData["groupKeys"];
-    let univMeasureKeys = inputData["univMeasureKeys"];
-    let groupMeasureKeys = inputData["groupMeasureKeys"];
-    let contrastKeys = inputData["contrastKeys"];
-    let groupStats = inputData["groupStats"]
-
-    // Processing Edges; rounding labels to make sure they are printable on edges
-    for (let edge of edges){
-      edge["label"] = `${edge["data"]["score"].toFixed(2)}`
-    } 
-
-    let initializeContrastMeasureSelectors = function(optionsArrayContrastKeys, optionsArrayMeasureKeys, nodes, groupKeys, groupStats) {
-      formSelectContrast.innerHTML = "";
-      formSelectUnivMeasure.innerHTML = "";
-      optionsArrayContrastKeys.forEach(function(optionKey) {
-        var option = document.createElement("option");
-        option.value = optionKey;
-        option.text = optionKey;
-        formSelectContrast.appendChild(option);
-      });
-      optionsArrayMeasureKeys.forEach(function(optionKey) {
-        var option = document.createElement("option");
-        option.value = optionKey;
-        option.text = optionKey;
-        formSelectUnivMeasure.appendChild(option);
-      });
-      initializeInteractiveVisualComponents(nodes, edges, groupKeys, groupStats)
-    }
-    
-    initializeContrastMeasureSelectors(contrastKeys, univMeasureKeys, nodes, groupKeys, groupStats)
-  }
-  if (typeof window.FileReader !== 'function') {
-    alert("The file API isn't supported on this browser yet.");
-    return;
-  }
-  input = document.getElementById('id-file-input');
-  if (!input) {
-    alert("File input dom element not found!");
-  }
-  else if (!input.files) {
-    alert("This browser does not seem to support the `files` property of file inputs.");
-  }
-  else if (!input.files[0]) {
-    alert("Please select a file before clicking 'Load'");
-  }
-  else {
-    file = input.files[0];
-    fr = new FileReader();
-    fr.addEventListener("load", receivedText);
-    //fr.onload = receivedText;
-    fr.readAsText(file);
-  }
-};
-buttonLoadJsonData.addEventListener("click", loadDataAndConstructNetworkVisualization);
 
 
