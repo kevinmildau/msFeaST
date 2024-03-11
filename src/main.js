@@ -1,11 +1,10 @@
 /**
   * Initializes groupStyles object with default color setting each group in the network visualization.
   *
-  * @param {groupsArray} array - Array of structure [{"group": "group_id1"}, {"group": "group_id2"}, ...]
-  * @returns {groupStyles} object - Object with entries for each group_id containing defaultNodeColor styling.
+  * @param {array} groupsArray - Array of structure [{"group": "group_id1"}, {"group": "group_id2"}, ...]
+  * @returns {object} groupStyles - Object with entries for each group_id containing defaultNodeColor styling.
   */
 let generateDefaultGroupList = function (groupsArray, defaultColor){
-  // turns groups input from Python into a list of default group stylings
   let groupStyles = {};
   for (groupEntry of groupsArray) {
     groupStyles[groupEntry] = {color: {background: defaultColor}}
@@ -265,7 +264,7 @@ let eventHandlerCoordinateScaling = function (keydown, nodes, networkNodeData, n
     nodes = resizeLayout(scalingInput.value, nodes); // updates the node data
     networkNodeData.clear();
     networkNodeData.update(nodes);
-    eventHandlerNodeDataChange(networkNodeData, network);
+    updateNodeDataToContrastAndMeasure(networkNodeData, network);
     network.fit();
   };
 };
@@ -282,9 +281,12 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats)
   groupList = generateDefaultGroupList(groups, stylingVariables.defaultNodeColor);
   networkDrawingOptions = generateNetworkDrawingOptions(groupList);
   // Add node title information based on node id and node group:
+  
   nodes.forEach(function(node) {
     node.title = 'ID: ' + node.id + '<br>Group: ' + node.group;
   });
+
+
   // Processing Edges; rounding labels to make sure they are printable on edges
   for (let edge of edges){
     edge["label"] = `${edge["data"]["score"].toFixed(2)}`;
@@ -302,7 +304,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats)
   network = new vis.Network(networkContainer, networkData, networkDrawingOptions);
   heatmapPanelController(groupStats, formSelectContrast, networkDrawingOptions, network);
   // Init Run NodeChangeData handler to ensure match between selected options and display data
-  eventHandlerNodeDataChange(networkNodeData, network);
+  updateNodeDataToContrastAndMeasure(networkNodeData, network);
 
   // Define Network Callback Events & Responses
   network.on("dragging", () => function(network){network.storePositions();});
@@ -330,12 +332,12 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats)
 
   formSelectContrast.addEventListener(
     "change",
-    () => eventHandlerNodeDataChange(networkNodeData, network)
+    () => updateNodeDataToContrastAndMeasure(networkNodeData, network)
   );
 
   formSelectUnivMeasure.addEventListener(
     "change", 
-    () => eventHandlerNodeDataChange(networkNodeData, network)
+    () => updateNodeDataToContrastAndMeasure(networkNodeData, network)
   );
 
   scalingInput.addEventListener(
