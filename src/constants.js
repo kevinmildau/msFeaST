@@ -20,3 +20,22 @@ const stylingVariables = {
   defaultNodeColor: "rgb(166, 90, 141, 0.5)", 
   defaultNodeBorderColor: "rgb(0, 0, 0, 0.5)"
 };
+
+/**
+  * Updates borderWidth of selected node to double size. For use inside vis.js network object.
+  *
+  * @param {values} object - visjs network selected return with styling elements accessible.
+  */
+const stylizeHighlightNode = function(values){
+  values.borderWidth = values.borderWidth * 2;
+};
+
+/**
+  * Updates borderWidth of selected node to double size. For use inside vis.js network object.
+  *
+  * @param {values} object - visjs network selected return with styling elements accessible.
+  */
+const stylizeHighlightEdge = function(values){
+  values.color = stylingVariables.colorHighlight;
+  values.opacity = 0.9;
+};
