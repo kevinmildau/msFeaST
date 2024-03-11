@@ -11,7 +11,7 @@ function getNodeLabel(network, nodeId){
   return output;
 };
 
-/**
+/** Function filters edge list down to 
  * 
  * @param {*} edgeList 
  * @param {*} nodeId 
@@ -27,7 +27,7 @@ let filterEdges = function(edgeList, nodeId){
     };
     let allEdgesForNode = Array.from(filteredEdgeSet);
     allEdgesForNode.sort((a,b) => a.data.score - b.data.score).reverse();
-    let topK = topKSelectionController.getTopKValue();
+    let topK = topKSelectionModule.getTopKValue();
     let nElemetsToSelect = Math.min(allEdgesForNode.length, topK);
     topKEdgesForNode = allEdgesForNode.slice(0, nElemetsToSelect);
     return topKEdgesForNode;
@@ -156,10 +156,14 @@ const generateNetworkDrawingOptions = function(groupList){
   return networkDrawingOptions;
 };
 
-  // Define Network Callback Events & Responses
-  let nodeDragController = function(dragNodeData, network){
-    network.storePositions(); 
-  }
+/** Function handles network drag event.
+ * 
+ * @param {*} dragNodeData 
+ * @param {*} network 
+ */
+let networkDragController = function(dragNodeData, network){
+  network.storePositions(); 
+}
 
 /** Function handles network click response
  * 
@@ -179,12 +183,13 @@ let networkClickController = function(clickInput, network, networkNodeData, netw
     let edgeSubset = filterEdges(edges, selectedNode);
     let nodeGroup = getNodeGroup(network, selectedNode);
     let infoString;
+    let clickedNode
     networkEdgeData.update(edgeSubset);
     infoGroupLevel = getNodeGroupInfo(groupStats[nodeGroup], nodeGroup);
     resetGroupDrawingOptions(networkDrawingOptions, stylingVariables.defaultNodeColor);
     highlightTargetGroup(networkDrawingOptions, nodeGroup, stylingVariables.colorHighlight);
     network.storePositions();
-    var clickedNode = networkNodeData.get(selectedNode);
+    clickedNode = networkNodeData.get(selectedNode);
     infoString = getNodeStatsInfo(clickedNode["data"], selectedNode);
     nodeInfoContainer.innerText = infoString + infoGroupLevel;
     network.setOptions(networkDrawingOptions);
@@ -247,7 +252,7 @@ eventHandlerWindowResize = function(network){
  * @param {*} networkNodeData 
  * @param {*} network 
  */
-let eventHandlerCoordinateScaling = function (keydown, nodes, networkNodeData, network, scalingInput){
+let eventHandlerCoordinateScaling = function (keydown, networkNodeData, network, scalingInput){
   // Function only rescales upon enter click
   if (keydown.key === 'Enter') {
     updatedNodes = resizeLayout(scalingInput.value, networkNodeData); // updates the node data
@@ -292,21 +297,19 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats)
   networkData = {nodes: networkNodeData, edges: networkEdgeData};
   network = new vis.Network(networkContainer, networkData, networkDrawingOptions);
 
+  // Initialize Visual Interaction Event Controllers
   heatmapPanelController(groupStats, formSelectContrast, networkDrawingOptions, network);
   // Init Run NodeChangeData handler to ensure match between selected options and display data
   updateNodeDataToContrastAndMeasure(networkNodeData, network);
 
-  network.on("dragging", (dragNodeData) => nodeDragController(dragNodeData, network));
+  network.on("dragging", (dragNodeData) => networkDragController(dragNodeData, network));
 
-  network.on(
-    "click", 
-    input => networkClickController(
-      input, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions
+  network.on("click", input => networkClickController(
+    input, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions
     )
   );
 
-  runNetworkPhysicsInput.addEventListener(
-    'keydown', 
+  runNetworkPhysicsInput.addEventListener('keydown', 
     keyInput => networkStabilizationController(
       keyInput, network, networkEdgeData, fullEdgeData
     )
@@ -324,7 +327,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats)
 
   scalingInput.addEventListener(
     'keydown', 
-    (keydown) => eventHandlerCoordinateScaling(keydown, nodes, networkNodeData, network, scalingInput)
+    (keydown) => eventHandlerCoordinateScaling(keydown, networkNodeData, network, scalingInput)
   );
   window.onresize = eventHandlerWindowResize(network)
 };
