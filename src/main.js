@@ -171,25 +171,7 @@ let networkClickController = function(clickInput, network, networkNodeData, netw
   }
 };
 
-/** In place coordinate modification of network upond enter keydown in run stabilize widget.
- * 
- * @param {*} keyInput 
- * @param {*} network 
- * @param {*} networkEdgeData 
- * @param {*} fullEdgeData 
- */
-let eventHandlerNetworkStabilizer = function(keyInput, network, networkEdgeData, fullEdgeData){
-  if (keyInput.key === 'Enter') {
-    // code for enter
-    networkEdgeData.update(fullEdgeData);
-    let n_iterations = Number(runNetworkPhysicsInput.value)
-    network.stabilize(n_iterations)
-    networkEdgeData.clear()
-    network.storePositions();
-    network.redraw()
-    network.fit();
-  }
-}
+
 
 /** Function handles change in measure or contrast selections
  * 
