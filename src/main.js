@@ -350,14 +350,11 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats)
 
   runNetworkPhysicsInput.addEventListener(
     'keydown', 
-    input => eventHandlerNetworkStabilizer(
-      input, network, networkEdgeData, fullEdgeData
+    keyInput => networkStabilizationController(
+      keyInput, network, networkEdgeData, fullEdgeData
     )
   );
 
-  // Init Run NodeChangeData handler to ensure match between selected options and display data
-  eventHandlerNodeDataChange(networkNodeData, network);
-  
   formSelectContrast.addEventListener(
     "change",
     () => eventHandlerNodeDataChange(networkNodeData, network)
