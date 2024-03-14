@@ -1,4 +1,21 @@
 JSON input data structure for dashboard:
+
+The dashboard json structure consists of a nested infromative key chain. The first layer contains the following keys:
+
+- nodes
+- groupStats
+- edges
+- univMeasureKeys
+- groupMeasureKeys
+- contrastKeys
+
+The last thee keys contain the respective unique keys for univariate measures, group measures, and contrasts as arrays 
+strings. Edges contains edges connecting nodes via node identifiers. Nodes and groupStats contain node and group 
+informaiton. Group stats immediately nests into contrasts keys, each populated by measure keys, each with a 
+corresponding measure value. Nodes contains top level node informaiton such as coordinates, and a data key which
+nests into contrast keys, containing measure keys, containing each measure value and measure NodeSize keys, each with
+corresponding values. For an abstracted complete example see below:
+
 ```json
 {
 	// groupKeys provides a quick reference for the number of groups and their keys
@@ -6,7 +23,7 @@ JSON input data structure for dashboard:
 	// univMeasureKeys provides a quick reference for the number of univ. measures and their keys
 	univMeasureKeys: ["univMeasureKey1", "univMeasureKey2", ...],
 	// groupMeasureKeys provides a quick reference for the number of group based. measures and their keys
-	groupMeasureKeys: ["groupMeasureKey1", "groupMeasureKey1", ...],
+	groupMeasureKeys: ["groupMeasureKey1", "groupMeasureKey2", ...],
 	// contrastKeys provides a quick reference for the number of contrasts and their keys
 	contrastKeys: ["contrastKey1", "contrastKey2", ...],
 	// groupStats provides statistical summary information for each groupKey in groupKeys. The number of entries
@@ -36,7 +53,7 @@ JSON input data structure for dashboard:
 	nodes: [
 		{
 			"id": "uniqueNodeIdentifier", // unique for each node in the network
-			"size": numericSize, // based on a univ. statistical measure, scaled to pixels between 10 and 50. A node size in px.
+			"size": numericSize, // A node size in px. Based on a univ. statistical measure scaled to pixels between 10 and 50.
 			"group": "groupKey1", // matching the keys in groupNames exactly
 			"x": numericCoordinateValue, // x location on canvas for the node in pixels
 			"y": numericCoordinateValue, // y location on canvas for the node in pixels
