@@ -4,7 +4,9 @@ import numpy as np
 import pandas as pd
 from sklearn.manifold import TSNE
 from scipy.spatial.distance import pdist, squareform
+from scipy.stats import spearmanr, pearsonr
 import plotly
+
 @dataclass
 class GridEntryTsne:
   """ 
