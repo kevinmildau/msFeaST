@@ -8,27 +8,14 @@ from typing import List, TypedDict, Tuple, Dict, NamedTuple, Union
 from warnings import warn
 import copy # for safer get methods  pipeline internal variables
 import json
-
-# kmedoid dependency
-from kmedoids import KMedoids
-from sklearn.metrics import silhouette_score
-
-from grid_entry_classes import GridEntryTsne, GridEntryKmedoid
+# from version import __version__ # for version indication in exports
 from r_output_parsing import load_and_validate_r_output
 from spectral_comparison import compute_similarities_wrapper, convert_similarity_to_distance, assert_similarity_matrix
 from file_checking import assert_filepath_exists
-from process_spectra import validate_spectra, load_spectral_data
-
-# tsne dependencies
-from sklearn.manifold import TSNE
-from scipy.spatial.distance import pdist, squareform
-
-# plotting functionalities
-import plotly
-import plotly.express
-import plotly.graph_objects as go
-
-
+from process_spectra import validate_spectra, load_spectral_data, add_feature_id_key, extract_feature_ids_from_spectra
+from embedding import GridEntryTsne, run_tsne_grid, print_tsne_grid, check_perplexities
+from kmedoid_clustering import GridEntryKmedoid, run_kmedoid_grid, check_k_values, print_kmedoid_grid
+from utility_functions import assert_iloc_valid
 @dataclass
 class Msfeast:
   """
