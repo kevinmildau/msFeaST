@@ -87,7 +87,7 @@ def check_k_values(k_values : List[int], max_k : int) -> None:
         )
     return None
 
-def _print_kmedoid_grid(grid : List[GridEntryKmedoid]) -> None:
+def print_kmedoid_grid(grid : List[GridEntryKmedoid]) -> None:
   """ Prints all values in kmedoid grid in readable format via pandas conversion """
   kmedoid_results = pd.DataFrame.from_dict(data = grid).loc[
       :, ["k", "silhouette_score", "random_seed_used"]
