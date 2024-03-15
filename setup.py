@@ -2,7 +2,7 @@
 from setuptools import setup
 import os
 
-r_script_sourcepath = os.path.join("src", "msfeast", "run_msfeast.R")
+r_script_sourcepath = os.path.join("msfeast", "runStats.R")
 
 # Read the version string from version.py
 version = {}
@@ -13,8 +13,8 @@ setup(
   name = 'msfeast',
   version = version["__version__"],
   include_package_data = True, 
-  package_data = {"msfeast" :  [r_script_sourcepath]},
   packages = ['msfeast'],
+  scripts = ['msfeast/runStats.R'],
   python_requires = '>=3.10',
   install_requires = [
     'numpy', 
