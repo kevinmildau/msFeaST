@@ -10,6 +10,7 @@ notebooks/tmp_output/test_dashboard.json
 .Rhistory
 .Rapp.history
 
+notebooks/test_output
 notebooks/__pycache__
 notebooks/tmp_output/test_dashboard.json
 notebooks/tmp_outputs
