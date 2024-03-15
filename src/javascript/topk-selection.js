@@ -1,7 +1,7 @@
 /*
-topKSelectionController
+topKSelectionModule
 */
-topKSelectionController = (function(){
+topKSelectionModule = (function(){
   const rangeInputTopKSelection = document.getElementById("id-topk-range-input");
   const topkLivePrintContainer = document.getElementById("id-topk-live-print");
   let updateTopKTextView = function(){

@@ -537,9 +537,9 @@ if (sys.nframe() == 0){
   feature_ids <- assignment_table$feature_id
   feature_sets <- generateFeatureSetList(assignment_table)
   
-  joint_validate_input_tables <- function(quantification_table, treatment_table, assignment_table){
-    # NOT IMPLEMENTED
-  }
+  #joint_validate_input_tables <- function(quantification_table, treatment_table, assignment_table){
+  #  # NOT IMPLEMENTED
+  #}
 
   ######################################################################################################################
   print("R Routine: running global test and fold change computations...")
