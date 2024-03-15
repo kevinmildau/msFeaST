@@ -14,6 +14,7 @@ from math import isnan
 # kmedoid dependency
 from kmedoids import KMedoids
 from sklearn.metrics import silhouette_score
+from r_output_parsing import _force_to_numeric
 
 # tsne dependencies
 from sklearn.manifold import TSNE
@@ -1257,7 +1258,7 @@ def _construct_nodes(
             ub_original = 13 # also max considered for visualization, equivalent of a 8192 fold increase or decrease
             round_decimals = 4
             # make sure the input is valid, and if not, replace with default lb (no size emphasis)
-            value = _check_numeric_and_replace_if_not(value, lb_original)        
+            value = _force_to_numeric(value, lb_original)        
             size = round(
               _linear_range_transform(
                 np.clip(np.abs(value), lb_original, ub_original),
@@ -1275,7 +1276,7 @@ def _construct_nodes(
             ub_original = 6 # also max considered for visualization, equivalent to 1 in a million probability
             round_decimals = 4
             # make sure the input is valid, and if not, replace with default lb (no size emphasis)
-            value = _check_numeric_and_replace_if_not(value, lb_original) 
+            value = _force_to_numeric(value, lb_original) 
             # check for exact zero input before log transformation
             if value != 0:
               size = round(
@@ -1310,39 +1311,3 @@ def _apply_bonferroni_correction_to_group_stats(groupStats, alpha = 0.01):
       adjusted_pvalue = min(1, adjusted_group_stats[group][contrast]["globalTestPValue"] * n_tests)
       adjusted_group_stats[group][contrast]["globalTestPValue"] = adjusted_pvalue
   return adjusted_group_stats
-
-def create_directory_if_not_exists(directory : str) -> None:
-  """
-  Creates a directory if it does not exist.
-
-  Parameters:
-    directory: str path to the directory.
-  Returns:
-    None
-  """
-  try:
-    os.makedirs(directory, exist_ok=True)
-    print(f"Directory '{directory}' created or already exists.")
-  except OSError as error:
-    warn(f"Directory could not be created. Following error encounted when attempting to create directory: {error}")
-  return None
-
-def _check_numeric_and_replace_if_not(value, default_value):
-  """ 
-  Function checks whether input is numeric or can be coerced to numeric, replaces it with suitable default if not. 
-  Covered are: string input, empty string input, None input, and specific "-inf" , "-INF" and positive equivalents that
-  are translated into infinite but valid floats.
-  """
-  if value is None: # catch None, since None breaks the try except in float(value)
-    return default_value
-  try:
-    # Try to convert the value to a float
-    num = float(value)
-    # Check if the number is infinite or NaN
-    if isnan(num):  # num != num is a check for NaN
-      return default_value
-    else:
-      return num
-  except ValueError:
-    # return default if conversion did not work
-    return default_value
