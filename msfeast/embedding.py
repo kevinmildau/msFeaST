@@ -46,7 +46,7 @@ class GridEntryUmap:
   """
   ...
 
-def _check_perplexities(perplexity_values : List[Union[float, int]], max_perplexity : Union[float, int]) -> None:
+def check_perplexities(perplexity_values : List[Union[float, int]], max_perplexity : Union[float, int]) -> None:
   """ Function checks whether perplexity values match expected configuration. Aborts if not. """
   assert perplexity_values is not [], (
     "Error: perplexity_values list is empty! This may be a result of post-processing: there must be a "
@@ -61,7 +61,7 @@ def _check_perplexities(perplexity_values : List[Union[float, int]], max_perplex
     )
   return None
 
-def _run_tsne_grid(
+def run_tsne_grid(
   distance_matrix : np.ndarray,
   perplexity_values : List[int], 
   random_states : Union[List, None] = None
@@ -75,7 +75,7 @@ def _run_tsne_grid(
   Returns: 
       A list of GridEntryTsne objects containing grid results. 
   """
-  _check_perplexities(perplexity_values, distance_matrix.shape[0])
+  check_perplexities(perplexity_values, distance_matrix.shape[0])
   if random_states is None:
       random_states = [ 0 for _ in perplexity_values ]
   output_list = []
@@ -117,7 +117,7 @@ def _plot_tsne_grid(tsne_list : List[GridEntryTsne]) -> None:
   fig.show()
   return None
 
-def _print_tsne_grid(grid : List[GridEntryTsne]) -> None:   
+def print_tsne_grid(grid : List[GridEntryTsne]) -> None:   
   """ Prints all values in tsne grid in readable format via pandas conversion """
   tsne_results = pd.DataFrame.from_dict(data = grid).loc[
       :, ["perplexity", "pearson_score", "spearman_score", "random_seed_used"]
