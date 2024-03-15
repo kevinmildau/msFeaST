@@ -14,8 +14,7 @@ from kmedoids import KMedoids
 from sklearn.metrics import silhouette_score
 
 from grid_entry_classes import GridEntryTsne, GridEntryKmedoid
-from r_output_parsing import _force_to_numeric
-from spectral_comparison import compute_similarities_wrapper, convert_similarity_to_distance
+from file_checking import assert_filepath_exists
 
 # tsne dependencies
 from sklearn.manifold import TSNE
