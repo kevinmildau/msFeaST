@@ -102,7 +102,7 @@ class Msfeast:
     """
     # Implement file extension check to see whether a csv or tsv file is provided
     table = ...
-    self._validate_quantification_table(table)
+    self.validate_quantification_table(table)
     return None
   
   def load_treatment_table_from_file(self, filepath : str) -> None:
@@ -112,7 +112,7 @@ class Msfeast:
     """
     # Implement file extension check to see whether a csv or tsv file is provided
     table = ...
-    self._validate_treatment_data(table)
+    self.validate_treatment_data(table)
     return None
   
   def attach_spectral_data(
@@ -146,7 +146,7 @@ class Msfeast:
       "Error: quantificaiton table validation requires spectral data. Please provide spectral data before attaching "
       "quantification table.")
 
-    self._validate_quantification_table(table)
+    self.validate_quantification_table(table)
     self.quantification_table = table
     return None
   
@@ -161,11 +161,11 @@ class Msfeast:
       None. Atacched treatment_table to self.
     """
     # Implement file extension check to see whether a csv or tsv file is provided
-    self._validate_treatment_data(table) # validat
+    self.validate_treatment_data(table) # validat
     self.treatment_table = table
     return None
   
-  def _validate_quantification_table(self, table : pd.DataFrame) -> None:
+  def validate_quantification_table(self, table : pd.DataFrame) -> None:
     """
     NOT IMPLEMENTED. 
     Function validates quantification table input against spectral data.
@@ -180,7 +180,7 @@ class Msfeast:
     assert True
     return None
   
-  def _validate_treatment_data(self, table : pd.DataFrame):
+  def validate_treatment_data(self, table : pd.DataFrame):
     """
     NOT IMPLEMENTED
     Function validates treatment information input. Expects treatment information to be a pandas.DataFrame with
