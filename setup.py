@@ -21,6 +21,7 @@ setup(
     'jupyter',
     "ipykernel",
     'sklearn',
+    'scipy',
     'plotly',
     'pandas',
     'matchms==0.24.1',
