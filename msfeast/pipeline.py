@@ -17,7 +17,7 @@ from grid_entry_classes import GridEntryTsne, GridEntryKmedoid
 from r_output_parsing import load_and_validate_r_output
 from spectral_comparison import compute_similarities_wrapper, convert_similarity_to_distance, assert_similarity_matrix
 from file_checking import assert_filepath_exists
-from process_spectra import validate_spectra
+from process_spectra import validate_spectra, load_spectral_data
 
 # tsne dependencies
 from sklearn.manifold import TSNE
@@ -64,8 +64,6 @@ class Msfeast:
   assignment_table : Union[None, pd.DataFrame] = None
   output_dictionary : Union[None, dict] = None
   r_data_long_df : Union[None, dict] = None
-  
-
   # settings used dictionary, initialized as empty
   _settings_used : dict = field(default_factory= lambda: {})
 
@@ -86,9 +84,11 @@ class Msfeast:
     Attaches spectrum_matchms to pipeline instance. Returns None.
     """
     assert_filepath_exists(filepath)
-    spectra_matchms = _load_spectral_data(filepath, identifier_key)
+    spectra_matchms = load_spectral_data(filepath, identifier_key)
+    
     if identifier_key != "feature_id":
       spectra_matchms = _add_feature_id_key(spectra_matchms, identifier_key)
+    
     validate_spectra(spectra_matchms)
     _ = _extract_feature_ids_from_spectra(spectra_matchms) # loads feature_ids to check uniqueness of every entry
     self.spectra_matchms = spectra_matchms
@@ -648,15 +648,6 @@ def _extract_feature_ids_from_spectra(spectra : List[matchms.Spectrum]) -> List[
   feature_ids = [str(spec.get("feature_id")) for spec in spectra]
   _assert_feature_ids_valid(feature_ids)
   return feature_ids
-
-def _load_spectral_data(filepath : str, identifier_key : str = "feature_id") -> List[matchms.Spectrum]:
-  """ Loads spectra from file and validates identifier availability """
-  assert_filepath_exists(filepath)
-  spectra_matchms = list(matchms.importing.load_from_mgf(filepath)) # this may cause its own assert errors. 
-  assert isinstance(spectra_matchms, list), "Error: spectral input must be type list[matchms.Spectrum]"
-  for spec in spectra_matchms:
-    assert isinstance(spec, matchms.Spectrum), "Error: all entries in list must be type spectrum."
-  return spectra_matchms
 
 def _run_kmedoid_grid(
     distance_matrix : np.ndarray, 
