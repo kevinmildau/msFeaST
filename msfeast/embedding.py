@@ -2,7 +2,9 @@ from dataclasses import dataclass
 from typing import List, Union
 import numpy as np
 import pandas as pd
-
+from sklearn.manifold import TSNE
+from scipy.spatial.distance import pdist, squareform
+import plotly
 @dataclass
 class GridEntryTsne:
   """ 
