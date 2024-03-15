@@ -475,9 +475,15 @@ class Msfeast:
     self.treatment_table.to_csv(filepath_treatment_table, index = False)
     self.assignment_table.to_csv(filepath_assignment_table, index = False)
 
+    # Fetch r script filepath
+    r_script_path = os.path.join(
+      os.path.dirname(os.path.realpath(__file__)), # module directory after pip install
+      "run_msfeast.R" # filename included as package data
+    )
+    
     # Run R Code
     subprocess.run((
-        f"Rscript run_msfeast.R {filepath_quantification_table} " 
+        f"Rscript {r_script_path} {filepath_quantification_table} " 
         f"{filepath_treatment_table} " 
         f"{filepath_assignment_table} "
         f"{filepath_r_output_json}"

@@ -6,7 +6,7 @@ r_script_sourcepath = os.path.join("src", "msfeast", "run_msfeast.R")
 
 # Read the version string from version.py
 version = {}
-with open(os.path.join('specxplore', 'version.py')) as fp:
+with open(os.path.join('src', 'msfeast', 'version.py')) as fp:
   exec(fp.read(), version)
 
 setup(
