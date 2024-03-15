@@ -14,7 +14,10 @@ from kmedoids import KMedoids
 from sklearn.metrics import silhouette_score
 
 from grid_entry_classes import GridEntryTsne, GridEntryKmedoid
+from r_output_parsing import load_and_validate_r_output
+from spectral_comparison import compute_similarities_wrapper, convert_similarity_to_distance, assert_similarity_matrix
 from file_checking import assert_filepath_exists
+from process_spectra import validate_spectra
 
 # tsne dependencies
 from sklearn.manifold import TSNE
@@ -646,71 +649,9 @@ def _extract_feature_ids_from_spectra(spectra : List[matchms.Spectrum]) -> List[
   _assert_feature_ids_valid(feature_ids)
   return feature_ids
 
-def _validate_spectra(
-    spectra : List[matchms.Spectrum], 
-    identifier_key : str = "feature_id"
-  ) -> None:
-  """ 
-  Function validates spectral data input to match expectations. A feature_id must be available for each spectrum. Aborts
-  if spectra non-conforming.
-
-  # Make sure spectrum is not None
-  # Make sure spectrum is instance matchms
-  # Make sure spectrum has peaks
-  # Make sure spectrum has feature_id
-  """
-  empty_spectra_detected = False
-  for spectrum in spectra:
-    assert isinstance(spectrum, matchms.Spectrum), (
-      f"Error: item in loaded spectrum list is not of type matchms.Spectrum!"
-    )
-    assert spectrum is not None, (
-      "Error: None object detected in spectrum list. All spectra must be valid matchms.Spectrum instances."
-    )
-    assert spectrum.get(identifier_key) is not None, (
-      "Error: All spectra must have valid feature_id entries."
-    )
-    assert spectrum.get("precursor_mz") is not None, (
-      "Error: All spectra must have valid precursor_mz value."
-    )
-    if spectrum.intensities is None or spectrum.mz is None: # is none also true for empty list []
-      empty_spectra_detected = True
-  if empty_spectra_detected:
-    warn((
-        "At least one spectrum provided that does not contain peak information (empty). "
-        "Spectral processing required!"
-      )
-    )
-  return None  
-
-def _assert_filepath_valid(filepath : str) -> None:
-  """ 
-  Helper Function checks whether the provided filepath is valid (str, in existing folder etc.), the file doesn't need to 
-  exist. The function raises an assert error if not.
-  """
-  assert isinstance(filepath, str), f"Error: expected filepath to be string but received {type(filepath)}"
-  assert os.path.isfile(filepath), "Error: supplied filepath is not valid."
-  return None
-
-def _assert_filepath_exists(filepath : str) -> None:
-  """ 
-  Helper Function checks whether the provided filepath is valid and exists. The function raises an assert error if not. 
-  """
-  assert isinstance(filepath, str), f"Error: expected filepath to be string but received {type(filepath)}"
-  assert os.path.exists(filepath), "Error: supplied filepath does not point to existing file."
-  return None
-
-def _assert_directory_exists(directory : str) -> None:
-  """ 
-  Helper Function checks whether the provided filepath is valid and exists. The function raises an assert error if not. 
-  """
-  assert isinstance(directory, str), f"Error: expected directory to be string but received {type(directory)}"
-  assert os.path.isdir(directory), "Error: model directory path must point to an existing directory!"
-  return None
-
 def _load_spectral_data(filepath : str, identifier_key : str = "feature_id") -> List[matchms.Spectrum]:
   """ Loads spectra from file and validates identifier availability """
-  _assert_filepath_exists(filepath)
+  assert_filepath_exists(filepath)
   spectra_matchms = list(matchms.importing.load_from_mgf(filepath)) # this may cause its own assert errors. 
   assert isinstance(spectra_matchms, list), "Error: spectral input must be type list[matchms.Spectrum]"
   for spec in spectra_matchms:
