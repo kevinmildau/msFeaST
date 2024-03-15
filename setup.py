@@ -6,7 +6,7 @@ r_script_sourcepath = os.path.join("src", "msfeast", "run_msfeast.R")
 
 # Read the version string from version.py
 version = {}
-with open(os.path.join('src', 'msfeast', 'version.py')) as fp:
+with open(os.path.join('msfeast', 'version.py')) as fp:
   exec(fp.read(), version)
 
 setup(
@@ -15,12 +15,12 @@ setup(
   include_package_data = True, 
   package_data = {"msfeast" :  [r_script_sourcepath]},
   packages = ['msfeast'],
-  python_requires = '==3.10',
+  python_requires = '>=3.10',
   install_requires = [
     'numpy', 
     'jupyter',
     "ipykernel",
-    'sklearn',
+    'scikit-learn',
     'scipy',
     'plotly',
     'pandas',
