@@ -478,7 +478,7 @@ class Msfeast:
     # Fetch r script filepath
     r_script_path = os.path.join(
       os.path.dirname(os.path.realpath(__file__)), # module directory after pip install
-      "run_msfeast.R" # filename included as package data
+      "runStats.R" # filename included as package data
     )
     
     # Run R Code
