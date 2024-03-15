@@ -124,3 +124,13 @@ def _print_tsne_grid(grid : List[GridEntryTsne]) -> None:
   print("T-sne grid results. Use to inform t-sne embedding selection.")
   print(tsne_results)
   return None
+
+def plot_selected_embedding(embedding_coordinates_table : pd.DataFrame) -> plotly.graph_objs.Figure:
+  """ """
+  """ Plots the provided t-sne embedding. """
+  fig  = plotly.express.scatter(
+    data_frame= embedding_coordinates_table, x = "x", y = "y", hover_data=["feature_id"],
+    width=800, height=800
+  )
+  fig.show()
+  return(fig)
