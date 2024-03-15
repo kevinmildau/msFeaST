@@ -21,8 +21,8 @@ from scipy.spatial.distance import pdist, squareform
 from scipy.stats import pearsonr, spearmanr 
 
 # spec2vec dependencies
-from spec2vec import Spec2Vec
-import gensim
+#from spec2vec import Spec2Vec
+#import gensim
 
 # plotting functionalities
 import plotly
