@@ -85,11 +85,11 @@ class Msfeast:
     Returns
     Attaches spectrum_matchms to pipeline instance. Returns None.
     """
-    _assert_filepath_exists(filepath)
+    assert_filepath_exists(filepath)
     spectra_matchms = _load_spectral_data(filepath, identifier_key)
     if identifier_key != "feature_id":
       spectra_matchms = _add_feature_id_key(spectra_matchms, identifier_key)
-    _validate_spectra(spectra_matchms)
+    validate_spectra(spectra_matchms)
     _ = _extract_feature_ids_from_spectra(spectra_matchms) # loads feature_ids to check uniqueness of every entry
     self.spectra_matchms = spectra_matchms
     self._spectral_data_loading_complete = True
@@ -134,7 +134,7 @@ class Msfeast:
     Returns 
 
     """
-    self._validate_spectra()
+    self.validate_spectra()
     return None
   
   def attach_quantification_table(self, table : pd.DataFrame) -> None :
@@ -226,7 +226,7 @@ class Msfeast:
     assert self.spectra_matchms is not None, (
       "Error: pipeline requires spectra to be attached prior to similarity computation."
     )
-    _assert_similarity_matrix(similarity_array, n_spectra=len(self.spectra_matchms))
+    assert_similarity_matrix(similarity_array, n_spectra=len(self.spectra_matchms))
     self.similarity_array = similarity_array
     self._attach_settings_used(score_name = score_name)
     return None
@@ -418,7 +418,7 @@ class Msfeast:
       shell=True
     )
     # load r data
-    r_json_data = _load_and_validate_r_output(filepath_r_output_json)
+    r_json_data = load_and_validate_r_output(filepath_r_output_json)
     # construct derived variables and attach
     self._generate_and_attach_long_format_r_data(r_json_data)
     self._generate_and_attach_json_dict(r_json_data, top_k)
@@ -657,17 +657,6 @@ def _load_spectral_data(filepath : str, identifier_key : str = "feature_id") -> 
   for spec in spectra_matchms:
     assert isinstance(spec, matchms.Spectrum), "Error: all entries in list must be type spectrum."
   return spectra_matchms
-
-def _assert_similarity_matrix(scores : np.ndarray, n_spectra : int) -> None:
-  """ Function checks whether similarity matrix corresponds to expected formatting. Aborts code if not. """
-  assert (isinstance(scores, np.ndarray)), "Error: input scores must be type np.ndarray."
-  assert scores.shape[0] == scores.shape[1] == n_spectra, (
-    "Error: score dimensions must be square & correspond to n_spectra"
-  )
-  assert np.logical_and(scores >= 0, scores <= 1).all(), "Error: all score values must be in range 0 to 1."
-  return None
-
-
 
 def _run_kmedoid_grid(
     distance_matrix : np.ndarray, 
