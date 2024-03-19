@@ -321,3 +321,11 @@ class Msfeast:
     self.embedding_coordinates_table = embedding_coordinates_table
     self.attach_settings_used(tsne_perplexity = self.tsne_grid[iloc].perplexity)
     return None
+  
+  def attach_settings_used(self, **kwargs) -> None:
+    """Helper function attaches used settings to settings dictionary via key value pairs passed as kwargs. """
+    for key, value in kwargs.items():
+        if key is not None and value is not None:
+            self._settings_used[key] = value
+    return None
+  
