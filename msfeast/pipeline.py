@@ -9,7 +9,6 @@ from warnings import warn
 import copy # for safer get methods  pipeline internal variables
 import json
 # from version import __version__ # for version indication in exports
-from r_output_parsing import load_and_validate_r_output
 from spectral_comparison import compute_similarities_wrapper, convert_similarity_to_distance, assert_similarity_matrix
 from file_checking import assert_filepath_exists
 from process_spectra import validate_spectra, load_spectral_data, add_feature_id_key, extract_feature_ids_from_spectra
@@ -87,34 +86,8 @@ class Msfeast:
     self._spectral_data_loading_complete = True
     return None
 
-  def load_and_attach_quantification_table_from_file(self, filepath : str) -> None :
+  def attach_spectra_from_list(self, spectra : List[matchms.Spectrum], identifier_key : str = "feature_id") -> None:
     """
-    NOT IMPLEMENTED
-    Loads spectral data quantification table from csv / tsv file. Must contain sample id, and feature_id based columns.
-    """
-    # Implement file extension check to see whether a csv or tsv file is provided
-    table = ...
-    self.validate_quantification_table(table)
-    return None
-  
-  def load_and_attach_treatment_table_from_file(self, filepath : str) -> None:
-    """
-    NOT IMPLEMENTED
-    Loads treatment data table from csv / tsv file. Must contain sample_id and treatment_id columns.
-    """
-    # Implement file extension check to see whether a csv or tsv file is provided
-    table = ...
-    self.validate_treatment_data(table)
-    return None
-  
-  def attach_spectra_from_list(
-      self, 
-      spectra : List[matchms.Spectrum], 
-      identifier_key : str = "feature_id"
-      ) -> None:
-    """
-    NOT IMPLEMENTED
-
     Attaches spectral data from python list. Must have feature_id entry, or alternative identifier_key name to fetch. 
 
     Parameters
