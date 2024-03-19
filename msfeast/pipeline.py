@@ -50,6 +50,7 @@ class Msfeast:
   similarity_array : Union[np.ndarray, None] = None
   embedding_coordinates_table : Union[pd.DataFrame, None] = None
   kmedoid_grid : Union[List[GridEntryKmedoid], None] = None
+  tsne_grid : Union[List[GridEntryTsne], None] = None
   assignment_table : Union[pd.DataFrame, None] = None
   r_json_results: Union[dict, None] = None
   dashboard_json_dict : Union[dict, None] = None
