@@ -19,7 +19,7 @@ from utility_functions import assert_iloc_valid
 @dataclass
 class Msfeast:
   """
-  msFeaST pipeline api class for user interactions via python console or GUI (NOT IMPLEMENTED YET)
+  msFeaST pipeline api class for user interactions via python console or GUI (NOT IMPLEMENTED)
 
   msFeaST probvides a pipeline for feature set testing based on unknown spectra. This API deals with data loading,
   processing, classification, embedding, statistical testing, and constructing the suitable data structures for 
@@ -27,30 +27,31 @@ class Msfeast:
   are:
 
   1. Data importing: The required data for msFeaST is loaded into the class instance via from file loading or 
-  provided as appropriate Python objects. Strict abidance by format requirements is crucial here to avoid downstream
-  processing issues.
-  2. Data cleaning: spectral data are filtered to conform with minimum spectral data requirements.
-  3. Optional Data Normalization: total-sum scaling is applied to the quantification table if no alternative 
+  provided as appropriate Python objects.
+  2. [Optional] Data cleaning: spectral data are filtered to conform with minimum spectral data requirements.
+  3. [Optional] Data Normalization: total-sum scaling is applied to the quantification table if no alternative 
   normalization approaches were used in other software.
-  4. Similarity measure computation
-  5. k-medoid classification or class provision
-  6. embedding or embedding provision (t-SNE and Umap implemented)
-  7. global test run or provide statistical results in some suitable format (not defined for now)
-  8. Export data tables & dashboard data structures
+  4. Similarity measure computation. 
+  5. K-medoid clustering.
+  6. Embedding.
+  7. Statistical Testing at cluster level and computation of descriptive statistics on feature level.
+  8. Export dashboard data structure (json)
 
   The msFeaST pipeline requires an interaction with the R programming language to run globaltest. For this to work, 
-  a working R and globaltest installation, as well as the R R script itself need to be available.
+  a working R and globaltest installation need to be available (auto-install along python NOT IMPLEMENTED)
+
   """
   # msFeaST instance variable are default set to None in constructor. The pipeline gradually builds them up.
   quantification_table: pd.DataFrame | None = None
   treatment_table: pd.DataFrame | None = None
   spectra_matchms: list[matchms.Spectrum] | None = None
-  similarity_array : Union[None, np.ndarray] = None
-  embedding_coordinates_table : Union[None, pd.DataFrame] = None
+  similarity_array : Union[np.ndarray, None] = None
+  embedding_coordinates_table : Union[pd.DataFrame, None] = None
   kmedoid_grid : Union[List[GridEntryKmedoid], None] = None
-  assignment_table : Union[None, pd.DataFrame] = None
-  output_dictionary : Union[None, dict] = None
-  r_data_long_df : Union[None, dict] = None
+  assignment_table : Union[pd.DataFrame, None] = None
+  r_json_results: Union[dict, None] = None
+  dashboard_json_dict : Union[dict, None] = None
+  r_data_long_df : Union[pd.DataFrame, None] = None
 
   # settings used dictionary, initialized as empty
   _settings_used : dict = field(default_factory= lambda: {}) # "msfeast_version": __version__["__version__"]
