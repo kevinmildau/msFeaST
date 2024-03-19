@@ -236,28 +236,58 @@ class Msfeast:
     selected_k = self.kmedoid_grid[iloc].k
     self.attach_settings_used(kmedoid_n_clusters = selected_k)
     return None
-
-  def attach_settings_used(self, **kwargs) -> None:
-    """Helper function attaches used settings to settings dictionary via key value pairs passed as kwargs. """
-    for key, value in kwargs.items():
-        if key is not None and value is not None:
-            self._settings_used[key] = value
-    return None
   
-  def export_dashboard_data_as_json(self, filepath : str, force = False):
+  def run_and_attach_statistical_comparisons(
+      self, 
+      directory: str, 
+      r_filename: str = "msfeast_r_output.json", 
+    ) -> None:
     """ 
-    INCOMPLETE
-    Can be split into many small routines, one to make the node lists, one to make the group stats values etc.
-    exportToJson 
+    Function runs statistical contrast comparisons at group level and at feature level. 
+    
+    Function refers statistical computations to msfeast R bash script requiring file system exchange.
     """
-    # validate the that all self object data available
-    self.validate_complete()
-    # validate the filepath does not exist or force setting to ensure everything works 
-    assert True
-    # construct json string for entire dataset
-    json_string = json.dumps(self.output_dictionary, indent=2)
-    with open(filepath, 'w') as f:
-        f.write(json_string)
+    r_json_results = run_statistics_routine(
+      directory, 
+      self.quantification_table, 
+      self.treatment_table, 
+      self.assignment_table,
+      r_filename, 
+      True
+    )
+    self.r_json_results = r_json_results
+    return None
+
+  def integrate_and_attach_dashboard_data(self, top_k_max : int = 50, alpha : float = 0.01) -> None: 
+    """ Integrate pipeline intermediate results into dashboard compatible dictionary for json exporting. """
+    feature_ids = extract_feature_ids_from_spectra(self.spectra_matchms)
+    
+    # Create dashboard json dict components
+    node_list = construct_node_list(self.r_json_results, self.assignment_table, self.embedding_coordinates_table)
+    edge_list = construct_edge_list(self.similarity_array, feature_ids, top_k_max)
+    group_stats_list = apply_bonferroni_correction_to_group_stats(self.r_json_results["set_specific"], alpha)
+    group_keys = self.r_json_results["set_id_keys"]
+    univariate_measure_keys = ["log2FoldChange", "globalTestFeaturePValue"]
+    group_measure_keys = ["globalTestPValue"]
+    contrast_keys = self.r_json_results["contrast_keys"]
+
+    # Create dashboard json dictionary from components.
+    dashboard_json_dict = {
+      "groupKeys": group_keys,
+      "univMeasureKeys": univariate_measure_keys,
+      "groupMeasureKeys": group_measure_keys,
+      "contrastKeys": contrast_keys,
+      "groupStats": group_stats_list,
+      "nodes": node_list,
+      "edges": edge_list,
+    }
+    self.dashboard_json_dict = dashboard_json_dict
+    return None
+
+  def export_dashboard_json(self, filepath : str):
+    """ Function exports dashboard json to file at filepath. """
+    from integrate import write_dict_to_json_file
+    write_dict_to_json_file(self.dashboard_json_dict, filepath)
     return None
 
   def run_and_attach_tsne_grid(self, perplexity_values : List[int] = [10, 20, 30, 40, 50]) -> None:
