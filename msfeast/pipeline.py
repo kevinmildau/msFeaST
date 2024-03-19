@@ -133,11 +133,7 @@ class Msfeast:
     self.treatment_table = table
     return None
   
-  def attach_spectral_similarity_array(
-      self, 
-      similarity_array : np.ndarray, 
-      score_name : str = "unspecified"
-      ) -> None:
+  def attach_spectral_similarity_array(self, similarity_array : np.ndarray, score_name : str = "unspecified") -> None:
     """
     Function attaches pre-computed similarity matrix in format of square np.ndarray to pipeline. Requires spectra to be
     loaded for size agreement assessment.
@@ -183,7 +179,7 @@ class Msfeast:
 
   def return_spectral_similarity_array(self) -> Union[np.ndarray, None]:
     """
-    Returns copy of the spectral similarity array from pipeline.
+    Returns a deep copy of the spectral similarity array from pipeline.
     """
     if self.similarity_array is not None:
       return copy.deepcopy(self.similarity_array)
