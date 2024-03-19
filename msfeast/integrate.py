@@ -3,51 +3,10 @@ import numpy as np
 import json
 import pandas as pd
 import copy
+from warnings import warn
+from process_spectra import extract_feature_ids_from_spectra
 
-def load_and_validate_r_output(filepath : str) -> dict:
-  """ Function loads and validates r output file.
-  Returns the r output json data as a python dictionary. First level entries are:
-  
-  feature_specific
-  --> feature id specific data, subdivided into contrast specific, measure specific, and finally value. I.e. for each
-  feature id, for each contrast key, for each measure key, there will be a corresponding value in a nested dict
-  of hierarchy [feature_identifier][contrast_key][measure_key] --> value. Feature_identifier, contrast_key, and
-  measure keys are data dependent strings. The hierarchy gives the type of entry.
-  
-  set_specific
-  --> set id specific data, subdivided into contrast specific, measure specific, and finally value
-  feature_id_keys. Similar to feature_id.
-  
-  set_id_keys
-  --> list of set identifiers
-  
-  contrast_keys
-  --> list of contrast keys
-  
-  feature_specific_measure_keys
-  --> list of measure keys for the feature specific entry
-  
-  set_specific_measure_keys
-  --> list of measure keys for the set specific entries
-  """
-  json_data = json.load(open(filepath, mode = "r"))
-  # Assert that the top level keys are all populated (partial input assertion testing only!)
-  assert json_data["feature_specific"]is not None, "ERROR: Expected feature_specific  entry to not be empty."
-  assert json_data["feature_specific"].keys() is not None, "ERROR: Expected feature specific keys."
-  assert json_data["set_specific"] is not None, "ERROR: Expected set_specific  entry to not be empty."
-  assert json_data["set_specific"].keys() is not None, "ERROR: Expected set specific keys."
-  assert json_data["feature_id_keys"] is not None, "ERROR: Expected feature id keys entry to not be empty."
-  assert json_data["set_id_keys"] is not None, "ERROR: Expected feature id keys entry to not be empty."
-  assert json_data["contrast_keys"] is not None, "ERROR: Expected contrast_keys entry to not be empty."
-  assert json_data["feature_specific_measure_keys"] is not None, "ERROR: Expected feature_specific_measure_keys to not be empty."
-  assert json_data["set_specific_measure_keys"] is not None, "ERROR: Expected set_specific_measure_keys entry to not be empty."
-  # TODO: for robustness, Cross compare R entries against python data from pipeline (contrasts, setids, fids)
-  # TODO: for robustness, Validate each feature_id and set_id entry
-  # return the validated data
-  return json_data
-
-
-def _construct_nodes(
+def construct_node_list(
     r_json_data : dict, 
     assignment_table : pd.DataFrame, 
     embedding_coordinates_table: pd.DataFrame
@@ -77,62 +36,24 @@ def _construct_nodes(
     }
     # For specific expected measures, translate the measure into node size: supported: p-value & log2foldchange
     # Currently no scale available.
-    lb_node_size = 10
-    ub_node_size = 50
+
     for contrast_key in node["data"].keys(): 
-      for measure_key in node["data"][contrast_key].keys():
+      for measure_key in measure_keys:
         # Only add nodeSize conversion if among the supported keys for conversion
-        if measure_key in measure_keys:
-          value = node["data"][contrast_key][measure_key] 
-          size = None
-          if measure_key == "log2FoldChange":
-            # transform to abs scale for positive and negative fold to be treated equally 
-            # limit to range 0 to 10 (upper bounding to limit avoid a huge upper bound masking smaller effects), 
-            # recast to size 10 to 50
-            lb_original = 0
-            ub_original = 13 # also max considered for visualization, equivalent of a 8192 fold increase or decrease
-            round_decimals = 4
-            # make sure the input is valid, and if not, replace with default lb (no size emphasis)
-            value = force_to_numeric(value, lb_original)        
-            size = round(
-              linear_range_transform(
-                np.clip(np.abs(value), lb_original, ub_original),
-                lb_original, ub_original, lb_node_size, ub_node_size), 
-              round_decimals
-            )
-          if measure_key == "globalTestFeaturePValue":
-            # transform p value to log10 scale to get order of magnitude scaling
-            # take absolute value to make increasing scale; the smaller p, the larger the value
-            # cutoff pvalue at size 10 to avoid masking smaller relevant effects, start sizing at 1, equivalent of
-            # pvalue = 0.1 (all above are simply min node size of 10)
-            # A abs(log10(p_value = 0.1)) = 1 ; this is size 10 for the nodes. Going below means getting size.
-            # max visual is log10(0.0000001) -> -6
-            lb_original = 0
-            ub_original = 6 # also max considered for visualization, equivalent to 1 in a million probability
-            round_decimals = 4
-            # make sure the input is valid, and if not, replace with default lb (no size emphasis)
-            value = force_to_numeric(value, lb_original) 
-            # check for exact zero input before log transformation
-            if value != 0:
-              size = round(
-                linear_range_transform(
-                  np.clip(np.abs(np.log10(value)), lb_original, ub_original), 
-                  lb_original, ub_original, lb_node_size, ub_node_size), 
-                round_decimals
-              )
-            else:
-              size = ub_node_size # maximum size for p value of zero
-          #assert size is not None, "Error: size computation failed."
-          node["data"][contrast_key][measure_key] = {
-            "measure": str(value),
-            "nodeSize": size,
-          }
+        value = node["data"][contrast_key][measure_key]   
+        size = transform_measure_to_node_size(value, measure = measure_key)
+        node["data"][contrast_key][measure_key] = {
+          "measure": str(value),
+          "nodeSize": size,
+        }
     # Attach the processed node to the node_entries list
     node_entries.append(node)
   return(node_entries)
 
-def _apply_bonferroni_correction_to_group_stats(groupStats, alpha = 0.01):
-  """ Applies Bonferroni adjustment to p-values in groupStats
+def apply_bonferroni_correction_to_group_stats(groupStats, alpha = 0.01):
+  """ 
+  Applies Bonferroni adjustment to p-values in groupStats
+  
   The number of groups times the number of contrasts gives the number of tests performed in total. Individual
   feature pvalues are not considered here and treated as descriptives instead. 
   """
@@ -183,17 +104,14 @@ def linear_range_transform(
   """ Returns a linear transformation of a value in one range to another. 
   
   Use to scale statistical values into appropriate size ranges for visualization.
-
   """
   assert original_lower_bound < original_upper_bound, "Error: lower bound must be strictly smaller than upper bound."
   assert new_lower_bound < new_upper_bound, "Error: lower bound must be strictly smaller than upper bound."
   assert original_lower_bound <= input_scalar <= original_upper_bound, (
     f"Error: input must be within specified bounds but received {input_scalar}"
   )
-
   # Normalize x to [0, 1]
   normalized_scalar = (input_scalar - original_lower_bound) / (original_upper_bound - original_lower_bound)
-  
   # Map the normalized value to the output range
   output_scalar = new_lower_bound + normalized_scalar * (new_upper_bound - new_lower_bound)
   return output_scalar
@@ -238,7 +156,7 @@ def construct_edge_list(similarity_array : np.ndarray, feature_ids : list[str], 
   return edge_list
 
 
-def _generate_and_attach_long_format_r_data(self, r_json_data : dict) -> None:
+def generate_and_attach_long_format_r_data(self, r_json_data : dict) -> None:
   """ Converts json format data to long format data frame. Focuses on feature_specific and set_specific statistical
   data. The data frame will have columns type, id, contrast, measure, and value:
   --> type (feature or set, string indicating the type of entry)
@@ -278,3 +196,77 @@ def _generate_and_attach_long_format_r_data(self, r_json_data : dict) -> None:
   self.r_data_long_df = long_form_df
   return None
 
+def write_dict_to_json_file(data : dict, filepath : str, force = False):
+  """ 
+  Function exports pipeline outout dictionary to json file.
+  """
+  # validate the that all self object data available
+  # self.validate_complete()
+  # validate the filepath does not exist or force setting to ensure everything works 
+  # assert True
+  # construct json string for entire dataset
+  json_string = json.dumps(data, indent=2)
+  with open(filepath, 'w') as f:
+      f.write(json_string)
+  return None
+
+def transform_p_value_to_node_size(value : float):
+  # transform p value to log10 scale to get order of magnitude scaling
+  # take absolute value to make increasing scale; the smaller p, the larger the value
+  # cutoff pvalue at size 10 to avoid masking smaller relevant effects, start sizing at 1, equivalent of
+  # pvalue = 0.1 (all above are simply min node size of 10)
+  # A abs(log10(p_value = 0.1)) = 1 ; this is size 10 for the nodes. Going below means getting size.
+  # max visual is log10(0.0000001) -> -6
+  lb_node_size = 10
+  ub_node_size = 50
+  lb_original = 0
+  ub_original = 6 # also max considered for visualization, equivalent to 1 in a million probability
+  round_decimals = 4
+  # make sure the input is valid, and if not, replace with default lb (no size emphasis)
+  value = force_to_numeric(value, lb_original) 
+  # check for exact zero input before log transformation
+  if value != 0:
+    size = round(
+      linear_range_transform(
+        np.clip(np.abs(np.log10(value)), lb_original, ub_original), 
+        lb_original, ub_original, lb_node_size, ub_node_size), 
+      round_decimals
+    )
+  else:
+    size = ub_node_size # maximum size for p value of zero
+  return size
+
+def transform_log2_fold_change_to_node_size(value : float) -> float:
+  # transform to abs scale for positive and negative fold to be treated equally 
+  # limit to range 0 to 10 (upper bounding to limit avoid a huge upper bound masking smaller effects), 
+  # recast to size 10 to 50
+  lb_node_size = 10
+  ub_node_size = 50
+  lb_original = 0
+  ub_original = 13 # also max considered for visualization, equivalent of a 8192 fold increase or decrease
+  round_decimals = 4
+  # make sure the input is valid, and if not, replace with default lb (no size emphasis)
+  value = force_to_numeric(value, lb_original)        
+  size = round(
+    linear_range_transform(
+      np.clip(np.abs(value), lb_original, ub_original),
+      lb_original, ub_original, lb_node_size, ub_node_size), 
+    round_decimals
+  )
+  return size
+
+def transform_measure_to_node_size(value : float, measure : str):
+  """ 
+  Function delegates transformation to respective implemenation for measure. 
+  
+  Supported measures are: "log2foldChange" and "globalTestFeaturePValue"
+  """
+  size = None
+  if measure == "log2foldChange":
+    size = transform_log2_fold_change_to_node_size(value)
+  elif measure == "globalTestFeaturePValue":
+    size = transform_p_value_to_node_size(value)
+  else:
+    warn("Measure provided has no defined transformation function!")
+  assert size is not None, "Error: size computation failed."
+  return size
