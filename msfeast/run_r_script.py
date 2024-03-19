@@ -1,80 +1,102 @@
 import os
 import subprocess
-from r_output_parsing import load_and_validate_r_output
+import json
 
-def run_and_attach_r_testing_routine(self, directory : str, r_filename : str = "r_output.json", top_k = 20, overwrite = False):
-    """
-    INCOMPLETE
-    Function writes r inputs to file, writes r script to file, tests r availabiltiy, runs test, and imports r results.
-    directory: folder name for r output
-    r_filename: filename for r output
+def run_statistics_routine(
+    directory : str, 
+    quantification_table, 
+    treatment_table, 
+    assignment_table,
+    r_filename : str = "msfeast_r_output.json",
+    overwrite : bool = True):
+  """
+  R interface function that calls R shell script doing statistical comparisons.
 
-    """
-    # assess all data required available
-    # construct python structures suitable for file writing
-    
-    self.assignment_table # -->
-    self.quantification_table # --> 
-    self.treatment_table # --> turn into contrasts
-    
-    # json filenames input for R; the one argument to pass to R so it can find all the rest
-    # could also contain all info, but that makes r parsing more difficult than reading csvs...
+  Function writes r inputs to file, writes r script to file, tests r availabiltiy, runs test, and imports r results.
+  
+  directory: folder name for r output
+  r_filename: filename for r output
+  """
+  filepath_quantification_table = str(os.path.join(directory, "msfeast_r_quant_table.csv"))
+  filepath_treatment_table = str(os.path.join(directory, "msfeast_r_treat_table.csv"))
+  filepath_assignment_table = str(os.path.join(directory, "msfeast_r_assignment_table.csv"))
+  write_table_to_file(quantification_table, filepath_quantification_table)
+  write_table_to_file(treatment_table, filepath_quantification_table)
+  write_table_to_file(assignment_table, filepath_quantification_table)
+  
+  filepath_r_output_json = str(os.path.join(directory, r_filename))
 
-    filepath_assignment_table = str(os.path.join(directory, "assignment_table.csv"))
-    filepath_quantification_table = str(os.path.join(directory, "test_quant_table.csv"))
-    filepath_treatment_table = str(os.path.join(directory, "test_treat_table.csv"))
-    filepath_r_output_json = str(os.path.join(directory, r_filename))
+  # Fetch r script filepath
+  r_script_path = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)), # module directory after pip install
+    "runStats.R" # filename included as package data
+  )
+  
+  # Run R Code
+  subprocess.run((
+      f"Rscript {r_script_path} {filepath_quantification_table} " 
+      f"{filepath_treatment_table} " 
+      f"{filepath_assignment_table} "
+      f"{filepath_r_output_json}"
+    ), 
+    shell = True
+  )
+  # load r data
+  r_json_data = load_r_output(filepath_r_output_json)
+  # construct derived variables and attach
+  return r_json_data
 
-    # TODO check for directory exist, if not, create it
-    # TODO check for existing r routine output, remove if force = true
+def write_table_to_file(table, filepath) -> None:
+  """ Function applies tabular processing for csv writing compatible with R. """
+  table = table.reset_index(drop=True)
+  table.drop(
+    table.columns[
+      table.columns.str.contains('Unnamed', case=False)
+    ], 
+    axis=1, 
+    inplace=True
+  )
+  table.to_csv(filepath, index = False)
+  return None
 
-
-    # Write R input data to file
-    self.quantification_table = self.quantification_table.reset_index(drop=True)
-    self.treatment_table = self.treatment_table.reset_index(drop=True)
-    self.assignment_table = self.assignment_table.reset_index(drop=True)
-    
-    # Required to remove the unnamed = 0 index column that is created somewhere
-    self.quantification_table.drop(
-      self.quantification_table.columns[
-          self.quantification_table.columns.str.contains('Unnamed', case=False)], 
-      axis=1, inplace=True
-    )
-    self.treatment_table.drop(
-      self.treatment_table.columns[
-        self.treatment_table.columns.str.contains('Unnamed', case=False)], 
-      axis=1, inplace=True
-    )
-    self.assignment_table.drop(
-      self.assignment_table.columns[
-        self.assignment_table.columns.str.contains('Unnamed', case=False)], 
-      axis=1, inplace=True
-    )
-
-    # Setting index to false is often not enough for pandas to remove it as the index is sometimes added as an unnamed 
-    # column
-    self.quantification_table.to_csv(filepath_quantification_table, index = False)
-    self.treatment_table.to_csv(filepath_treatment_table, index = False)
-    self.assignment_table.to_csv(filepath_assignment_table, index = False)
-
-    # Fetch r script filepath
-    r_script_path = os.path.join(
-      os.path.dirname(os.path.realpath(__file__)), # module directory after pip install
-      "runStats.R" # filename included as package data
-    )
-    
-    # Run R Code
-    subprocess.run((
-        f"Rscript {r_script_path} {filepath_quantification_table} " 
-        f"{filepath_treatment_table} " 
-        f"{filepath_assignment_table} "
-        f"{filepath_r_output_json}"
-      ), 
-      shell=True
-    )
-    # load r data
-    r_json_data = load_and_validate_r_output(filepath_r_output_json)
-    # construct derived variables and attach
-    self._generate_and_attach_long_format_r_data(r_json_data)
-    self._generate_and_attach_json_dict(r_json_data, top_k)
-    return None
+def load_r_output(filepath : str) -> dict:
+  """ Function loads and validates r output file.
+  Returns the r output json data as a python dictionary. First level entries are:
+  
+  feature_specific
+  --> feature id specific data, subdivided into contrast specific, measure specific, and finally value. I.e. for each
+  feature id, for each contrast key, for each measure key, there will be a corresponding value in a nested dict
+  of hierarchy [feature_identifier][contrast_key][measure_key] --> value. Feature_identifier, contrast_key, and
+  measure keys are data dependent strings. The hierarchy gives the type of entry.
+  
+  set_specific
+  --> set id specific data, subdivided into contrast specific, measure specific, and finally value
+  feature_id_keys. Similar to feature_id.
+  
+  set_id_keys
+  --> list of set identifiers
+  
+  contrast_keys
+  --> list of contrast keys
+  
+  feature_specific_measure_keys
+  --> list of measure keys for the feature specific entry
+  
+  set_specific_measure_keys
+  --> list of measure keys for the set specific entries
+  """
+  json_data = json.load(open(filepath, mode = "r"))
+  # Assert that the top level keys are all populated (partial input assertion testing only!)
+  assert json_data["feature_specific"]is not None, "ERROR: Expected feature_specific  entry to not be empty."
+  assert json_data["feature_specific"].keys() is not None, "ERROR: Expected feature specific keys."
+  assert json_data["set_specific"] is not None, "ERROR: Expected set_specific  entry to not be empty."
+  assert json_data["set_specific"].keys() is not None, "ERROR: Expected set specific keys."
+  assert json_data["feature_id_keys"] is not None, "ERROR: Expected feature id keys entry to not be empty."
+  assert json_data["set_id_keys"] is not None, "ERROR: Expected feature id keys entry to not be empty."
+  assert json_data["contrast_keys"] is not None, "ERROR: Expected contrast_keys entry to not be empty."
+  assert json_data["feature_specific_measure_keys"] is not None, "ERROR: Expected feature_specific_measure_keys to not be empty."
+  assert json_data["set_specific_measure_keys"] is not None, "ERROR: Expected set_specific_measure_keys entry to not be empty."
+  # TODO: for robustness, Cross compare R entries against python data from pipeline (contrasts, setids, fids)
+  # TODO: for robustness, Validate each feature_id and set_id entry
+  # return the validated data
+  return json_data
