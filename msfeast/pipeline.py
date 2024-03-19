@@ -56,7 +56,7 @@ class Msfeast:
   # settings used dictionary, initialized as empty
   _settings_used : dict = field(default_factory= lambda: {}) # "msfeast_version": __version__["__version__"]
 
-  def attach_spectral_data_from_file(self, filepath : str, identifier_key : str = "feature_id") -> None:
+  def attach_spectra_from_file(self, filepath : str, identifier_key : str = "feature_id") -> None:
     """ 
     Loads and attaches spectra from provided filepath (pointing to compatible .mgf file). Does not run any pre-
     processing. While the function does not check spectral data integrity or performs any filtering, it does make 
@@ -79,7 +79,7 @@ class Msfeast:
       spectra_matchms = add_feature_id_key(spectra_matchms, identifier_key)
     
     validate_spectra(spectra_matchms, identifier_key)
-    _ = extract_feature_ids_from_spectra(spectra_matchms) # loads feature_ids to check uniqueness of every entry
+    extract_feature_ids_from_spectra(spectra_matchms) # loads feature_ids & checks uniqueness of every entry
     self.spectra_matchms = spectra_matchms
     self._spectral_data_loading_complete = True
     return None
