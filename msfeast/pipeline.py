@@ -329,3 +329,24 @@ class Msfeast:
             self._settings_used[key] = value
     return None
   
+if False:
+  # Functions not yet implemented
+  def load_and_attach_quantification_table_from_file(self, filepath : str) -> None :
+    """
+    NOT IMPLEMENTED
+    Loads spectral data quantification table from csv / tsv file. Must contain sample id, and feature_id based columns.
+    """
+    # Implement file extension check to see whether a csv or tsv file is provided
+    table = ...
+    self.validate_quantification_table(table)
+    return None
+  
+  def load_and_attach_treatment_table_from_file(self, filepath : str) -> None:
+    """
+    NOT IMPLEMENTED
+    Loads treatment data table from csv / tsv file. Must contain sample_id and treatment_id columns.
+    """
+    # Implement file extension check to see whether a csv or tsv file is provided
+    table = ...
+    self.validate_treatment_data(table)
+    return None
