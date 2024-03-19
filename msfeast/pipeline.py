@@ -2,12 +2,9 @@ from dataclasses import dataclass, field
 import pandas as pd
 import numpy as np
 import matchms
-import os
-import subprocess
-from typing import List, TypedDict, Tuple, Dict, NamedTuple, Union
+from typing import List, Union
 from warnings import warn
 import copy # for safer get methods  pipeline internal variables
-import json
 # from version import __version__ # for version indication in exports
 from spectral_comparison import compute_similarities_wrapper, convert_similarity_to_distance, assert_similarity_matrix
 from file_checking import assert_filepath_exists
