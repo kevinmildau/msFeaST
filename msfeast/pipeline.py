@@ -200,6 +200,7 @@ class Msfeast:
         Attaches cluster assignment table to self. Returns None.          
     """
     # asser provided iloc is valid
+    # TODO: abstract to def check_iloc()
     assert isinstance(iloc, int), (
         f"Unsupported input type, iloc must be type int but {type(iloc)} provided!"
     )
@@ -208,6 +209,7 @@ class Msfeast:
       "Error: iloc provided not in range of valid ilocs for kmedoid grid! Values must be in set: "
       f"{valid_ilocs}"
     )
+    # TODO: abstract code below into def construct_assignment_table()
     # Make sure an initiated classification_table is available
     feature_ids = extract_feature_ids_from_spectra(self.spectra_matchms)
     self.assignment_table = pd.DataFrame(data = {
