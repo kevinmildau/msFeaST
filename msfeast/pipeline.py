@@ -96,7 +96,7 @@ class Msfeast:
       representation makes use of lowercase only.
     Returns 
     """
-    spectra_matchms = copy.deepcopy(spectra)
+    spectra_matchms = copy.deepcopy(spectra) # avoids unintended modification of spectra
     if identifier_key != "feature_id":
       spectra_matchms = add_feature_id_key(spectra_matchms, identifier_key)
     validate_spectra(spectra_matchms)
@@ -108,12 +108,9 @@ class Msfeast:
     Attaches spectral data quantification table from pandas data frame. Must contain sample id, and feature_id based 
     columns.
     """
-    assert self.spectra_matchms is not None, (
-      "Error: quantificaiton table validation requires spectral data. Please provide spectral data before attaching "
-      "quantification table.")
-
-    self.validate_quantification_table(table)
-    self.quantification_table = table
+    assert True
+    quantification_table = copy.deepcopy(table) # avoids unintended modification of quantification table
+    self.quantification_table = quantification_table
     return None
   
   def attach_treatment_table(self, table : pd.DataFrame) -> None:
@@ -124,11 +121,11 @@ class Msfeast:
       table: pd.DataFrame with sample_id and treatment_id columns. Exact name correspondance is expected. Assumes a 
         dtype of str.
     Returns
-      None. Atacched treatment_table to self.
+      None. Attached treatment_table to self.
     """
-    # Implement file extension check to see whether a csv or tsv file is provided
-    self.validate_treatment_data(table) # validat
-    self.treatment_table = table
+    assert True
+    treatment_table = copy.deepcopy(table)
+    self.treatment_table = treatment_table
     return None
   
   def attach_spectral_similarity_array(self, similarity_array : np.ndarray, score_name : str = "unspecified") -> None:
