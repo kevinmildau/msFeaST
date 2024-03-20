@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from kmedoids import KMedoids
 from sklearn.metrics import silhouette_score
 from typing import List, Union
+import numpy as np
+import pandas as pd
 
 @dataclass
 class GridEntryKmedoid:

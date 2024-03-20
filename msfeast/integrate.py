@@ -4,7 +4,7 @@ import json
 import pandas as pd
 import copy
 from warnings import warn
-from process_spectra import extract_feature_ids_from_spectra
+from msfeast.process_spectra import extract_feature_ids_from_spectra
 
 def construct_node_list(
     r_json_data : dict, 
@@ -116,7 +116,7 @@ def linear_range_transform(
   output_scalar = new_lower_bound + normalized_scalar * (new_upper_bound - new_lower_bound)
   return output_scalar
 
-def construct_edge_list(similarity_array : np.ndarray, feature_ids : list[str], top_k : int = 30) -> List:
+def construct_edge_list(similarity_array : np.ndarray, feature_ids : list[str], top_k : int = 30) -> list:
   # Construct edges using all relevant information for edges
   # use similarity array and corresponding feature_ids to determine top-K neighbours
   # use standard linear scale projection for edge weights (assume between 0 and 1)
@@ -262,11 +262,11 @@ def transform_measure_to_node_size(value : float, measure : str):
   Supported measures are: "log2foldChange" and "globalTestFeaturePValue"
   """
   size = None
-  if measure == "log2foldChange":
+  if measure == "log2FoldChange":
     size = transform_log2_fold_change_to_node_size(value)
   elif measure == "globalTestFeaturePValue":
     size = transform_p_value_to_node_size(value)
   else:
-    warn("Measure provided has no defined transformation function!")
+    warn("Measure provided measure has no defined transformation function!")
   assert size is not None, "Error: size computation failed."
   return size

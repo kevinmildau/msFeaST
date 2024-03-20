@@ -4,11 +4,11 @@ import json
 
 def run_statistics_routine(
     directory : str, 
+    r_filename : str,
     quantification_table, 
     treatment_table, 
     assignment_table,
-    r_filename : str = "msfeast_r_output.json",
-    overwrite : bool = True):
+  ):
   """
   R interface function that calls R shell script doing statistical comparisons.
 

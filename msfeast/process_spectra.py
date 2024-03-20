@@ -1,7 +1,7 @@
 from typing import List
 import matchms
 from warnings import warn
-from file_checking import assert_filepath_exists
+from msfeast.file_checking import assert_filepath_exists
 
 def process_spectra(self, spectra):
   """

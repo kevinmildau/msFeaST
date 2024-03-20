@@ -6,15 +6,14 @@ from typing import List, Union
 from warnings import warn
 import copy # for safer get methods  pipeline internal variables
 # from version import __version__ # for version indication in exports
-from spectral_comparison import compute_similarities_wrapper, convert_similarity_to_distance
-from file_checking import assert_filepath_exists
-from process_spectra import validate_spectra, load_spectral_data, add_feature_id_key, extract_feature_ids_from_spectra
-from embedding import GridEntryTsne, run_tsne_grid, print_tsne_grid, check_perplexities
-from kmedoid_clustering import GridEntryKmedoid, run_kmedoid_grid, check_k_values, print_kmedoid_grid
-from utility_functions import assert_iloc_valid, assert_similarity_matrix
-from run_r_script import run_statistics_routine
-from integrate import construct_node_list, construct_edge_list, apply_bonferroni_correction_to_group_stats
-
+from msfeast.spectral_comparison import compute_similarities_wrapper, convert_similarity_to_distance
+from msfeast.file_checking import assert_filepath_exists
+from msfeast.process_spectra import validate_spectra, load_spectral_data, add_feature_id_key, extract_feature_ids_from_spectra
+from msfeast.embedding import GridEntryTsne, run_tsne_grid, print_tsne_grid, check_perplexities
+from msfeast.kmedoid_clustering import GridEntryKmedoid, run_kmedoid_grid, check_k_values, print_kmedoid_grid
+from msfeast.utility_functions import assert_iloc_valid, assert_similarity_matrix
+from msfeast.run_r_script import run_statistics_routine
+from msfeast.integrate import construct_node_list, construct_edge_list, apply_bonferroni_correction_to_group_stats, write_dict_to_json_file
 @dataclass
 class Msfeast:
   """
@@ -233,11 +232,10 @@ class Msfeast:
     """
     r_json_results = run_statistics_routine(
       directory, 
+      r_filename,
       self.quantification_table, 
       self.treatment_table, 
       self.assignment_table,
-      r_filename, 
-      True
     )
     self.r_json_results = r_json_results
     return None
@@ -270,7 +268,6 @@ class Msfeast:
 
   def export_dashboard_json(self, filepath : str):
     """ Function exports dashboard json to file at filepath. """
-    from integrate import write_dict_to_json_file
     write_dict_to_json_file(self.dashboard_json_dict, filepath)
     return None
 
