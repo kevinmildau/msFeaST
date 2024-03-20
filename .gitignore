@@ -6,7 +6,7 @@ mockData
 notebooks/.Rhistory
 
 notebooks/tmp_output/test_dashboard.json
-
+msfeast/__pycache__
 .Rhistory
 .Rapp.history
 
