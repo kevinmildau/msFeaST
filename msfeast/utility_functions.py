@@ -1,5 +1,15 @@
 import os
 from warnings import warn
+import numpy as np
+
+def assert_similarity_matrix(scores : np.ndarray, n_spectra : int) -> None:
+  """ Function checks whether similarity matrix corresponds to expected formatting. Aborts code if not. """
+  assert (isinstance(scores, np.ndarray)), "Error: input scores must be type np.ndarray."
+  assert scores.shape[0] == scores.shape[1] == n_spectra, (
+    "Error: score dimensions must be square & correspond to n_spectra"
+  )
+  assert np.logical_and(scores >= 0, scores <= 1).all(), "Error: all score values must be in range 0 to 1."
+  return None
 
 def assert_iloc_valid(iloc : int, iloc_range_max : int) -> None:
   """ Asserts that a provided iloc is a valid value in range (0, iloc_range_max) """

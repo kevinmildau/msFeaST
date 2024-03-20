@@ -69,15 +69,6 @@ def _compute_similarities_cosine(
     scores = np.clip(scores, a_min = 0, a_max = 1) 
     return scores
 
-def assert_similarity_matrix(scores : np.ndarray, n_spectra : int) -> None:
-  """ Function checks whether similarity matrix corresponds to expected formatting. Aborts code if not. """
-  assert (isinstance(scores, np.ndarray)), "Error: input scores must be type np.ndarray."
-  assert scores.shape[0] == scores.shape[1] == n_spectra, (
-    "Error: score dimensions must be square & correspond to n_spectra"
-  )
-  assert np.logical_and(scores >= 0, scores <= 1).all(), "Error: all score values must be in range 0 to 1."
-  return None
-
 def _extract_similarity_scores_from_matchms_cosine_array(
   tuple_array : np.ndarray
   ) -> np.ndarray:
