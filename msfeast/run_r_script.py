@@ -21,8 +21,8 @@ def run_statistics_routine(
   filepath_treatment_table = str(os.path.join(directory, "msfeast_r_treat_table.csv"))
   filepath_assignment_table = str(os.path.join(directory, "msfeast_r_assignment_table.csv"))
   write_table_to_file(quantification_table, filepath_quantification_table)
-  write_table_to_file(treatment_table, filepath_quantification_table)
-  write_table_to_file(assignment_table, filepath_quantification_table)
+  write_table_to_file(treatment_table, filepath_treatment_table)
+  write_table_to_file(assignment_table, filepath_assignment_table)
   
   filepath_r_output_json = str(os.path.join(directory, r_filename))
 
