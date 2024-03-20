@@ -1,6 +1,7 @@
 if __name__ == "__main__":
   print("Starting Main...")
   import msfeast.pipeline
+  #from msfeast.pipeline import Msfeast
   import os
   import pandas as pd
 
@@ -23,12 +24,12 @@ if __name__ == "__main__":
   pipeline = msfeast.pipeline.Msfeast()
 
   print("Attaching data...")
-  pipeline.attach_spectral_data_from_file(filepath_test_spectra, identifier_key="scans")
+  pipeline.attach_spectra_from_file(filepath_test_spectra, identifier_key="scans")
   pipeline.attach_quantification_table(quant_table)
   pipeline.attach_treatment_table(treat_table)
 
   print("Running spectral similarity computations...")
-  pipeline.run_spectral_similarity_computations("ModifiedCosine")
+  pipeline.run_and_attach_spectral_similarity_computations("ModifiedCosine")
   
   print("Run kmedoid grid...")
   pipeline.run_and_attach_kmedoid_grid([5])
@@ -40,10 +41,13 @@ if __name__ == "__main__":
 
   print("Initializing R runtime...")
   if os.path.isfile(r_filepath):
-        os.remove(r_filepath)
-  pipeline.run_r_testing_routine(output_directory, r_output_filename, top_k = 10)
-  
-  print("exporting json data...")
-  pipeline.export_to_json_file(dashboard_output_filepath)
+    os.remove(r_filepath)
+  pipeline.run_and_attach_statistical_comparisons(output_directory, r_output_filename)
+
+  print("Integrating pipeline results...")
+  pipeline.integrate_and_attach_dashboard_data(top_k_max=10, alpha=0.01)
+
+  print("Exporting json file...")
+  pipeline.export_dashboard_json(filepath=dashboard_output_filepath)
 
   print("Reached end of trial run.")
