@@ -130,8 +130,9 @@ class Msfeast:
   
   def attach_spectral_similarity_array(self, similarity_array : np.ndarray, score_name : str = "unspecified") -> None:
     """
-    Function attaches pre-computed similarity matrix in format of square np.ndarray to pipeline. Requires spectra to be
-    loaded for size agreement assessment.
+    Function attaches pre-computed similarity matrix in format of square np.ndarray to pipeline. 
+    
+    Requires spectra to be loaded for size agreement assessment.
 
     Parameters
       similarity_array : np.ndarray square form with shape n_spectra by n_spectra. Similarities in range 0 to 1. 
@@ -155,8 +156,8 @@ class Msfeast:
     Runs and attaches spectral similarity measures using self.spectra. Requires model_directory_path as input.
     
     Parameters
-      score_name : str indicating the score_name to use, can be "ModifiedCosine", "spec2vec", "ms2deepscore", 
-        "CosineHungarian", or "CosineGreedy".
+      score_name : str indicating the score_name to use, can be "ModifiedCosine", "CosineHungarian", "CosineGreedy", 
+        "spec2vec", "ms2deepscore".
       model_directory_path : str path to directory containing model files. Assumes one set of model files only!
       force : bool defaulting to false indicating whether existing similarity matrices can be overwritten or not.
     Returns
