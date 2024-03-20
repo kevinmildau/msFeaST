@@ -175,16 +175,6 @@ class Msfeast:
     self.attach_settings_used(score_name = score_name)
     return None
 
-  def return_spectral_similarity_array(self) -> Union[np.ndarray, None]:
-    """
-    Returns a deep copy of the spectral similarity array from pipeline.
-    """
-    if self.similarity_array is not None:
-      return copy.deepcopy(self.similarity_array)
-    else: 
-      warn("Similarity array not available. Returning None instead.")
-      return None
-
   def run_and_attach_kmedoid_grid(self, k_values : List[int] = [8, 10, 20, 30, 50]):
     """ 
     Run the k-medoid grid & attach the results to pipeline instance.
@@ -327,24 +317,12 @@ class Msfeast:
             self._settings_used[key] = value
     return None
   
-if False:
-  # Functions not yet implemented
-  def load_and_attach_quantification_table_from_file(self, filepath : str) -> None :
+  def get_spectral_similarity_array(self) -> Union[np.ndarray, None]:
     """
-    NOT IMPLEMENTED
-    Loads spectral data quantification table from csv / tsv file. Must contain sample id, and feature_id based columns.
+    Returns a deep copy of the spectral similarity array from pipeline.
     """
-    # Implement file extension check to see whether a csv or tsv file is provided
-    table = ...
-    self.validate_quantification_table(table)
-    return None
-  
-  def load_and_attach_treatment_table_from_file(self, filepath : str) -> None:
-    """
-    NOT IMPLEMENTED
-    Loads treatment data table from csv / tsv file. Must contain sample_id and treatment_id columns.
-    """
-    # Implement file extension check to see whether a csv or tsv file is provided
-    table = ...
-    self.validate_treatment_data(table)
-    return None
+    if self.similarity_array is not None:
+      return copy.deepcopy(self.similarity_array)
+    else: 
+      warn("Similarity array not available. Returning None instead.")
+      return None
