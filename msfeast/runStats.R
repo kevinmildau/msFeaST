@@ -4,15 +4,15 @@
 #' @description Creates configuration data frame (list) from inputs.
 #' @param measures List of measures c("globalTest", "log2FoldChange") are supported. Must be a list even if scalar.
 #' @param contrasts List of contrasts. Named list, where names are contrast names, and sub-list elements are treatment 
-#' identifiers. For example: list("contrast_ctrl_vs_trt" = list(reference="ctrl", treatment="trt"))
+#' identifiers. For example: list("ctrl_vs_trt" = list(reference="ctrl", treatment="trt"))
 #' @param feature_ids List of feature identifiers (character). For example: list("feature_1", "feature_2").
 #' @param feature_sets List of feature sets, where names in the list are feature set ids (character), and list elements 
 #' are lists with feature identifiers (character). For example: list("set_1" = list("feature_1", "feature_2"), ...).
 #' @details 
-#' generates configurations for msfeast linear situation run
+#' generates all configurations for msfeast to run individually.
 #' Configurations takes the form of a data frame with columns: 
 #' measure, feature_set, feature_id, contrast, feature_set_members
-#' --> measure is a character string, with globalTest or log2FoldChange as an entry
+#' --> measure is a character string, with "globalTest" or "log2FoldChange" as an entry
 #' --> feature_set is a character string or NA, with the feature_set id entry that is NA if the config measure is 
 #'     log2foldChange (feature level)
 #' --> feature_id is a character string or NA, with a feature_id entry that is NA if the config measure is globalTest 
@@ -27,13 +27,13 @@ generate_configurations <- function(measures, contrasts, feature_ids, feature_se
   feature_set_names <- names(feature_sets) # Names from named list
   configurations <- data.frame()
   # globalTest & log2FoldChange are currently accepted measures.
-  for (current_measure in measures){ 
+  for (measure in measures){ 
     configurations = switch(
-      current_measure,
+      measure,
       "globalTest" = rbind(
         configurations, 
         expand.grid(
-          measure = current_measure, 
+          measure = measure, 
           feature_set = feature_set_names,
           feature_id = NA,
           contrast = contrasts, 
@@ -42,7 +42,7 @@ generate_configurations <- function(measures, contrasts, feature_ids, feature_se
       "log2FoldChange" = rbind(
         configurations, 
         expand.grid(
-          measure = current_measure, 
+          measure = measure, 
           feature_set = NA,
           feature_id = feature_ids, 
           contrast = contrasts, 
@@ -166,11 +166,12 @@ run_and_attach_global_test_on_feature_set <- function(
     select(-c("sample_id", "treatment")) %>%
     as.matrix(.)
 
-  # get the actual values
+  # Run global tes
   model_output <- globaltest::gt(tmpResponse, tmpFeatureData, model = "linear")
   p_value <- model_output@result[[1]] # extracts the p-value
 
-  # extraction of results leads to the construction of an RPlots.pdf
+  # Extract feature specific results from global test
+  # extraction of results leads to the construction of an RPlots.pdf that cannot be deactivated
   table <- extract(covariates(model_output))
   extras_table <- table@extra
   results_table <- table@result
@@ -212,13 +213,16 @@ run_and_attach_global_test_on_feature_set <- function(
 #' @title run_msfeast
 #' @description Main interface function for msFeaST. This function provides a convenience wrapper to the globaltest 
 #' (v5.50.0) package.
-#' Given the quantification table, metadata_table, feature_sets, contrasts and measures, the function
+#' Given the quantification table, metadata_table, feature_sets, contrasts and measures, the function does the 
+#' following:
+#' 
 #'  1. Initialize configurations for each test
 #'  2. Initialize output data structures (hierarchical named lists for json export (based on env)) 
 #'  3. For each configuration:
-#'    -> extract and construct relevant tables
+#'    -> extract and construct relevant data tables
 #'    -> run the test handler -> add results to respective output structures
 #'  4. Return results output structures as nested named lists and json strings
+#' 
 #' @param quantification_table A tibble (data frame) with a sample_id column (character) and a column for each 
 #' feature_id containing the respective measurement values (float)
 #' @param metadata_table A tibble with a sample_id column (character) and a condition_id column (character). The 
@@ -239,22 +243,19 @@ run_and_attach_global_test_on_feature_set <- function(
 #' ...
 #' }
 run_msfeast <- function( quantification_table, metadata_table, feature_sets, feature_ids, contrasts){
-  
-  measures = list("globalTest", "log2FoldChange")
-
+  measures = list("globalTest", "log2FoldChange") # constant.
   # Create configuration table used for looping over all measure configurations
   # configurations is a data_frame type of list (named columns, nrow and ncol attributes)
   configurations <- generate_configurations(measures, contrasts, feature_ids, feature_sets)
   n_configurations <- nrow(configurations)
+  
   # Create empty output data container.
   # A named list with two entries, each named lists with keys for feature and set
   # identifiers Code Assumption: at least one group and one feature specific measure 
-  # is computed (no fully empty list). 
+  # is computed (no fully empty list). listenv is used to allow in place modification.
   resultsListEnv <- listenv::listenv(
     feature_specific = construct_empty_named_list(feature_ids),
     set_specific = construct_empty_named_list(names(feature_sets)))
-
-
   # Loop through all configurations and attach relevant metadata to output container
   # Each row in configurations is dealt with separately, where the required information
   # is accessed using named column / list entries. Configurations are measure specific,
@@ -263,10 +264,10 @@ run_msfeast <- function( quantification_table, metadata_table, feature_sets, fea
   # to be available while log2foldChange is feature specific and doesn't require this
   # information.
   for (row_number in 1:n_configurations){
-    current_measure <- configurations$measure[[row_number]]
+    measure <- configurations$measure[[row_number]]
     # NOTE THE INPLACE MODIFICATION OF resultsListEnv WITHIN THE HANDLERS!
     switch(
-      current_measure,
+      measure,
       "globalTest" = run_and_attach_global_test_on_feature_set(
         resultsListEnv = resultsListEnv,
         feature_set_name = configurations$feature_set[[row_number]],
@@ -286,11 +287,7 @@ run_msfeast <- function( quantification_table, metadata_table, feature_sets, fea
       ),
     )
   }
-  # quantification_table, metadata_table, feature_sets, feature_ids, contrasts, 
-  # measures = list("globalTest", "log2FoldChange")
-
-  # Attach easy of parsing variables
-  
+  # Attach easy of parsing variables 
   resultsListEnv$feature_id_keys <- feature_ids
   tmp_contrasts <- names(contrasts)
   if (! is.list(tmp_contrasts)){
@@ -302,9 +299,7 @@ run_msfeast <- function( quantification_table, metadata_table, feature_sets, fea
     "globalTestFeaturePValue",  "globalTestFeatureStatistic", "globalTestFeatureEffectDirection", "log2FoldChange"
   )
   resultsListEnv$set_specific_measure_keys <- list("globalTestPValue")
-
-  
-  # Avoids unexpected modify in place behavior for output of msfeast after return
+  # Convert listenv to list to avoid unexpected modify in place behavior for output of msfeast after return
   resultsList <- as.list(resultsListEnv)
   return(resultsList)
 }
