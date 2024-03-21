@@ -38,14 +38,6 @@ class GridEntryTsne:
       f"y coordinates = {', '.join(self.y_coordinates[0:4])}...")
     return custom_print
 
-@dataclass
-class GridEntryUmap:
-  """ 
-  NOT IMPLEMENTED
-  Results container for umap grid computation. A list of these containers can be converted to pandas for easy display.
-  """
-  ...
-
 def check_perplexities(perplexity_values : List[Union[float, int]], max_perplexity : Union[float, int]) -> None:
   """ Function checks whether perplexity values match expected configuration. Aborts if not. """
   assert perplexity_values is not [], (
@@ -128,11 +120,16 @@ def print_tsne_grid(grid : List[GridEntryTsne]) -> None:
   return None
 
 def plot_selected_embedding(embedding_coordinates_table : pd.DataFrame) -> plotly.graph_objs.Figure:
-  """ """
-  """ Plots the provided t-sne embedding. """
-  fig  = plotly.express.scatter(
+  """ 
+  Plots the provided t-sne embedding.
+  
+  Input
+    embedding_coordinates_table : pd.DataFrame with assumed "x" and "y" coordinate entries and a "feature_id"
+    column entry.
+  """
+  figure  = plotly.express.scatter(
     data_frame= embedding_coordinates_table, x = "x", y = "y", hover_data=["feature_id"],
     width=800, height=800
   )
-  fig.show()
-  return(fig)
+  figure.show()
+  return(figure)
