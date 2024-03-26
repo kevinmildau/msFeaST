@@ -73,25 +73,19 @@ let heatmapPanelController = function(groupStats, domElementContrast, networkDra
   heatmapObject = constructHeatmapData(groupStats, colorscale, margin);
   colorBarObject = constructColorBarData(colorscale, margin);
   updateViews(heatmapObject, colorBarObject);
-  var hoverTimer;  // Define a timer variable
-  var delay_hover = 500; // Delay in milliseconds
-  
-  heatmapContainer.on('plotly_hover', function(data){
-    // Clear the timer if it's already set
-    if(hoverTimer) {
-      clearTimeout(hoverTimer);
-    }
-    // Set a new timer
-    hoverTimer = setTimeout(function() {
-        var xValue = data.points[0].x;
-        //document.getElementById("textout").innerText = "Last hovered over y value: " + yValue;
-        console.log('Hovering over x value: ' + xValue);
-        resetGroupDrawingOptions(networkDrawingOptions, stylingVariables.defaultNodeColor) // autoreset at every hover
-        highlightTargetGroup(networkDrawingOptions, xValue, stylingVariables.colorHighlight)
-        network.setOptions(networkDrawingOptions);
-        network.redraw();
-      }, 
-      delay_hover
-    );
-  });
+  //var hoverTimer;  // Define a timer variable
+  //var delay_hover = 0; // Delay in milliseconds
+  heatmapContainer.on('plotly_click', data => updateUsingClickData(data, networkDrawingOptions, network));
+}
+
+/** Takes plotly click data and updates the network visualization highlight group accordingly.
+ * 
+ * @param {data} plotly click data 
+ */
+let updateUsingClickData = function(data, networkDrawingOptions, network){
+  var xValue = data.points[0].x;
+  resetGroupDrawingOptions(networkDrawingOptions, stylingVariables.defaultNodeColor) // autoreset at every hover
+  highlightTargetGroup(networkDrawingOptions, xValue, stylingVariables.colorHighlight)
+  network.setOptions(networkDrawingOptions);
+  network.redraw();
 }
