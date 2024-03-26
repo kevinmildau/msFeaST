@@ -147,7 +147,7 @@ def construct_edge_list(similarity_array : np.ndarray, feature_ids : list[str], 
           "id": f"{feature_id}_to_{neighbor_id}",
           "from": feature_id,
           "to": neighbor_id,
-          "width": round(linear_range_transform(score, 0, 1, 1, 30), 2), # 1 and 30 are the px widths for edges
+          "width": transform_similarity_score_to_width(score), # 1 and 30 are the px widths for edges
           "data": {
             "score": score
           }
@@ -270,3 +270,23 @@ def transform_measure_to_node_size(value : float, measure : str):
     warn("Measure provided measure has no defined transformation function!")
   assert size is not None, "Error: size computation failed."
   return size
+
+def transform_similarity_score_to_width(score: float):
+  """ 
+  Function transforms edge similarity score in range 0 to 1 to edge widths using a discrete mapping.
+
+  The range of scores between [0, 1] is divided into 
+  0 to <0.2, 0.2 to <0.4, 0.4 to <0.6, 0.6 to <0.8, and 0.8 to < 1,
+  Values below 0 are assigned width of 1. Values equal to or above 1 are assigned 26.
+
+  """
+  # multiply the score by one hundred and force to integer, take range from [0,1] to [0,100]
+  # This avoids numpy floating point problems making discrete cut locations unexpected, e.g. 0.60000000000001 rather
+  # than 0.6, leading to values of 0.6... being mapped to the wrong bin!
+  score_int = np.int64(score * 100)
+  digitized_score = np.digitize(score_int, np.linspace(20, 100, num=5, dtype= np.int64))
+  mapping = dict(zip(np.arange(0, 6), [1, 6, 11, 16, 21, 26]))
+  width = mapping[digitized_score]
+  #if score > 1 or score < 0: 
+  #  warn(f"Expected score in range [0,1] but received {score}, determined width to be {width}")
+  return width
