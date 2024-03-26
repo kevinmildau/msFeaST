@@ -15,7 +15,7 @@
 .nodeInfoText {
   font-family: Helvetica;
   font-size: 1rem;
-  color: rgba(217, 42, 203, 0.795);
+  color: rgb(235,16,162, 0.7);;
 }
 
 .heatmapPanel {
@@ -35,7 +35,7 @@
 }
 
 .customWarningStyle {
-  color: magenta;
+  color: rgb(235,16,162, 0.8);
 }
 
 .navbar {
@@ -44,6 +44,18 @@
 
 .navbar-brand {
   font-family: 'Helvetica';
+}
+
+
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+  background-color: rgb(235,16,162, 0.7);
+}
+
+
+.nav-link {
+  color: black;
+  background-color: rgba(128, 128, 128, 0.4);
+  
 }
 
 
