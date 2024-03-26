@@ -15,7 +15,7 @@
 .nodeInfoText {
   font-family: Helvetica;
   font-size: 1rem;
-  color: rgb(166, 90, 141, 0.95);
+  color: rgba(217, 42, 203, 0.795);
 }
 
 .heatmapPanel {
@@ -35,11 +35,11 @@
 }
 
 .customWarningStyle {
-  color: red;
+  color: magenta;
 }
 
 .navbar {
-  background-color: gainsboro;
+  background-color: rgba(241, 241, 241, 0.96);
 }
 
 .navbar-brand {
@@ -65,8 +65,18 @@ header {
 .vis-tooltip {
   font-family: 'Helvetica' !important;
   color: #000000  !important; /* Change the font color */
-  background-color: darkgray !important; /* Change the background color */
+  background-color: rgb(234, 234, 234) !important; /* Change the background color */
   border: 1px solid #808074  !important; /* Change the border */
   border-radius: 3px  !important; /* Add rounded corners */
   padding: 5px  !important; /* Add some padding */
+}
+
+.logo-image{
+  width: 45px;
+  height: 45px;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  display: inline-block;
 }
