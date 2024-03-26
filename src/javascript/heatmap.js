@@ -1,7 +1,7 @@
 let heatmapPanelController = function(groupStats, domElementContrast, networkDrawingOptions, network){
   // Constructs heatmap with global test set specific results
   // Dev Note: Assumes n_measures at set level is equal to 1!
-  let colorscale = 'YlGnBu';
+  let colorscale = 'Greys'; // Greys, Rainbow, Portland (diverging), Jet, Hot has clear low end separation
   let margin = 10;
   /** Function constructs heatmap trace and layout from groupStats data
    *  
