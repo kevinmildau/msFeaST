@@ -6,11 +6,11 @@ if __name__ == "__main__":
   import pandas as pd
   
   print("Define Filepaths...")
-  test_data_directory = os.path.join("notebooks", "test_data_input")
+  test_data_directory = os.path.join("msfeast_test", "test_data_input")
   filepath_test_spectra = os.path.join(test_data_directory, "test_spectra.mgf")
   filepath_test_quant_table = os.path.join(test_data_directory, "test_quant_table.csv")
   filepath_test_treat_table = os.path.join(test_data_directory, "test_treat_table.csv")
-  output_directory = os.path.join("notebooks", "test_output")
+  output_directory = os.path.join("msfeast_test", "test_output")
   r_output_filename = os.path.join("r_output.json")
   r_filepath = os.path.join(output_directory, r_output_filename)
   dashboard_output_filepath = os.path.join(output_directory, "dashboard_data.json")
