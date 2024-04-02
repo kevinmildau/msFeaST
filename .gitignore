@@ -17,6 +17,7 @@ notebooks/tmp_outputs
 notebooks/2024-03-12-typedDict.ipynb
 notebooks/2024-02-19 testing alternative clustering.ipynb
 
+msfeast_test/test_output
 
 build
 msfeast.egg-info
