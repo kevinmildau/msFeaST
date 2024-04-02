@@ -15,7 +15,7 @@ setup(
   include_package_data = True, 
   packages = ['msfeast'],
   scripts = ['msfeast/runStats.R'],
-  python_requires = '>=3.10',
+  python_requires = '==3.10',
   install_requires = [
     'numpy', 
     'jupyter',
