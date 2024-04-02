@@ -41,7 +41,7 @@ scaffold = read_to_string(html_scaffold_file)
 scaffold = scaffold.replace("/*#javascriptCodeInsertLocation#*/", js_code)
 scaffold = scaffold.replace("#logoInsertLocation#", logo_code)
 scaffold = scaffold.replace("#cssStyleSheetInsertLocation#", css_code)
-with open("trial.html", "w") as html:
+with open("msFeaST_Dashboard_Bundle.html", "w") as html:
   html.write(scaffold)
 
 print("Process Complete...")
