@@ -3,7 +3,7 @@
 # or for showing prints:
 # pytest -s
 
-import msfeastPipeline as msfeast
+from msfeast.pipeline import Msfeast
 import pytest
 import os
 
