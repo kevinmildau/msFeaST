@@ -11,8 +11,8 @@ The python module dependencies are managed using conda ([conda installation guid
 To set-up msFeaST, open a terminal from within a suitable working directory and run the following commands one after another. Some commands may request user input regarding package updating, we recommend using entering y and pressing enter for these requests. To avoid R path caching issues (see known problems), make sure to open a new command line prompt for installation and set-up the conda environment prior to any calls of RScript. 
 
 ```
-conda create --name renv_trial python=3.10
-conda activate renv_trial
+conda create --name msfeast_environment python=3.10
+conda activate msfeast_environment
 conda install conda-forge::r-base=4.3
 pip install "git+https://github.com/kevinmildau/msfeast.git"
 RScript -e "install.packages(c('remotes', 'BiocManager'), repos='https://cloud.r-project.org')"
