@@ -27,8 +27,8 @@ setup(
     'matchms==0.24.1',
     "matchmsextras==0.4.0",
     'kmedoids==0.5.0',
-    # 'spec2vec==0.8.0',
-    # 'ms2deepscore==0.4.0',
+    'spec2vec==0.8.0',
+    'ms2deepscore==2.0.0',
   ],  
   extras_require={
     'dev': ['pytest']
