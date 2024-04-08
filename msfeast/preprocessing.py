@@ -88,3 +88,23 @@ def extract_treatment_table(
     )
   treatment_table["sample_id"] = treatment_table["sample_id"].astype(dtype="string")
   return treatment_table
+
+def subset_spectra_to_exclude(spectra : List[matchms.Spectrum], exclusion_list : List [str]):
+  """ 
+  Subsets spectra to exclude a particular set of feature identifiers. 
+  Assumes feature_id present. Throws error if return subset is empty. Used to align spectra with quant table.
+  """
+  subset = [spec for spec in spectra if spec.get("feature_id") not in exclusion_list]
+  assert len(subset) >= 1 and subset != [None], "Error: subsetting spectral list resulted in empty output."
+  return subset
+
+def subset_spectra_to_include(spectra : List[matchms.Spectrum], inclusion_list : List [str], verbose = True):
+  """ 
+  Subsets spectra to exclusively include a particular set of feature identifiers. 
+  Assumes feature_id present. Throws error if return subset is empty. Used to align spectra with quant table.
+  """
+  subset = [spec for spec in spectra if spec.get("feature_id") in inclusion_list]
+  assert len(subset) >= 1 and subset != [None], "Error: subsetting spectral list resulted in empty output."
+  if verbose and len(inclusion_list) > len(subset):
+    print("Warning: Not all features in inclusion list found in spectra.")
+  return subset
