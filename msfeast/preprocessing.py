@@ -48,3 +48,43 @@ def apply_default_spectral_processing(
     print("Number of spectral features which passed pre-processing: ", len(tmp_spectra))
   assert tmp_spectra != [None], "Error: no spectra left after default spectral processing!"
   return tmp_spectra
+
+def extract_treatment_table(
+    metadata_table : pd.DataFrame,
+    treatment_column_name : str,
+    treatment_identifiers : List[str], 
+    sample_column_name : str = "filename",
+    reference_category : Union[str, None] = None
+    ) -> pd.DataFrame:
+  """ Extracts treatment table from gnps metadata table 
+  
+  Parameters
+    metadata_table : pd.DataFrame - gnps export metadata table
+    treatment_column_name : str - the column name for the treatment identifying entries (case and whitespace sensitive!)
+    treatment_identifiers : List[str] - list of strings for the treatment identifiers to be extracted (case and whitespace sensitive!)
+    sample_column_name : str = "filename"  - string for the sample id containing columns (case and whitespace sensitive!), defaults to 'filename'
+    reference_category : Union[str, None] = None - string for the reference treatment identifier (case and whitespace sensitive!)
+
+  Returns
+    pd.DataFrame object with treatment_id and sample_id columns.
+  """
+  tmpdf = copy.deepcopy(metadata_table) # avoid accidental modification
+  # extract relevant columns
+  treatment_table = tmpdf[[sample_column_name, treatment_column_name]]
+  # rename to default names
+  treatment_table.columns = ["sample_id", "treatment"] # renaming columns; order given in column extraction
+  # extract relevant rows
+  selection_mask = treatment_table["treatment"].isin(treatment_identifiers)
+  treatment_table = treatment_table[selection_mask] # extract relevant treatment entrys (row subselection)
+  
+  treatment_table.reset_index(drop = True, inplace=True) # remove whatever pandas index may exist inplace
+
+  if reference_category is not None:
+    # reorder df to include reference treatment in first row
+    selection_mask = treatment_table["treatment"] == reference_category
+    treatment_table = pd.concat(
+      [treatment_table[selection_mask], treatment_table[~selection_mask]],
+      ignore_index=True
+    )
+  treatment_table["sample_id"] = treatment_table["sample_id"].astype(dtype="string")
+  return treatment_table
