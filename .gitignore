@@ -5,6 +5,8 @@ trialCode
 mockData
 notebooks/.Rhistory
 
+msfeast_test/__pycache__
+
 notebooks/tmp_output/test_dashboard.json
 msfeast/__pycache__
 .Rhistory
