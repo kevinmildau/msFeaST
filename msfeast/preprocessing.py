@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Tuple
 import matchms
 import copy
 import pandas as pd
@@ -9,8 +9,9 @@ def apply_default_spectral_processing(
     minimum_number_of_fragments : int = 5,
     maximum_number_of_fragments : int = 200,
     verbose = True
-  ):
-  """ Function applies default spectral processing of msFeaST using matchms. 
+  ) -> List[matchms.Spectrum]:
+  """ 
+  Function applies default spectral processing of msFeaST using matchms. 
   
   Runs:
     1. matchms default filters, 
@@ -19,14 +20,14 @@ def apply_default_spectral_processing(
     4. low intensity fragments removal if the spectrum exceeds maximum_number_of_fragments.
 
   Parameters
-    spectra: List[matchms.Spectrum] - list of matchms spectrum objects.
-    feature_identifier : str - the feature identifier name used in the data, defaults to "scans" 
-    minimum_number_of_fragments : int - minimum number of fragments required for a spectrum to be kept, defaults to 5.
-    maximum_number_of_fragments : int - maximum number of fragments allowed in a spectrum, defaults to 200 (any more
+    spectra: list of matchms Spectrum objects.
+    feature_identifier: the feature identifier name used in the spectral data file, defaults to "scans" 
+    minimum_number_of_fragments: minimum number of fragments required for a spectrum to be kept, defaults to 5.
+    maximum_number_of_fragments: maximum number of fragments allowed in a spectrum, defaults to 200 (any more
     are assumed noise; the lowest intensity fragments are removed until the spectrum has 200 fragments)
 
   Returns 
-    List[matchms.Spectrum] - the cleaned list of matchms spectrum objects. If none, an assertion error is caused.
+    The processed list of matchms spectrum objects. If none, an assertion error is caused.
   """
   tmp_spectra = copy.deepcopy(spectra)
   if verbose:
@@ -56,7 +57,8 @@ def extract_treatment_table(
     sample_column_name : str = "filename",
     reference_category : Union[str, None] = None
     ) -> pd.DataFrame:
-  """ Extracts treatment table from gnps metadata table 
+  """ 
+  Extracts treatment table from gnps metadata table 
   
   Parameters
     metadata_table : pd.DataFrame - gnps export metadata table
@@ -92,6 +94,7 @@ def extract_treatment_table(
 def subset_spectra_to_exclude(spectra : List[matchms.Spectrum], exclusion_list : List [str]):
   """ 
   Subsets spectra to exclude a particular set of feature identifiers. 
+
   Assumes feature_id present. Throws error if return subset is empty. Used to align spectra with quant table.
   """
   subset = [spec for spec in spectra if spec.get("feature_id") not in exclusion_list]
@@ -101,6 +104,7 @@ def subset_spectra_to_exclude(spectra : List[matchms.Spectrum], exclusion_list :
 def subset_spectra_to_include(spectra : List[matchms.Spectrum], inclusion_list : List [str], verbose = True):
   """ 
   Subsets spectra to exclusively include a particular set of feature identifiers. 
+
   Assumes feature_id present. Throws error if return subset is empty. Used to align spectra with quant table.
   """
   subset = [spec for spec in spectra if spec.get("feature_id") in inclusion_list]
