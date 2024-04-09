@@ -184,6 +184,9 @@ def generate_exclusion_list(quantification_table : pd.DataFrame) -> Union[List[s
   return all_zero_features
 
 def align_feature_subsets(quantification_table : pd.DataFrame, spectra : List[matchms.Spectrum]):
+  """ 
+  Aligns quantification table and spectra in terms of feature_ids. Assumes spectra already filtered.
+  """
   # Assumes:
   # --> treatment table is already subset, and only relevant samples are in quantification table
   # --> spectra were already subset and contain only suitable spectra (no further removal necessary)
