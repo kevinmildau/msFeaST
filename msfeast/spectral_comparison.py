@@ -3,6 +3,9 @@ from typing import Union, List
 from warnings import warn
 import numpy as np
 import os
+from ms2deepscore import MS2DeepScore
+from ms2deepscore.models import load_model  
+
 
 # Dev Note: imports for ms2deepscore and spec2vec are currently in calling functions to avoid dependency problems.
 
@@ -132,11 +135,7 @@ def _compute_similarities_ms2ds(
   Returns: 
       ndarray with shape (n, n) where n is the number of spectra (Pairwise similarity matrix).
   """
-  from ms2deepscore import MS2DeepScore
-  from ms2deepscore.models import load_model  
-  import ms2deepscore # This makes the dependency issue only a problem when this function is called
-  filename = _return_model_filepath(model_path, ".hdf5")
-  model = ms2deepscore.models.load_model(filename) # Load ms2ds model
+  model = ms2deepscore.models.load_model(model_path) # Load ms2ds model
   similarity_measure = ms2deepscore.MS2DeepScore(model)
   scores_matchms = matchms.calculate_scores(
     spectrum_list, spectrum_list, similarity_measure, is_symmetric=True, array_type="numpy"
