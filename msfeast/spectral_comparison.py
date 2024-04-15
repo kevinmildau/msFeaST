@@ -135,8 +135,8 @@ def _compute_similarities_ms2ds(
   Returns: 
       ndarray with shape (n, n) where n is the number of spectra (Pairwise similarity matrix).
   """
-  model = ms2deepscore.models.load_model(model_path) # Load ms2ds model
-  similarity_measure = ms2deepscore.MS2DeepScore(model)
+  model = load_model(model_path) # Load ms2ds model
+  similarity_measure = MS2DeepScore(model)
   scores_matchms = matchms.calculate_scores(
     spectrum_list, spectrum_list, similarity_measure, is_symmetric=True, array_type="numpy"
   )
