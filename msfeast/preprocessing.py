@@ -9,6 +9,7 @@ def apply_default_spectral_processing(
     feature_identifier : str = "scans",
     minimum_number_of_fragments : int = 5,
     maximum_number_of_fragments : int = 200,
+    ion_mode : Union[str, None] = None, 
     verbose = True
   ) -> List[matchms.Spectrum]:
   """ 
@@ -26,7 +27,7 @@ def apply_default_spectral_processing(
     minimum_number_of_fragments: minimum number of fragments required for a spectrum to be kept, defaults to 5.
     maximum_number_of_fragments: maximum number of fragments allowed in a spectrum, defaults to 200 (any more
     are assumed noise; the lowest intensity fragments are removed until the spectrum has 200 fragments)
-
+    ion_mode : str specifying the ion mode of the spectrum. If None (default) ionmode is not added to the spectra.
   Returns 
     The processed list of matchms spectrum objects. If none, an assertion error is caused.
   """
@@ -44,6 +45,8 @@ def apply_default_spectral_processing(
     for spectrum in tmp_spectra
   ]
   tmp_spectra = [spectrum for spectrum in tmp_spectra if spectrum is not None]
+  if ion_mode is not None:
+    tmp_spectra = [spectrum.set("ionmode", ion_mode) for spectrum in tmp_spectra]
   # spectrum.set uses modify in place
   [spectrum.set("feature_id", spectrum.get(feature_identifier)) for spectrum in tmp_spectra]
   if verbose:
