@@ -21,7 +21,7 @@ notebooks/2024-02-19 testing alternative clustering.ipynb
 
 notebooks/data/mushroom_type_comparison
 notebooks/data/omsw_pleurotus_comparison
-
+notebooks/data/omsw_pleurotus_ms2deepscore
 msfeast_test/test_output
 
 build
