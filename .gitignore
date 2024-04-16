@@ -1,17 +1,28 @@
 .DS_Store
 archive
 archive2
+archive3
+
 trialCode
 mockData
 notebooks/.Rhistory
 
-notebooks/tmp_output/test_dashboard.json
+msfeast_test/__pycache__
 
+notebooks/tmp_output/test_dashboard.json
+msfeast/__pycache__
 .Rhistory
 .Rapp.history
 
+notebooks/test_output
 notebooks/__pycache__
 notebooks/tmp_output/test_dashboard.json
 notebooks/tmp_outputs
 notebooks/2024-03-12-typedDict.ipynb
 notebooks/2024-02-19 testing alternative clustering.ipynb
+
+msfeast_test/test_output
+
+build
+msfeast.egg-info
+models/ms2deepscore_model.pt
