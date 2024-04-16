@@ -1,3 +1,5 @@
+# Developer script used to bundle the javascript files into a single file for self-contained html use.
+
 import os
 from typing import List
 
