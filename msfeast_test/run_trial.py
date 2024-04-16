@@ -1,3 +1,5 @@
+# semi-automatic integration test.
+
 if __name__ == "__main__":
   print("Starting Main...")
   import msfeast.pipeline
