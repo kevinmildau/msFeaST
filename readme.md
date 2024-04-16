@@ -2,6 +2,10 @@
 
 The current msFeaST pre-processing and pipeline workflow has been tested on macos and should work identically on linux operating systems. Windows support is currently being worked on. The interactive visualization dashboard works regardless of os on desktop browsers (e.g., firefox, chrome, edge, safari)
 
+# msFeaST Quickstart
+
+To inspect the interactive dashboard for the illustrative examples, please download the *msFeaST_Dashboard_bundle.html* and the ready made data from notebooks\data\omsw_pleurotus_ms2deepscore\dashboard_data.json. Open the html bundle in your browser and load the select and load the data. Changing to the dataview tab shows the now loaded data.
+
 # msFeaST setup
 
 msFeaST is a data analysis workflow that works with Python, R, and web-browser based visualizations (javascript, html, css). To work with msFeaST on your local machine, you need to install the msFeaST python module, install the R dependencies, and download the bundled visualization dashboard (*msFeaST_Dashboard_bundle.html*). If you only want to inspect pre-processed example files using the visual dashboard, the *msFeaST_Dashboard_bundle.html* is the only file needed alongside the .json file. No dependencies need to be installed to do so.
