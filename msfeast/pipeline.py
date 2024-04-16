@@ -17,26 +17,28 @@ from msfeast.integrate import construct_node_list, construct_edge_list, apply_bo
 @dataclass
 class Msfeast:
   """
-  msFeaST pipeline api class for user interactions via python console or GUI (NOT IMPLEMENTED)
+  msFeaST pipeline class for user interactions via python console
 
-  msFeaST probvides a pipeline for feature set testing based on unknown spectra. This API deals with data loading,
+  msFeaST probvides a pipeline for feature set testing based on unknown spectra. This class deals with data loading,
   processing, classification, embedding, statistical testing, and constructing the suitable data structures for 
-  interactive visualization in the msFeaST javascript app. The steps of the pipeline expected to be followed in order 
-  are:
+  interactive visualization in the msFeaST bundled html dashboard. The steps of the pipeline expected to be followed in
+  order are:
 
-  1. Data importing: The required data for msFeaST is loaded into the class instance via from file loading or 
+  1. Attach Data: The required data for msFeaST is loaded into the class instance via from file loading or 
   provided as appropriate Python objects.
-  2. [Optional] Data cleaning: spectral data are filtered to conform with minimum spectral data requirements.
-  3. [Optional] Data Normalization: total-sum scaling is applied to the quantification table if no alternative 
-  normalization approaches were used in other software.
-  4. Similarity measure computation. 
-  5. K-medoid clustering.
-  6. Embedding.
-  7. Statistical Testing at cluster level and computation of descriptive statistics on feature level.
-  8. Export dashboard data structure (json)
+  2. [Optional] Data cleaning: spectral data are filtered to conform with minimum spectral data requirements. Usually
+     part of the pre-processing workflow.
+  3. Similarity measure computation. 
+  4. Perform K-medoid clustering.
+  5. Perform t-SNE embedding.
+  6. Statistical Testing at cluster level and computation of descriptive statistics on feature level.
+  7. Export dashboard data structure (json)
 
   The msFeaST pipeline requires an interaction with the R programming language to run globaltest. For this to work, 
-  a working R and globaltest installation need to be available (auto-install along python NOT IMPLEMENTED)
+  a working R and globaltest installation need to be available.
+
+  For an installation guide please visit https://github.com/kevinmildau/msFeaST/tree/main. For a pipeline usage example,
+  please visit the notebooks contained within the same repository.
 
   """
   # msFeaST instance variable are default set to None in constructor. The pipeline gradually builds them up.
@@ -52,7 +54,7 @@ class Msfeast:
   dashboard_json_dict : Union[dict, None] = None
   r_data_long_df : Union[pd.DataFrame, None] = None
 
-  # settings used dictionary, initialized as empty
+  # settings used dictionary, initialized as empty ; NOT USED YET
   _settings_used : dict = field(default_factory= lambda: {}) # "msfeast_version": __version__["__version__"]
 
   def attach_spectra_from_file(self, filepath : str, identifier_key : str = "feature_id") -> None:
