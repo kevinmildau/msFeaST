@@ -1,14 +1,14 @@
 # Feature Set Tester Pipeline and Dashboard Repo
 
-This repository is currently in development and not yet ready for use. This readme will be updated once the the tool changes fro 0.0.dev to 0.0.1dev
+The current msFeaST pre-processing and pipeline workflow has been tested on macos and should work identically on linux operating systems. Windows support is currently being worked on. The interactive visualization dashboard works regardless of os on desktop browsers (e.g., firefox, chrome, edge, safari)
 
 # msFeaST setup
 
-msFeaST is a data analysis workflow that works with Python, R, and web-browser based visualizations (javascript, html, css). To work with msFeaST on your local machine, you need to install the msFeaST python module, install the R dependencies, and download the bundled visualization dashboard.
+msFeaST is a data analysis workflow that works with Python, R, and web-browser based visualizations (javascript, html, css). To work with msFeaST on your local machine, you need to install the msFeaST python module, install the R dependencies, and download the bundled visualization dashboard (*msFeaST_Dashboard_bundle.html*). If you only want to inspect pre-processed example files using the visual dashboard, the *msFeaST_Dashboard_bundle.html* is the only file needed alongside the .json file. No dependencies need to be installed to do so.
 
 The python module dependencies are managed using conda ([conda installation guide](https://conda.io/projects/conda/en/latest/user-guide/install/index.html)), R is installed within this conda environment at an appropriate version, and any dependencies are installed. Please note that R installation related compilation steps may require a couple of minutes on some systems.
 
-To set-up msFeaST, open a terminal from within a suitable working directory and run the following commands one after another. Some commands may request user input regarding package updating, we recommend using entering y and pressing enter for these requests. To avoid R path caching issues (see known problems), make sure to open a new command line prompt for installation and set-up the conda environment prior to any calls of RScript. 
+To set-up msFeaST, open a terminal from within a suitable working directory and run the following commands one after another. Some commands may request user input regarding package updating, we recommend using entering y (for yes) and pressing enter for these requests. To avoid R path caching issues (see known problems), make sure to open a new command line prompt for installation and set-up of the conda environment prior to any calls of RScript. 
 
 ```
 conda create --name msfeast_environment python=3.10
@@ -29,7 +29,7 @@ jupyter-notebook
 1. Command creates a conda environment containing an isolated python envioronment for msFeaST to be placed into.
 2. Command activates this environment. Subsequent command line calls take effect within this environment.
 3. Command installs R at the required version. *1
-4. Command installs the msFeaST python module and any required Python dependencies. If using a repository clone, move to the root directory of the package and run "pip install ." instead.
+4. Command installs the msFeaST python module and any required Python dependencies. If using a repository clone, move to the root directory of the package and run "pip install ." instead. *<span style="color:magenta">To avoid RScript command caching problems, we recommend closing the terminal after this step and reopening it, and re-entering ````conda activate msfeast_environment``` to make sure that the RSCript calls install the packages conda R version.</span>* 
 5. Command installs R package management dependencies. *1
 6. Command installs survival package at development version. *1
 7. Command installs listenv package at development version. *1
@@ -37,7 +37,7 @@ jupyter-notebook
 9. Command installs tibble package at development version. *1
 10. Command installs dplyr package at development version. *1
 11. Command install globaltest dependency at development version using Bioconductor release version. Note that the Bioconductor version of 3.18 implies globaltest 5.56.0. *1
-12. Command opens jupyter notebook in browser. From here, the msFeaST data processing pipeline demo can be accessed and modified.
+12. Command opens jupyter notebook in browser. From here, the msFeaST data pre-processing and processing pipeline examples can be accessed and modified.
 
 *1 *R packages are currently not installed using conda since the conda R package environment is not working reliably for the required packages yet.*
 
@@ -60,8 +60,9 @@ other attached packages:
 [7] dplyr_1.1.4      
 ```
 
-This set-up has been tested on a macos-arm64 machine. It should work identically in linux. In windows, the commands must be run from within the the ANACONDA PROMPT ({ANACONDA SET-UP}(https://www.anaconda.com/download#downloads)).
+This set-up has been tested on a macos-arm64 machine. It should work identically in linux. 
 
+*UNTESTED*: In windows, the commands should be run from within the the ANACONDA PROMPT required for conda use ([ANACONDA SET-UP](https://www.anaconda.com/download#downloads)). This ANACONDA PROMPT will also be required to start the tool within the right environment and run the jupyter-notebooks.
 
 **Known Problems:**
 In rare cases where the RScript command is run from the terminal prior to the conda installation of R as instructed above, the temporary cached path to R used within conda may be faulty.
