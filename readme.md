@@ -1,4 +1,4 @@
-# Feature Set Tester Pipeline and Dashboard Repo
+# msFeaST
 
 The current msFeaST pre-processing and pipeline workflow has been tested on macos and should work identically on linux operating systems. Windows support is currently being worked on. The interactive visualization dashboard works regardless of os on desktop browsers (e.g., firefox, chrome, edge, safari)
 
