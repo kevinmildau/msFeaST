@@ -28,11 +28,17 @@ const filterEdges = function(edgeList, nodeId){
  * @param {*} selectedNodeId 
  * @returns 
  */
-const getNodeStatsInfo = function (inputNodeData, selectedNodeId){
+const getNodeDataInfo = function (inputNodeData, selectedNodeId, contrastKeys){
   // function expects selectedNode["data"] information
-  let outputString = 'Univariate Data for clicked node with id = ' + String(selectedNodeId) + "\n";
+  let outputString = 'Data for clicked node with id: ' + String(selectedNodeId) + "\n";
   //console.log("Checking nodeData", inputNodeData)
-  for (const contrastKey in inputNodeData) {
+  if ("spectrum_ms_information" in inputNodeData){
+    outputString += 'Spectrum information:\n'
+    outputString += `  precursor_mz: ${inputNodeData["spectrum_ms_information"]["precursor_mz"]}\n`
+    outputString += `  retention_time: ${inputNodeData["spectrum_ms_information"]["retention_time"]}\n`
+  }
+  outputString += 'Univariate data:\n'
+  for (const contrastKey of contrastKeys) {
     outputString += `[${contrastKey}:]\n`
     for (const measureKey in inputNodeData[contrastKey]){
       if (["globalTestFeaturePValue", "log2FoldChange"].includes(measureKey)){

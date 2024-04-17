@@ -17,7 +17,7 @@ let networkDragController = function(dragNodeData, network){
  * @param {*} groupStats
  * @param {*} networkDrawingOptions
  */
-let networkClickController = function(clickInput, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions) {
+let networkClickController = function(clickInput, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions, contrastKeys) {
   // If a node is clicked, addon visualization is added,
   // If an empty area is clicked, edge and styling data is reset
   if (clickInput.nodes.length > 0){
@@ -32,7 +32,7 @@ let networkClickController = function(clickInput, network, networkNodeData, netw
     highlightTargetGroup(networkDrawingOptions, nodeGroup, stylingVariables.colorHighlight);
     network.storePositions();
     clickedNode = networkNodeData.get(selectedNode);
-    infoString = getNodeStatsInfo(clickedNode["data"], selectedNode);
+    infoString = getNodeDataInfo(clickedNode["data"], selectedNode, contrastKeys);
     nodeInfoContainer.innerText = infoString + infoGroupLevel;
     network.setOptions(networkDrawingOptions);
     network.redraw();
@@ -104,7 +104,7 @@ let eventHandlerCoordinateScaling = function (keydown, networkNodeData, network,
   };
 };
 
-function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats){
+function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats, contrastKeys){
   let networkDrawingOptions;
   let groupList;
   let fullEdgeData; // used for force directed layout only
@@ -145,7 +145,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats)
   network.on("dragging", (dragNodeData) => networkDragController(dragNodeData, network));
 
   network.on("click", input => networkClickController(
-    input, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions
+    input, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions, contrastKeys
     )
   );
 

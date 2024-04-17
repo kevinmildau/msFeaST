@@ -9,8 +9,14 @@ from msfeast.process_spectra import extract_feature_ids_from_spectra
 def construct_node_list(
     r_json_data : dict, 
     assignment_table : pd.DataFrame, 
-    embedding_coordinates_table: pd.DataFrame
+    embedding_coordinates_table: pd.DataFrame,
+    spectral_ms1_information: dict
   ) -> list:
+  """
+  
+  spectral_ms1_information : dict with feature_id keys, each with precursor_mz key value and retention_time key value 
+    pairs.
+  """
   # Constructs nodes using all relevant information for nodes
   # get group id from assignment_table
   # get feature_stats from R output <--> add conversions to node size (may require global bounds information)
@@ -26,26 +32,25 @@ def construct_node_list(
   for feature_key in r_json_data["feature_specific"].keys():
     feature_group = assignment_table.loc[assignment_table['feature_id'] == feature_key, "set_id"].values[0]
     coordinates = embedding_coordinates_table.loc[embedding_coordinates_table['feature_id'] == feature_key,]
+    node_data = r_json_data["feature_specific"][feature_key]
+    for contrast_key in node_data.keys(): 
+      for measure_key in measure_keys:
+        # Only add nodeSize conversion if among the supported keys for conversion
+        value = node_data[contrast_key][measure_key]   
+        size = transform_measure_to_node_size(value, measure = measure_key)
+        node_data[contrast_key][measure_key] = {
+          "measure": str(value),
+          "nodeSize": size,
+        }
+    node_data["spectrum_ms_information"] = spectral_ms1_information[feature_key]
     node = {
       "id" : feature_key,
       "size": 10, # --> measure derived variable, set to 10 for now.
       "group": feature_group, # feature derived variable
       "x": coordinates["x"].values[0] * 100, # default scaling for better visual representation
       "y": coordinates["y"].values[0] * 100, # default scaling for better visual representation
-      "data" : r_json_data["feature_specific"][feature_key]
+      "data" : node_data
     }
-    # For specific expected measures, translate the measure into node size: supported: p-value & log2foldchange
-    # Currently no scale available.
-
-    for contrast_key in node["data"].keys(): 
-      for measure_key in measure_keys:
-        # Only add nodeSize conversion if among the supported keys for conversion
-        value = node["data"][contrast_key][measure_key]   
-        size = transform_measure_to_node_size(value, measure = measure_key)
-        node["data"][contrast_key][measure_key] = {
-          "measure": str(value),
-          "nodeSize": size,
-        }
     # Attach the processed node to the node_entries list
     node_entries.append(node)
   return(node_entries)

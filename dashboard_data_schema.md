@@ -58,6 +58,10 @@ corresponding values. For an abstracted complete example see below:
 			"x": numericCoordinateValue, // x location on canvas for the node in pixels
 			"y": numericCoordinateValue, // y location on canvas for the node in pixels
 			"data" : { // data is an generic term for the json structured statistical info for each node.
+				"spectrum_ms_information": {
+					precursor_mz : value, // precursor mz value from the .mgf file
+					retention_time : value, // ms1 retention time information, in the unit used within the .mgf file
+				},
 				// all node specific information goes here, ordered by contrast
 				"contrastKey1": {
 					"univMeasureKey1": {"measure": value, "nodeSize": value}, // the measure value can be arbitrary, the nodeSize value should be in range 10 to 50 based on the measure value

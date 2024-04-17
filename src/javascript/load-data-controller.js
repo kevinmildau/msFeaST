@@ -82,7 +82,7 @@ let parseInputAndInitalizeDashboard = function (fileInput) {
   
   setContrastKeys(contrastKeys);
   setMeasureKeys(univMeasureKeys);
-  initializeInteractiveVisualComponents(nodes, edges, groupKeys, groupStats);
+  initializeInteractiveVisualComponents(nodes, edges, groupKeys, groupStats, contrastKeys);
 };
 
 let assertFileReaderSupport = function (){
