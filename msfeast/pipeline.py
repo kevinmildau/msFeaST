@@ -247,7 +247,13 @@ class Msfeast:
     feature_ids = extract_feature_ids_from_spectra(self.spectra_matchms)
     
     # Create dashboard json dict components
-    node_list = construct_node_list(self.r_json_results, self.assignment_table, self.embedding_coordinates_table)
+    ms1_info_dict = create_spectral_ms1_info_dict(self.spectra_matchms)
+    node_list = construct_node_list(
+      self.r_json_results, 
+      self.assignment_table, 
+      self.embedding_coordinates_table, 
+      ms1_info_dict
+    )
     edge_list = construct_edge_list(self.similarity_array, feature_ids, top_k_max)
     group_stats_list = apply_bonferroni_correction_to_group_stats(self.r_json_results["set_specific"], alpha)
     group_keys = self.r_json_results["set_id_keys"]
@@ -325,3 +331,14 @@ class Msfeast:
     else: 
       warn("Similarity array not available. Returning None instead.")
       return None
+
+
+def create_spectral_ms1_info_dict(spectra: List[matchms.Spectrum]) -> dict:
+      """ Creates a dictionary with feature id keys, each with precursor_mz and retention_time key value pairs. """
+      spectral_ms1_info_dict = {}
+      for spectrum in spectra:
+        spectral_ms1_info_dict[spectrum.get("feature_id")] = {
+          "precursor_mz" : spectrum.get("precursor_mz"),
+          "retention_time" : spectrum.get("retention_time"), 
+        }
+      return spectral_ms1_info_dict
