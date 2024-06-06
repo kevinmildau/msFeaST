@@ -14,12 +14,19 @@ The python module dependencies are managed using conda ([conda installation guid
 
 To set-up msFeaST, open a terminal from within a suitable working directory and run the following commands one after another. Some commands may request user input regarding package updating, we recommend using entering y (for yes) and pressing enter for these requests. To avoid R path caching issues (see known problems), make sure to open a new command line prompt for installation and set-up of the conda environment prior to any calls of RScript. 
 
-```
+```{bash}
 conda create --name msfeast_environment python=3.10
 conda activate msfeast_environment
 conda install conda-forge::r-base=4.3
+```
+
+To avoid problems with the R path, close (kill) the open terminal, and reopen a new terminal window to run the following commands:
+
+```
+conda activate msfeast_environment
 pip install "git+https://github.com/kevinmildau/msfeast.git"
 RScript -e "install.packages(c('remotes', 'BiocManager'), repos='https://cloud.r-project.org')"
+RScript -e "remotes::install_version('Matrix', version = '1.6-5', repos='https://cloud.r-project.org');"
 RScript -e "remotes::install_version('survival', version = '3.5-8', repos='https://cloud.r-project.org');"
 RScript -e "remotes::install_version('listenv', version = '0.9.1', repos='https://cloud.r-project.org');"
 RScript -e "remotes::install_version('readr', version = '2.1.5', repos='https://cloud.r-project.org');"
@@ -33,17 +40,26 @@ jupyter-notebook
 1. Command creates a conda environment containing an isolated python envioronment for msFeaST to be placed into.
 2. Command activates this environment. Subsequent command line calls take effect within this environment.
 3. Command installs R at the required version. *1
-4. Command installs the msFeaST python module and any required Python dependencies. If using a repository clone, move to the root directory of the package and run "pip install ." instead. *<span style="color:magenta">To avoid RScript command caching problems, we recommend closing the terminal after this step and reopening it, and re-entering ````conda activate msfeast_environment``` to make sure that the RSCript calls install the packages conda R version.</span>* 
-5. Command installs R package management dependencies. *1
-6. Command installs survival package at development version. *1
-7. Command installs listenv package at development version. *1
-8. Command installs readr package at development version. *1
-9. Command installs tibble package at development version. *1
-10. Command installs dplyr package at development version. *1
-11. Command install globaltest dependency at development version using Bioconductor release version. Note that the Bioconductor version of 3.18 implies globaltest 5.56.0. *1
-12. Command opens jupyter notebook in browser. From here, the msFeaST data pre-processing and processing pipeline examples can be accessed and modified.
+4. Command activates the created environment in the newly opened terminal.
+5. Command installs the msFeaST python module and any required Python dependencies. If using a repository clone, move to the root directory of the package and run "pip install ." instead. *<span style="color:magenta">To avoid RScript command caching problems, we recommend closing the terminal after this step and reopening it, and re-entering ````conda activate msfeast_environment``` to make sure that the RSCript calls install the packages conda R version.</span>* 
+6. Command installs R package management dependencies. *1
+7. Command Installs the R package Matrix at required version (indirect requirement for globaltest) *1
+8. Command installs survival package at development version. (indirect requirement for globaltest) *1
+9. Command installs listenv package at development version. *1
+10. Command installs readr package at development version. *1
+11. Command installs tibble package at development version. *1
+12. Command installs dplyr package at development version. *1
+13. Command install globaltest dependency at development version using Bioconductor release version. Note that the Bioconductor version of 3.18 implies globaltest 5.56.0 & R version 4.3.3  *1
+14. Command opens jupyter notebook in browser. From here, the msFeaST data pre-processing and processing pipeline examples can be accessed and modified.
 
-*1 *R packages are currently not installed using conda since the conda R package environment is not working reliably for the required packages yet.*
+*1 *R packages are currently not installed using conda since the conda R package environment is not working reliably for the required packages yet. Instead, remotes and biocmanager are used to control R package versions.*
+
+After initial set-up is done, the jupyter-notebook can be accessed in the right environment using these two commands:
+```{bash}
+conda activate msfeast_environment
+jupyter-notebook
+```
+
 
 To inspect the R configuration installed run the following command (only works if all packages installed successfully):
 
@@ -63,6 +79,8 @@ other attached packages:
 [4] listenv_0.9.1       readr_2.1.5         tibble_3.2.1       
 [7] dplyr_1.1.4      
 ```
+
+If this command does not work, msFeaST will not be able to run successfully.
 
 This set-up has been tested on a macos-arm64 machine. It should work identically in linux. 
 
