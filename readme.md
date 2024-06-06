@@ -59,7 +59,7 @@ After initial set-up is done, the jupyter-notebook can be accessed in the right 
 conda activate msfeast_environment
 jupyter-notebook
 ```
-
+where it is important that the terminal used is newly opened and does not have R or rscript paths buffered (see known problems).
 
 To inspect the R configuration installed run the following command (only works if all packages installed successfully):
 
@@ -97,4 +97,4 @@ See the following github issue for further information: [r path issue](https://g
 type R
 type rscript
 ```
-Both should be situated within the conda environment created.
+Both should be situated within the conda environment created. The safest way to work with msfeast and avoiding path mismatch is to open a new terminal and activate the conda environment immediately. 
