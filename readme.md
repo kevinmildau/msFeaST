@@ -30,19 +30,19 @@ To avoid problems with the R path (see known problems), close (kill) the open te
 ```
 conda activate msfeast_environment
 pip install "git+https://github.com/kevinmildau/msfeast.git"
-RScript -e "install.packages(c('remotes', 'BiocManager'), repos='https://cloud.r-project.org')"
-RScript -e "remotes::install_version('Matrix', version = '1.6-5', repos='https://cloud.r-project.org');"
-RScript -e "remotes::install_version('survival', version = '3.5-8', repos='https://cloud.r-project.org');"
-RScript -e "remotes::install_version('listenv', version = '0.9.1', repos='https://cloud.r-project.org');"
-RScript -e "remotes::install_version('readr', version = '2.1.5', repos='https://cloud.r-project.org');"
-RScript -e "remotes::install_version('tibble', version = '3.2.1', repos='https://cloud.r-project.org');"
-RScript -e "remotes::install_version('dplyr', version = '1.1.4', repos='https://cloud.r-project.org');"
-RScript -e "BiocManager::install('globaltest', version='3.18')"
+rscript -e "install.packages(c('remotes', 'BiocManager'), repos='https://cloud.r-project.org')"
+rscript -e "remotes::install_version('Matrix', version = '1.6-5', repos='https://cloud.r-project.org');"
+rscript -e "remotes::install_version('survival', version = '3.5-8', repos='https://cloud.r-project.org');"
+rscript -e "remotes::install_version('listenv', version = '0.9.1', repos='https://cloud.r-project.org');"
+rscript -e "remotes::install_version('readr', version = '2.1.5', repos='https://cloud.r-project.org');"
+rscript -e "remotes::install_version('tibble', version = '3.2.1', repos='https://cloud.r-project.org');"
+rscript -e "remotes::install_version('dplyr', version = '1.1.4', repos='https://cloud.r-project.org');"
+rscript -e "BiocManager::install('globaltest', version='3.18')"
 ```
 
 *What are these commands are doing?*
 1. Command activates the created environment in the newly opened terminal.
-2. Command installs the msFeaST python module and any required Python dependencies. If using a repository clone, move to the root directory of the package and run "pip install ." instead. *<span style="color:magenta">To avoid RScript command caching problems, we recommend closing the terminal after this step and reopening it, and re-entering ````conda activate msfeast_environment``` to make sure that the RSCript calls install the packages conda R version.</span>* 
+2. Command installs the msFeaST python module and any required Python dependencies. If using a repository clone, move to the root directory of the package and run "pip install ." instead. *<span style="color:magenta">To avoid rscript command caching problems, we recommend closing the terminal after this step and reopening it, and re-entering ````conda activate msfeast_environment``` to make sure that the RSCript calls install the packages conda R version.</span>* 
 3. Command installs R package management dependencies. *1
 4. Command Installs the R package Matrix at required version (indirect requirement for globaltest) *1
 5. Command installs survival package at development version. (indirect requirement for globaltest) *1
@@ -64,7 +64,7 @@ jupyter-notebook
 To inspect the R configuration installed run the following command (only works if all packages installed successfully):
 
 ```{bash}
-RScript -e "catch <- lapply(c('dplyr', 'tibble', 'readr', 'listenv', 'BiocManager', 'globaltest'), library, character.only = TRUE); sessionInfo()"
+rscript -e "catch <- lapply(c('dplyr', 'tibble', 'readr', 'listenv', 'BiocManager', 'globaltest'), library, character.only = TRUE); sessionInfo()"
 ```
 
 This should return, among other things, the following session information (platform and OS may differ):
@@ -87,12 +87,12 @@ This set-up has been tested on a macos-arm64 machine. It should work identically
 *UNTESTED*: In windows, the commands should be run from within the the ANACONDA PROMPT required for conda use ([ANACONDA SET-UP](https://www.anaconda.com/download#downloads)). This ANACONDA PROMPT will also be required to start the tool within the right environment and run the jupyter-notebooks.
 
 **Known Problems:**
-1. In rare cases where the RScript command is run from the terminal prior to the conda installation of R as instructed above, the temporary cached path to R used within conda may be faulty. 
-Here, the cached path to R will be used when installing using RScript rather than the new conda environment specific R path. 
+1. In rare cases where the rscript command is run from the terminal prior to the conda installation of R as instructed above, the temporary cached path to R used within conda may be faulty. 
+Here, the cached path to R will be used when installing using rscript rather than the new conda environment specific R path. 
 To avoid this issue, close the terminal after step 4, reopen the terminal, repeat the conda activation (step2), and proceed with the installation. 
-This will avoid RScript calls installing the packages in the wrong R path. 
+This will avoid rscript calls installing the packages in the wrong R path. 
 See the following github issue for further information: [r path issue](https://github.com/conda/conda/issues/1258#issuecomment-91035641).
-2. Some terminal interfaces such as the vscode terminal may default into specific conda environments. This default move into conda may cause the path miss-alignment issues of point 1. If problems persists, check the R and RScript path via the following commands:
+2. Some terminal interfaces such as the vscode terminal may default into specific conda environments. This default move into conda may cause the path miss-alignment issues of point 1. If problems persists, check the R and rscript path via the following commands:
 ```
 type R
 type rscript
