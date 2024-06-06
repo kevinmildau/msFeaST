@@ -87,8 +87,14 @@ This set-up has been tested on a macos-arm64 machine. It should work identically
 *UNTESTED*: In windows, the commands should be run from within the the ANACONDA PROMPT required for conda use ([ANACONDA SET-UP](https://www.anaconda.com/download#downloads)). This ANACONDA PROMPT will also be required to start the tool within the right environment and run the jupyter-notebooks.
 
 **Known Problems:**
-In rare cases where the RScript command is run from the terminal prior to the conda installation of R as instructed above, the temporary cached path to R used within conda may be faulty. 
+1. In rare cases where the RScript command is run from the terminal prior to the conda installation of R as instructed above, the temporary cached path to R used within conda may be faulty. 
 Here, the cached path to R will be used when installing using RScript rather than the new conda environment specific R path. 
 To avoid this issue, close the terminal after step 4, reopen the terminal, repeat the conda activation (step2), and proceed with the installation. 
 This will avoid RScript calls installing the packages in the wrong R path. 
 See the following github issue for further information: [r path issue](https://github.com/conda/conda/issues/1258#issuecomment-91035641).
+2. Some terminal interfaces such as the vscode terminal may default into specific conda environments. This default move into conda may cause the path miss-alignment issues of point 1. If problems persists, check the R and RScript path via the following commands:
+```
+type R
+type RScript
+```
+Both should be situated within the conda environment created.
