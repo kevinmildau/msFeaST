@@ -34,7 +34,7 @@ def run_statistics_routine(
   
   # Run R Code
   subprocess.run((
-      f"Rscript {r_script_path} {filepath_quantification_table} " 
+      f"rscript {r_script_path} {filepath_quantification_table} " 
       f"{filepath_treatment_table} " 
       f"{filepath_assignment_table} "
       f"{filepath_r_output_json}"
