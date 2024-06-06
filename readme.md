@@ -95,6 +95,6 @@ See the following github issue for further information: [r path issue](https://g
 2. Some terminal interfaces such as the vscode terminal may default into specific conda environments. This default move into conda may cause the path miss-alignment issues of point 1. If problems persists, check the R and RScript path via the following commands:
 ```
 type R
-type RScript
+type rscript
 ```
 Both should be situated within the conda environment created.
