@@ -15904,7 +15904,7 @@
     },
     "group_km_170": {
       "PleurotusOMSW0_vs_PleurotusOMSW80": {
-        "globalTestPValue": 0.0002
+        "globalTestPValue": 0.0005
       }
     },
     "group_km_11": {
@@ -16004,7 +16004,7 @@
     },
     "group_km_246": {
       "PleurotusOMSW0_vs_PleurotusOMSW80": {
-        "globalTestPValue": 0.0001
+        "globalTestPValue": 0
       }
     },
     "group_km_121": {
