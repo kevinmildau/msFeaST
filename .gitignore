@@ -26,3 +26,4 @@ msfeast_test/test_output
 build
 msfeast.egg-info
 models/ms2deepscore_model.pt
+notebooks/.ipynb_checkpoints/msfeast_pipeline_mushroom_type_comparison-checkpoint.ipynb
