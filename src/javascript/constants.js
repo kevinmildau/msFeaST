@@ -17,6 +17,6 @@ const scalingInput = document.getElementById("id-graph-scaler");
 const stylingVariables = {
   colorHighlight: "rgb(235,16,162, 0.8)",
   defaultEdgeColor: "#A65A8D",
-  defaultNodeColor: "rgb(166, 90, 141, 0.5)", 
-  defaultNodeBorderColor: "rgb(0, 0, 0, 0.5)"
+  defaultNodeColor: "rgb(166, 90, 141, 0.25)", 
+  defaultNodeBorderColor: "rgb(0, 0, 0, 0.25)"
 };
