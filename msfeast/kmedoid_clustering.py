@@ -4,7 +4,7 @@ from sklearn.metrics import silhouette_score
 from typing import List, Union
 import numpy as np
 import pandas as pd
-
+import plotly.express
 @dataclass
 class GridEntryKmedoid:
     """ 
@@ -99,7 +99,7 @@ def print_kmedoid_grid(grid : List[GridEntryKmedoid]) -> None:
   print(kmedoid_results)
   return None
 
-def _plot_kmedoid_grid(
+def plot_kmedoid_grid(
   kmedoid_list : List[GridEntryKmedoid]
   ) -> None:
   """ Plots Silhouette Score vs k for each entry in list of GridEntryKmedoid objects. """
