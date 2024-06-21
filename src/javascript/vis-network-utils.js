@@ -86,6 +86,27 @@ let getNodeGroupInfo = function (inputGroupData, groupId){
   return outputString
 }
 
+
+/**
+ * 
+ * @param {*} groupMemberships group_id keyed object with feature_ids for each member
+ * @param {*} groupId 
+ * @returns string with feature_ids styles to add no more than 5 ids per line of text.
+ */
+let getGroupmemberships = function (groupMemberships, groupId){
+  let outputString = 'Features belonging to group with id =  ' + String(groupId) + ":\n";
+  let counter = 1;
+  for (const feature_id of groupMemberships[groupId]) {
+    if (counter % 10 == 0){
+      outputString += "\n";
+    }
+    outputString += String(feature_id) + ", ";
+    counter += 1;
+  }
+  outputString += "\n";
+  return outputString
+}
+
 /** Gets label data for node with specified id.
  * 
  * @param {vis.network} network 
