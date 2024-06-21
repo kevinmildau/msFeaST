@@ -37,6 +37,7 @@ let networkClickController = function(clickInput, network, networkNodeData, netw
     nodeInfoContainer.innerText = infoString + infoGroupLevel + infoGroupMembers;
     network.setOptions(networkDrawingOptions);
     network.redraw();
+    heatmapPanelController(groupStats, formSelectContrast, networkDrawingOptions, network, highlightGroupId = nodeGroup); // <-- this
   } else {
     nodeInfoContainer.innerText = "";
     network.storePositions();
@@ -44,6 +45,7 @@ let networkClickController = function(clickInput, network, networkNodeData, netw
     resetGroupDrawingOptions(networkDrawingOptions, stylingVariables.defaultNodeColor);
     network.setOptions(networkDrawingOptions);
     network.redraw();
+    heatmapPanelController(groupStats, formSelectContrast, networkDrawingOptions, network); // <-- this
   }
 };
 
