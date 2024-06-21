@@ -38,7 +38,7 @@ let assertInputSchemaValid = function (jsonData){
   // basic function to check whether the expected entries are available, to be replaced with object schema and type validation
   // jsonData is expected to be type object after a successful json parse. JSON parsing errors are handled separately.
   let schemaValid = true; 
-  let expectedKeys = ["groupKeys", "univMeasureKeys", "groupMeasureKeys", "contrastKeys", "groupStats", "nodes", "edges"]
+  let expectedKeys = ["groupKeys", "groupMemberships", "univMeasureKeys", "groupMeasureKeys", "contrastKeys", "groupStats", "nodes", "edges"]
   for (key of expectedKeys){
     if (typeof(jsonData[key]) === "undefined"){
       schemaValid = false; 
@@ -75,6 +75,7 @@ let parseInputAndInitalizeDashboard = function (fileInput) {
   nodes = jsonData["nodes"];
   edges = jsonData["edges"];
   groupKeys = jsonData["groupKeys"];
+  groupMemberships = jsonData["groupMemberships"];
   groupStats = jsonData["groupStats"];
   univMeasureKeys = jsonData["univMeasureKeys"];
   contrastKeys = jsonData["contrastKeys"];
@@ -82,7 +83,7 @@ let parseInputAndInitalizeDashboard = function (fileInput) {
   
   setContrastKeys(contrastKeys);
   setMeasureKeys(univMeasureKeys);
-  initializeInteractiveVisualComponents(nodes, edges, groupKeys, groupStats, contrastKeys);
+  initializeInteractiveVisualComponents(nodes, edges, groupKeys, groupStats, contrastKeys, groupMemberships);
 };
 
 let assertFileReaderSupport = function (){
