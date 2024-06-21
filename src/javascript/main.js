@@ -17,7 +17,7 @@ let networkDragController = function(dragNodeData, network){
  * @param {*} groupStats
  * @param {*} networkDrawingOptions
  */
-let networkClickController = function(clickInput, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions, contrastKeys) {
+let networkClickController = function(clickInput, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions, contrastKeys, groupMemberships) {
   // If a node is clicked, addon visualization is added,
   // If an empty area is clicked, edge and styling data is reset
   if (clickInput.nodes.length > 0){
@@ -28,12 +28,13 @@ let networkClickController = function(clickInput, network, networkNodeData, netw
     let clickedNode
     networkEdgeData.update(edgeSubset);
     infoGroupLevel = getNodeGroupInfo(groupStats[nodeGroup], nodeGroup);
+    infoGroupMembers = getGroupmemberships(groupMemberships, nodeGroup);
     resetGroupDrawingOptions(networkDrawingOptions, stylingVariables.defaultNodeColor);
     highlightTargetGroup(networkDrawingOptions, nodeGroup, stylingVariables.colorHighlight);
     network.storePositions();
     clickedNode = networkNodeData.get(selectedNode);
     infoString = getNodeDataInfo(clickedNode["data"], selectedNode, contrastKeys);
-    nodeInfoContainer.innerText = infoString + infoGroupLevel;
+    nodeInfoContainer.innerText = infoString + infoGroupLevel + infoGroupMembers;
     network.setOptions(networkDrawingOptions);
     network.redraw();
   } else {
@@ -104,7 +105,7 @@ let eventHandlerCoordinateScaling = function (keydown, networkNodeData, network,
   };
 };
 
-function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats, contrastKeys){
+function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats, contrastKeys, groupMemberships){
   let networkDrawingOptions;
   let groupList;
   let fullEdgeData; // used for force directed layout only
@@ -145,7 +146,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
   network.on("dragging", (dragNodeData) => networkDragController(dragNodeData, network));
 
   network.on("click", input => networkClickController(
-    input, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions, contrastKeys
+    input, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions, contrastKeys, groupMemberships
     )
   );
 
