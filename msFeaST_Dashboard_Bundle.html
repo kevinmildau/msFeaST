@@ -388,7 +388,7 @@ let assertInputSchemaValid = function (jsonData){
   // basic function to check whether the expected entries are available, to be replaced with object schema and type validation
   // jsonData is expected to be type object after a successful json parse. JSON parsing errors are handled separately.
   let schemaValid = true; 
-  let expectedKeys = ["groupKeys", "univMeasureKeys", "groupMeasureKeys", "contrastKeys", "groupStats", "nodes", "edges"]
+  let expectedKeys = ["groupKeys", "groupMemberships", "univMeasureKeys", "groupMeasureKeys", "contrastKeys", "groupStats", "nodes", "edges"]
   for (key of expectedKeys){
     if (typeof(jsonData[key]) === "undefined"){
       schemaValid = false; 
@@ -425,6 +425,7 @@ let parseInputAndInitalizeDashboard = function (fileInput) {
   nodes = jsonData["nodes"];
   edges = jsonData["edges"];
   groupKeys = jsonData["groupKeys"];
+  groupMemberships = jsonData["groupMemberships"];
   groupStats = jsonData["groupStats"];
   univMeasureKeys = jsonData["univMeasureKeys"];
   contrastKeys = jsonData["contrastKeys"];
@@ -432,7 +433,7 @@ let parseInputAndInitalizeDashboard = function (fileInput) {
   
   setContrastKeys(contrastKeys);
   setMeasureKeys(univMeasureKeys);
-  initializeInteractiveVisualComponents(nodes, edges, groupKeys, groupStats, contrastKeys);
+  initializeInteractiveVisualComponents(nodes, edges, groupKeys, groupStats, contrastKeys, groupMemberships);
 };
 
 let assertFileReaderSupport = function (){
@@ -757,6 +758,27 @@ let getNodeGroupInfo = function (inputGroupData, groupId){
   return outputString
 }
 
+
+/**
+ * 
+ * @param {*} groupMemberships group_id keyed object with feature_ids for each member
+ * @param {*} groupId 
+ * @returns string with feature_ids styles to add no more than 5 ids per line of text.
+ */
+let getGroupmemberships = function (groupMemberships, groupId){
+  let outputString = 'Features belonging to group with id =  ' + String(groupId) + ":\n";
+  let counter = 1;
+  for (const feature_id of groupMemberships[groupId]) {
+    if (counter % 10 == 0){
+      outputString += "\n";
+    }
+    outputString += String(feature_id) + ", ";
+    counter += 1;
+  }
+  outputString += "\n";
+  return outputString
+}
+
 /** Gets label data for node with specified id.
  * 
  * @param {vis.network} network 
@@ -788,7 +810,7 @@ let networkDragController = function(dragNodeData, network){
  * @param {*} groupStats
  * @param {*} networkDrawingOptions
  */
-let networkClickController = function(clickInput, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions, contrastKeys) {
+let networkClickController = function(clickInput, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions, contrastKeys, groupMemberships) {
   // If a node is clicked, addon visualization is added,
   // If an empty area is clicked, edge and styling data is reset
   if (clickInput.nodes.length > 0){
@@ -799,12 +821,13 @@ let networkClickController = function(clickInput, network, networkNodeData, netw
     let clickedNode
     networkEdgeData.update(edgeSubset);
     infoGroupLevel = getNodeGroupInfo(groupStats[nodeGroup], nodeGroup);
+    infoGroupMembers = getGroupmemberships(groupMemberships, nodeGroup);
     resetGroupDrawingOptions(networkDrawingOptions, stylingVariables.defaultNodeColor);
     highlightTargetGroup(networkDrawingOptions, nodeGroup, stylingVariables.colorHighlight);
     network.storePositions();
     clickedNode = networkNodeData.get(selectedNode);
     infoString = getNodeDataInfo(clickedNode["data"], selectedNode, contrastKeys);
-    nodeInfoContainer.innerText = infoString + infoGroupLevel;
+    nodeInfoContainer.innerText = infoString + infoGroupLevel + infoGroupMembers;
     network.setOptions(networkDrawingOptions);
     network.redraw();
   } else {
@@ -875,7 +898,7 @@ let eventHandlerCoordinateScaling = function (keydown, networkNodeData, network,
   };
 };
 
-function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats, contrastKeys){
+function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats, contrastKeys, groupMemberships){
   let networkDrawingOptions;
   let groupList;
   let fullEdgeData; // used for force directed layout only
@@ -916,7 +939,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
   network.on("dragging", (dragNodeData) => networkDragController(dragNodeData, network));
 
   network.on("click", input => networkClickController(
-    input, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions, contrastKeys
+    input, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions, contrastKeys, groupMemberships
     )
   );
 
