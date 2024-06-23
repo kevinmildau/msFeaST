@@ -107,8 +107,7 @@ def plot_tsne_grid(tsne_list : List[GridEntryTsne]) -> None:
   trace_pearson = go.Scatter(x = iloc_perplexity, y = pearson_scores, name="pearson_score", mode = "markers")
   fig = go.Figure([trace_pearson, trace_spearman])
   fig.update_layout(xaxis_title="Perplexity / iloc", yaxis_title="Score")
-  fig.show()
-  return None
+  return fig
 
 def print_tsne_grid(grid : List[GridEntryTsne]) -> None:   
   """ Prints all values in tsne grid in readable format via pandas conversion """

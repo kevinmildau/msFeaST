@@ -110,5 +110,4 @@ def plot_kmedoid_grid(
     xaxis_title="K (Number of Clusters) / iloc", 
     yaxis_title="Silhouette Score"
   )
-  fig.show()
-  return None
+  return fig
