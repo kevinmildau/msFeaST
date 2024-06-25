@@ -732,7 +732,7 @@ const getNodeDataInfo = function (inputNodeData, selectedNodeId, contrastKeys){
   for (const contrastKey of contrastKeys) {
     outputString += `[${contrastKey}:]\n`
     for (const measureKey in inputNodeData[contrastKey]){
-      if (["globalTestFeaturePValue", "log2FoldChange"].includes(measureKey)){
+      if (["univariatePValue", "log2FoldChange"].includes(measureKey)){
         // only these two measures have a measure and nodeSize difference in their data.
         value = inputNodeData[contrastKey][measureKey]["measure"];
       } else {
