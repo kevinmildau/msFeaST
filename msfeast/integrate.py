@@ -28,7 +28,7 @@ def construct_node_list(
   # get x and y coordinates from embedding_coordinates_table
   ...
   node_entries = list()
-  measure_keys = ["globalTestFeaturePValue", "log2FoldChange"]
+  measure_keys = ["univariatePValue", "log2FoldChange"]
 
   for feature_key in r_json_data["feature_specific"].keys():
     feature_group = assignment_table.loc[assignment_table['feature_id'] == feature_key, "set_id"].values[0]
@@ -264,12 +264,12 @@ def transform_measure_to_node_size(value : float, measure : str):
   """ 
   Function delegates transformation to respective implemenation for measure. 
   
-  Supported measures are: "log2foldChange" and "globalTestFeaturePValue"
+  Supported measures are: "log2foldChange" and "univariatePValue"
   """
   size = None
   if measure == "log2FoldChange":
     size = transform_log2_fold_change_to_node_size(value)
-  elif measure == "globalTestFeaturePValue":
+  elif measure == "univariatePValue":
     size = transform_p_value_to_node_size(value)
   else:
     warn("Measure provided measure has no defined transformation function!")

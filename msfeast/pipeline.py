@@ -257,7 +257,7 @@ class Msfeast:
     edge_list = construct_edge_list(self.similarity_array, feature_ids, top_k_max)
     group_stats_list = apply_bonferroni_correction_to_group_stats(self.r_json_results["set_specific"], alpha)
     group_keys = self.r_json_results["set_id_keys"]
-    univariate_measure_keys = ["log2FoldChange", "globalTestFeaturePValue"]
+    univariate_measure_keys = ["log2FoldChange", "univariatePValue"]
     group_measure_keys = ["globalTestPValue"]
     contrast_keys = self.r_json_results["contrast_keys"]
     group_memberships = generate_group_membership_dict(self.assignment_table)
