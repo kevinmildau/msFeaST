@@ -20,6 +20,8 @@ corresponding values. For an abstracted complete example see below:
 {
 	// groupKeys provides a quick reference for the number of groups and their keys
 	groupKeys: ["groupKey1", "groupKey2", ...],
+	// groupMemberships collects the feature ids belonging to each groupKey as an array of strings
+	groupMemberships: {"groupKey1" : ["uniqueNodeIdentifier1", "uniqueNodeIdentifier2"], ...},
 	// univMeasureKeys provides a quick reference for the number of univ. measures and their keys
 	univMeasureKeys: ["univMeasureKey1", "univMeasureKey2", ...],
 	// groupMeasureKeys provides a quick reference for the number of group based. measures and their keys

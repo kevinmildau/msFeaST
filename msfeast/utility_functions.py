@@ -14,7 +14,7 @@ def assert_similarity_matrix(scores : np.ndarray, n_spectra : int) -> None:
 def assert_iloc_valid(iloc : int, iloc_range_max : int) -> None:
   """ Asserts that a provided iloc is a valid value in range (0, iloc_range_max) """
   assert iloc in [x for x in range(0, iloc_range_max)], (
-    f"Error: must provide iloc in range of tsne grid 0 to {len(self.tsne_grid)}"
+    f"Error: must provide iloc in range of tsne grid 0 to {iloc_range_max}"
   )
   return None
 

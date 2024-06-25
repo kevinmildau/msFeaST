@@ -253,35 +253,54 @@ const scalingInput = document.getElementById("id-graph-scaler");
 const stylingVariables = {
   colorHighlight: "rgb(235,16,162, 0.8)",
   defaultEdgeColor: "#A65A8D",
-  defaultNodeColor: "rgb(166, 90, 141, 0.5)", 
-  defaultNodeBorderColor: "rgb(0, 0, 0, 0.5)"
+  defaultNodeColor: "rgb(166, 90, 141, 0.25)", 
+  defaultNodeBorderColor: "rgb(0, 0, 0, 0.25)"
 };
 
-let heatmapPanelController = function(groupStats, domElementContrast, networkDrawingOptions, network){
+let heatmapPanelController = function(groupStats, domElementContrast, networkDrawingOptions, network, highlightGroupId = undefined){
   // Constructs heatmap with global test set specific results
   // Dev Note: Assumes n_measures at set level is equal to 1!
   let colorscale = 'Greys'; // Greys, Rainbow, Portland (diverging), Jet, Hot has clear low end separation
   let margin = 10;
+
+  /** Function creates xTicks with highlight style if provided a highlight group
+   *  
+   * @param {*} groupIdentifiers array of identifiers 
+   * @param {*} highlightGroup the identifier to be highlighted in the axis text
+   * @returns 
+   */
+  let generateXaxisTicks = function(groupIdentifiers, highlightGroup){
+    let xTicks = [];
+    for (tick of groupIdentifiers){
+      if (tick === highlightGroup){
+        xTicks.push(`<span style='font-weight:bold;font-size:100%;color:${stylingVariables["colorHighlight"]}'>${String(tick)}</span>`)
+      } else {
+        xTicks.push(tick)
+      }
+    }
+    return xTicks
+  }
   /** Function constructs heatmap trace and layout from groupStats data
    *  
    * @param {*} groupStats 
    * @returns 
    */
-  let constructHeatmapData = function(groupStats, colorscale, margin){
-    let xTicks = Object.keys(groupStats);
+  let constructHeatmapData = function(groupStats, colorscale, margin, highlightGroupId){
+    let xVals = Object.keys(groupStats);
+    let xTicks = generateXaxisTicks(xVals, highlightGroupId);
     let yTicks = Array.from(domElementContrast.options).map(option => option.value); // Change global access to local data!
     // get array of p-values for all constrat
     let globalTestPValuesArray = [];
     for (let current_contrast of yTicks) {
       tmp_array = [];
-      for (let current_group of xTicks) {
+      for (let current_group of xVals) {
         tmp_array.push(groupStats[current_group][current_contrast]["globalTestPValue"]);
       }
       globalTestPValuesArray.push(tmp_array);
     }
     let heatmapTrace = [{
       z: globalTestPValuesArray,
-      x: xTicks,
+      x: xVals,
       y: yTicks,
       zmin: 0,  // Minimum color value
       zmax: 1,   // Maximum color value
@@ -293,7 +312,7 @@ let heatmapPanelController = function(groupStats, domElementContrast, networkDra
     }];
     var heatmapLayout = {
       margin: {t:margin, l:margin},
-      xaxis: {automargin : true, tickmode: "linear", dtick:1, tickfont : {size : 8}},
+      xaxis: {automargin : true, tickmode: "array", dtick:1, tickfont : {size : 8} ,tickvals: xVals, ticktext : xTicks}, // 
       yaxis: {automargin : true, side: "right"},
       title: '',
       autosize: true,
@@ -329,7 +348,7 @@ let heatmapPanelController = function(groupStats, domElementContrast, networkDra
     Plotly.newPlot(colorBarContainer, colorBarObject.trace, colorBarObject.layout, {responsive : true});
     Plotly.newPlot(heatmapContainer, heatmapObject.trace, heatmapObject.layout, {responsive : true});
   };
-  heatmapObject = constructHeatmapData(groupStats, colorscale, margin);
+  heatmapObject = constructHeatmapData(groupStats, colorscale, margin, highlightGroupId);
   colorBarObject = constructColorBarData(colorscale, margin);
   updateViews(heatmapObject, colorBarObject);
   //var hoverTimer;  // Define a timer variable
@@ -388,7 +407,7 @@ let assertInputSchemaValid = function (jsonData){
   // basic function to check whether the expected entries are available, to be replaced with object schema and type validation
   // jsonData is expected to be type object after a successful json parse. JSON parsing errors are handled separately.
   let schemaValid = true; 
-  let expectedKeys = ["groupKeys", "univMeasureKeys", "groupMeasureKeys", "contrastKeys", "groupStats", "nodes", "edges"]
+  let expectedKeys = ["groupKeys", "groupMemberships", "univMeasureKeys", "groupMeasureKeys", "contrastKeys", "groupStats", "nodes", "edges"]
   for (key of expectedKeys){
     if (typeof(jsonData[key]) === "undefined"){
       schemaValid = false; 
@@ -425,6 +444,7 @@ let parseInputAndInitalizeDashboard = function (fileInput) {
   nodes = jsonData["nodes"];
   edges = jsonData["edges"];
   groupKeys = jsonData["groupKeys"];
+  groupMemberships = jsonData["groupMemberships"];
   groupStats = jsonData["groupStats"];
   univMeasureKeys = jsonData["univMeasureKeys"];
   contrastKeys = jsonData["contrastKeys"];
@@ -432,7 +452,7 @@ let parseInputAndInitalizeDashboard = function (fileInput) {
   
   setContrastKeys(contrastKeys);
   setMeasureKeys(univMeasureKeys);
-  initializeInteractiveVisualComponents(nodes, edges, groupKeys, groupStats, contrastKeys);
+  initializeInteractiveVisualComponents(nodes, edges, groupKeys, groupStats, contrastKeys, groupMemberships);
 };
 
 let assertFileReaderSupport = function (){
@@ -712,7 +732,7 @@ const getNodeDataInfo = function (inputNodeData, selectedNodeId, contrastKeys){
   for (const contrastKey of contrastKeys) {
     outputString += `[${contrastKey}:]\n`
     for (const measureKey in inputNodeData[contrastKey]){
-      if (["globalTestFeaturePValue", "log2FoldChange"].includes(measureKey)){
+      if (["univariatePValue", "log2FoldChange"].includes(measureKey)){
         // only these two measures have a measure and nodeSize difference in their data.
         value = inputNodeData[contrastKey][measureKey]["measure"];
       } else {
@@ -757,6 +777,27 @@ let getNodeGroupInfo = function (inputGroupData, groupId){
   return outputString
 }
 
+
+/**
+ * 
+ * @param {*} groupMemberships group_id keyed object with feature_ids for each member
+ * @param {*} groupId 
+ * @returns string with feature_ids styles to add no more than 5 ids per line of text.
+ */
+let getGroupmemberships = function (groupMemberships, groupId){
+  let outputString = 'Features belonging to group with id =  ' + String(groupId) + ":\n";
+  let counter = 1;
+  for (const feature_id of groupMemberships[groupId]) {
+    if (counter % 10 == 0){
+      outputString += "\n";
+    }
+    outputString += String(feature_id) + ", ";
+    counter += 1;
+  }
+  outputString += "\n";
+  return outputString
+}
+
 /** Gets label data for node with specified id.
  * 
  * @param {vis.network} network 
@@ -788,7 +829,7 @@ let networkDragController = function(dragNodeData, network){
  * @param {*} groupStats
  * @param {*} networkDrawingOptions
  */
-let networkClickController = function(clickInput, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions, contrastKeys) {
+let networkClickController = function(clickInput, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions, contrastKeys, groupMemberships) {
   // If a node is clicked, addon visualization is added,
   // If an empty area is clicked, edge and styling data is reset
   if (clickInput.nodes.length > 0){
@@ -799,14 +840,16 @@ let networkClickController = function(clickInput, network, networkNodeData, netw
     let clickedNode
     networkEdgeData.update(edgeSubset);
     infoGroupLevel = getNodeGroupInfo(groupStats[nodeGroup], nodeGroup);
+    infoGroupMembers = getGroupmemberships(groupMemberships, nodeGroup);
     resetGroupDrawingOptions(networkDrawingOptions, stylingVariables.defaultNodeColor);
     highlightTargetGroup(networkDrawingOptions, nodeGroup, stylingVariables.colorHighlight);
     network.storePositions();
     clickedNode = networkNodeData.get(selectedNode);
     infoString = getNodeDataInfo(clickedNode["data"], selectedNode, contrastKeys);
-    nodeInfoContainer.innerText = infoString + infoGroupLevel;
+    nodeInfoContainer.innerText = infoString + infoGroupLevel + infoGroupMembers;
     network.setOptions(networkDrawingOptions);
     network.redraw();
+    heatmapPanelController(groupStats, formSelectContrast, networkDrawingOptions, network, highlightGroupId = nodeGroup); // <-- this
   } else {
     nodeInfoContainer.innerText = "";
     network.storePositions();
@@ -814,6 +857,7 @@ let networkClickController = function(clickInput, network, networkNodeData, netw
     resetGroupDrawingOptions(networkDrawingOptions, stylingVariables.defaultNodeColor);
     network.setOptions(networkDrawingOptions);
     network.redraw();
+    heatmapPanelController(groupStats, formSelectContrast, networkDrawingOptions, network); // <-- this
   }
 };
 
@@ -875,7 +919,7 @@ let eventHandlerCoordinateScaling = function (keydown, networkNodeData, network,
   };
 };
 
-function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats, contrastKeys){
+function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats, contrastKeys, groupMemberships){
   let networkDrawingOptions;
   let groupList;
   let fullEdgeData; // used for force directed layout only
@@ -916,7 +960,7 @@ function initializeInteractiveVisualComponents(nodes, edges, groups, groupStats,
   network.on("dragging", (dragNodeData) => networkDragController(dragNodeData, network));
 
   network.on("click", input => networkClickController(
-    input, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions, contrastKeys
+    input, network, networkNodeData, networkEdgeData, edges, groupStats, networkDrawingOptions, contrastKeys, groupMemberships
     )
   );
 

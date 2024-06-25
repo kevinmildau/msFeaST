@@ -196,13 +196,13 @@ run_and_attach_global_test_on_feature_set <- function(
     feature_specific_p_value <- results_table[tmp_index, ]["p-value"] # matrix & named vector accessing
     feature_specific_statistic <- results_table[tmp_index, ]["Statistic"] # matrix & named vector accessing
     # Attach data 
-    resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["globalTestFeaturePValue"] <- list(
+    resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["univariatePValue"] <- list(
       feature_specific_p_value
     )
-    resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["globalTestFeatureStatistic"] <- list(
+    resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["univariateStatistic"] <- list(
       feature_specific_statistic
     )
-    resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["globalTestFeatureEffectDirection"] <- list(
+    resultsListEnv$"feature_specific"[[feature_id]][[contrast_name]]["univariateEffectDirection"] <- list(
       effect_direction
     )
   }
@@ -296,7 +296,7 @@ run_msfeast <- function( quantification_table, metadata_table, feature_sets, fea
   resultsListEnv$contrast_keys <- tmp_contrasts
   resultsListEnv$set_id_keys <- names(feature_sets)
   resultsListEnv$feature_specific_measure_keys <- c(
-    "globalTestFeaturePValue",  "globalTestFeatureStatistic", "globalTestFeatureEffectDirection", "log2FoldChange"
+    "univariatePValue",  "univariateStatistic", "univariateEffectDirection", "log2FoldChange"
   )
   resultsListEnv$set_specific_measure_keys <- list("globalTestPValue")
   # Convert listenv to list to avoid unexpected modify in place behavior for output of msfeast after return

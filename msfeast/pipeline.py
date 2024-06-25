@@ -13,7 +13,7 @@ from msfeast.embedding import GridEntryTsne, run_tsne_grid, print_tsne_grid, che
 from msfeast.kmedoid_clustering import GridEntryKmedoid, run_kmedoid_grid, check_k_values, print_kmedoid_grid
 from msfeast.utility_functions import assert_iloc_valid, assert_similarity_matrix
 from msfeast.run_r_script import run_statistics_routine
-from msfeast.integrate import construct_node_list, construct_edge_list, apply_bonferroni_correction_to_group_stats, write_dict_to_json_file
+from msfeast.integrate import construct_node_list, construct_edge_list, apply_bonferroni_correction_to_group_stats, write_dict_to_json_file, generate_group_membership_dict
 @dataclass
 class Msfeast:
   """
@@ -257,13 +257,15 @@ class Msfeast:
     edge_list = construct_edge_list(self.similarity_array, feature_ids, top_k_max)
     group_stats_list = apply_bonferroni_correction_to_group_stats(self.r_json_results["set_specific"], alpha)
     group_keys = self.r_json_results["set_id_keys"]
-    univariate_measure_keys = ["log2FoldChange", "globalTestFeaturePValue"]
+    univariate_measure_keys = ["log2FoldChange", "univariatePValue"]
     group_measure_keys = ["globalTestPValue"]
     contrast_keys = self.r_json_results["contrast_keys"]
-
+    group_memberships = generate_group_membership_dict(self.assignment_table)
+    
     # Create dashboard json dictionary from components.
     dashboard_json_dict = {
       "groupKeys": group_keys,
+      "groupMemberships": group_memberships, # <--group_id key, feature_id list
       "univMeasureKeys": univariate_measure_keys,
       "groupMeasureKeys": group_measure_keys,
       "contrastKeys": contrast_keys,

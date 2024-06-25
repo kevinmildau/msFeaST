@@ -5,6 +5,7 @@ import pandas as pd
 import copy
 from warnings import warn
 from msfeast.process_spectra import extract_feature_ids_from_spectra
+from typing import Dict
 
 def construct_node_list(
     r_json_data : dict, 
@@ -27,7 +28,7 @@ def construct_node_list(
   # get x and y coordinates from embedding_coordinates_table
   ...
   node_entries = list()
-  measure_keys = ["globalTestFeaturePValue", "log2FoldChange"]
+  measure_keys = ["univariatePValue", "log2FoldChange"]
 
   for feature_key in r_json_data["feature_specific"].keys():
     feature_group = assignment_table.loc[assignment_table['feature_id'] == feature_key, "set_id"].values[0]
@@ -160,7 +161,6 @@ def construct_edge_list(similarity_array : np.ndarray, feature_ids : list[str], 
         edge_list.append(edge)
   return edge_list
 
-
 def generate_and_attach_long_format_r_data(self, r_json_data : dict) -> None:
   """ Converts json format data to long format data frame. Focuses on feature_specific and set_specific statistical
   data. The data frame will have columns type, id, contrast, measure, and value:
@@ -264,12 +264,12 @@ def transform_measure_to_node_size(value : float, measure : str):
   """ 
   Function delegates transformation to respective implemenation for measure. 
   
-  Supported measures are: "log2foldChange" and "globalTestFeaturePValue"
+  Supported measures are: "log2foldChange" and "univariatePValue"
   """
   size = None
   if measure == "log2FoldChange":
     size = transform_log2_fold_change_to_node_size(value)
-  elif measure == "globalTestFeaturePValue":
+  elif measure == "univariatePValue":
     size = transform_p_value_to_node_size(value)
   else:
     warn("Measure provided measure has no defined transformation function!")
@@ -295,3 +295,22 @@ def transform_similarity_score_to_width(score: float):
   #if score > 1 or score < 0: 
   #  warn(f"Expected score in range [0,1] but received {score}, determined width to be {width}")
   return width
+
+def generate_group_membership_dict(assignment_table : pd.DataFrame) -> Dict:
+  """ Generates group member list for each group and stores in dict with group identifiers as keys. 
+  
+  Input:
+    assignment_table : pd data frame with feature_id (str) and set_it columns (str).
+  Returns:
+    dict with {"set_id" : [feature_id, ...], ...} structure. Feature ids are returned as str. 
+  """
+  assert "set_id" in assignment_table.columns, "Error: column with name set_id required."
+  assert "feature_id" in assignment_table.columns, "Error: column with name feature_id required."
+  group_ids = assignment_table["set_id"].to_numpy(dtype = str)
+  feature_ids = assignment_table["feature_id"].to_numpy(dtype = str)
+  unique_groups = np.unique(group_ids)
+  group_membership_dict = {}
+  for group in unique_groups:
+    index = np.where(group_ids == group)
+    group_membership_dict[group] = feature_ids[index].tolist()
+  return group_membership_dict

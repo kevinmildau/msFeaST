@@ -6,6 +6,7 @@ from sklearn.manifold import TSNE
 from scipy.spatial.distance import pdist, squareform
 from scipy.stats import spearmanr, pearsonr
 import plotly
+import plotly.graph_objects as go
 
 @dataclass
 class GridEntryTsne:
@@ -95,7 +96,7 @@ def run_tsne_grid(
     )
   return output_list
 
-def _plot_tsne_grid(tsne_list : List[GridEntryTsne]) -> None:
+def plot_tsne_grid(tsne_list : List[GridEntryTsne]) -> None:
   """ Plots pearson and spearman scores vs perplexity for each entry in list of GridEntryTsne objects. """
   
   pearson_scores = [x.spearman_score for x in tsne_list]
@@ -106,8 +107,7 @@ def _plot_tsne_grid(tsne_list : List[GridEntryTsne]) -> None:
   trace_pearson = go.Scatter(x = iloc_perplexity, y = pearson_scores, name="pearson_score", mode = "markers")
   fig = go.Figure([trace_pearson, trace_spearman])
   fig.update_layout(xaxis_title="Perplexity / iloc", yaxis_title="Score")
-  fig.show()
-  return None
+  return fig
 
 def print_tsne_grid(grid : List[GridEntryTsne]) -> None:   
   """ Prints all values in tsne grid in readable format via pandas conversion """
@@ -131,5 +131,4 @@ def plot_selected_embedding(embedding_coordinates_table : pd.DataFrame) -> plotl
     data_frame= embedding_coordinates_table, x = "x", y = "y", hover_data=["feature_id"],
     width=800, height=800
   )
-  figure.show()
   return(figure)

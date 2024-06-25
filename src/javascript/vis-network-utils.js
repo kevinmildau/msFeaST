@@ -41,7 +41,7 @@ const getNodeDataInfo = function (inputNodeData, selectedNodeId, contrastKeys){
   for (const contrastKey of contrastKeys) {
     outputString += `[${contrastKey}:]\n`
     for (const measureKey in inputNodeData[contrastKey]){
-      if (["globalTestFeaturePValue", "log2FoldChange"].includes(measureKey)){
+      if (["univariatePValue", "log2FoldChange"].includes(measureKey)){
         // only these two measures have a measure and nodeSize difference in their data.
         value = inputNodeData[contrastKey][measureKey]["measure"];
       } else {
@@ -83,6 +83,27 @@ let getNodeGroupInfo = function (inputGroupData, groupId){
       outputString += `  ${measureKey}: ${rounded_value}\n`
     }
   }
+  return outputString
+}
+
+
+/**
+ * 
+ * @param {*} groupMemberships group_id keyed object with feature_ids for each member
+ * @param {*} groupId 
+ * @returns string with feature_ids styles to add no more than 5 ids per line of text.
+ */
+let getGroupmemberships = function (groupMemberships, groupId){
+  let outputString = 'Features belonging to group with id =  ' + String(groupId) + ":\n";
+  let counter = 1;
+  for (const feature_id of groupMemberships[groupId]) {
+    if (counter % 10 == 0){
+      outputString += "\n";
+    }
+    outputString += String(feature_id) + ", ";
+    counter += 1;
+  }
+  outputString += "\n";
   return outputString
 }
 
