@@ -4,7 +4,9 @@ The current msFeaST pre-processing and pipeline workflow has been tested on maco
 
 # msFeaST Quickstart
 
-To inspect the interactive dashboard for the illustrative examples, please download the *msFeaST_Dashboard_bundle.html* and the ready made data from notebooks\data\omsw_pleurotus_ms2deepscore\dashboard_data.json. Open the html bundle in your browser and load the select and load the data. Changing to the dataview tab shows the now loaded data.
+To inspect the interactive dashboard for the illustrative examples, please download the *msFeaST_Dashboard_bundle.html* and the ready made data from notebooks\data\omsw_pleurotus_ms2deepscore\dashboard_data.json. Open the html bundle in your browser and load the select and load the data. Changing to the dataview tab shows the now loaded data. 
+
+To run msFeaST using your own data, follow the installation instructions (msFeaST setup). Navigate to the notebook folder and open the preprocessing_mushroom_type_comparison.ipynb and msfeast_pipeline_mushroom_type_comparison.ipynb notebooks on your local machine. These notebooks contain a complete example of quantification table, metadata table, and spectral data processing required for msFeaST, as well as a complete use-case example. To make use of your own data, change the data filepath arguments to your own data file location and run the pipeline. Text in magenta italics font highlights required user input for the pipeline. The jupyter-notebook pipeline produces the a text file in json format that can be interactively explored in the interactive dashboard.
 
 # msFeaST setup
 
